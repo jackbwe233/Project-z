@@ -70,7 +70,7 @@ import {
   normalizeToolPreferences,
 } from "./lib/sessions.js";
 import { generationErrorFallback } from "./lib/generation.js";
-import { detectBrowser } from "./lib/browser.js";
+import { detectBrowser, isIOSDevice } from "./lib/browser.js";
 import { computeLoadProgress } from "./lib/progress.js";
 import {
   loadButtonLabel,
@@ -3432,6 +3432,18 @@ async function init() {
   updateComposerState();
 
   if (state.fileOrigin) $("file-origin-note").hidden = false;
+
+  // iPhone/iPad: opening saved chats must never also start a GPU/model load.
+  // In-app WebKit browsers can terminate the whole page under memory pressure.
+  // Preserve all existing local conversations, settings, and model caches.
+  // Tapping Load model performs the graphics check and initializes the model.
+  if (isIOSDevice(navigator.userAgent, navigator.maxTouchPoints)) {
+    state.webgpuChecking = false;
+    state.storageChecking = false;
+    setModelStatus("", "Tap Load model");
+    updateComposerState();
+    return;
+  }
 
   await probeWebGPU();
   try {
