@@ -70,7 +70,7 @@ import {
   normalizeToolPreferences,
 } from "./lib/sessions.js";
 import { generationErrorFallback } from "./lib/generation.js";
-import { detectBrowser, isIOSDevice } from "./lib/browser.js";
+import { detectBrowser, isIOSDevice, graphicsProbeAttempts } from "./lib/browser.js";
 import { computeLoadProgress } from "./lib/progress.js";
 import {
   loadButtonLabel,
@@ -652,11 +652,12 @@ async function probeWebGPU() {
         throw new Error("This local model runtime does not currently support Firefox. Try updated Chrome, Edge, or Safari.");
       }
 
-      // A stalled requestAdapter() must not leave the whole application checking forever.
-      // One automatic retry is safe; repeated attempts could drain battery and confuse users.
+      // Protect iPhone WebKit from repeated GPU initialization after a failed probe.
+      // Desktop browsers may still retry once for a transient adapter failure.
+      const maxAttempts = graphicsProbeAttempts(navigator.userAgent, navigator.maxTouchPoints);
       let adapter = null;
       let previousError = null;
-      for (let attempt = 0; attempt < 2; attempt++) {
+      for (let attempt = 0; attempt < maxAttempts; attempt++) {
         try {
           adapter = await withDeadline(
             navigator.gpu.requestAdapter(),
@@ -668,7 +669,7 @@ async function probeWebGPU() {
         } catch (err) {
           previousError = err;
         }
-        if (attempt === 0) {
+        if (attempt + 1 < maxAttempts) {
           recordDiagnostic("Graphics", previousError, { recovered: false });
           setModelStatus("loading", "Auto-retrying graphics…");
           await new Promise(resolve => setTimeout(resolve, 350));
