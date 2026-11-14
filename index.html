@@ -1034,6 +1034,17 @@
           </div>
         </div>
       </details>
+      <details class="side-block" id="diagnostics-block">
+        <summary>Diagnostics <span class="conv-count" id="diagnostics-count"></span></summary>
+        <div class="side-block-body">
+          <p class="field-hint" id="diagnostics-status" role="status">Z is monitoring for recoverable errors on this device.</p>
+          <div class="storage-actions">
+            <button type="button" class="btn" id="diagnostics-retry">Run checks again</button>
+            <button type="button" class="btn" id="diagnostics-copy">Copy diagnostic report</button>
+          </div>
+          <p class="field-hint" style="margin-top:9px">Safe retries happen automatically. Changes to the app's code require review and approval.</p>
+        </div>
+      </details>
     </div>
     <div class="sidebar-footer">
       <button type="button" class="credits-btn" id="credits-btn">Credits</button>
@@ -1160,6 +1171,6 @@
   </div>
 </dialog>
 
-<script type="module" src="./app.js?v=neo-20261114"></script>
+<script type="module" src="./app.js?v=neo-recovery-20261114"></script>
 </body>
 </html>
