@@ -3208,6 +3208,7 @@ async function runAssistantGeneration(session) {
   } catch (err) {
     console.error(err);
     generationError = err instanceof Error ? err.message : String(err);
+    recordDiagnostic("Reply generation", generationError);
     const fallback = generationErrorFallback(err, { raw: streamCtx.raw || raw });
     raw = fallback.raw;
     if (fallback.toast) toast(fallback.toast);
@@ -3687,6 +3688,7 @@ const projectZ = initProjectZ({ input: $("user-input"), notify: toast, send: sen
 
 init().catch(err => {
   console.error("WebLLM initialization failed.", err);
+  recordDiagnostic("App startup", err);
   state.loading = false;
   state.busy = false;
   updateComposerState();
