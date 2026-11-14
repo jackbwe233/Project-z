@@ -17,7 +17,12 @@ test('research, persistence, responsive layout and chat handoff', async ({ page 
   await page.reload();
   await expect(page.getByRole('link', { name: 'Example source' })).toHaveCount(3);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-  await page.getByRole('button', { name: 'Draft summary in Z Chat' }).click();
+  await page.getByRole('button', { name: 'Draft summary', exact: true }).click();
+  await expect(page.locator('#research-preview')).toBeVisible();
+  await expect(page).toHaveURL(/research\.html$/);
+  await expect(page.locator('#research-draft-text')).toHaveValue(/Summarize this research for Apple/);
+  await page.getByRole('button', { name: 'Open draft in Z Chat' }).click();
+  await expect(page).toHaveURL(/index\.html\?z_start=1#research/);
   await expect(page.locator('#user-input')).toHaveValue(/Summarize this research for Apple/);
   await page.locator('.z-voice-drawer > summary').click();
   await expect(page.getByRole('button', { name: 'Talk to Z', exact: true })).toBeVisible();
