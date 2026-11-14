@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   emptyLearningStore, normalizeLearningStore, learnFromUserMessage,
-  setLearningEnabled, approveLearning, forgetLearning, selectRelevantMemories,
+  setLearningEnabled, approveLearning, forgetLearning, editLearning, selectRelevantMemories,
   buildPersonalMemoryContext, exportLearningBundle, importLearningBundle,
   isSensitiveCandidate, readLearningStore, writeLearningStore,
   MAX_SAVED,
@@ -41,6 +41,15 @@ describe("Project Z learning vault", () => {
     expect(forgetLearning(suggested, id).pending).toHaveLength(0);
     const approved = approveLearning(suggested, id);
     expect(forgetLearning(approved, id).saved).toHaveLength(0);
+  });
+
+  it("lets users edit approved facts but refuses sensitive edits", () => {
+    const saved = learnFromUserMessage(emptyLearningStore(), "Remember that I like jazz.").store;
+    const id = saved.saved[0].id;
+    const changed = editLearning(saved, id, "I enjoy instrumental jazz.");
+    expect(changed.saved[0].text).toBe("I enjoy instrumental jazz.");
+    expect(changed.saved[0].id).not.toBe(id);
+    expect(editLearning(saved, id, "my password is abc123")).toEqual(saved);
   });
 
   it("deduplicates repeated facts instead of growing forever", () => {
