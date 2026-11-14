@@ -10,7 +10,7 @@ describe('Inline JavaScript syntax in all Project Z HTML pages', () => {
   for (const page of pages) {
     it(page + ' contains no unparseable inline JavaScript', () => {
       const html = readFileSync(join(root, page), 'utf8');
-      const scripts = [...html.matchAll(/<script\\b[^>]*>([\\s\\S]*?)<\\/script>/gi)]
+      const scripts = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)]
         .map(match => match[1].trim()).filter(Boolean);
       for (let i = 0; i < scripts.length; i++) {
         expect(() => new Function(scripts[i]), page + ': inline script ' + (i + 1)).not.toThrow();
