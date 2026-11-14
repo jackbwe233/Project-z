@@ -81,38 +81,39 @@ test('Personal memory is opt-in and reviewable without an active AI model', asyn
   await expect(page.locator('#z-learning-saved')).not.toContainText('I prefer concise study guides.');
 });
 
-test('MONO chat uses black surfaces and thin white outlines', async ({ page }) => {
+test('Orbital chat has themed surfaces and readable controls', async ({ page }) => {
   await page.goto('/');
-  await expect(page.locator('#sidebar')).toHaveCount(1);
   const style = await page.evaluate(() => {
-    const css = sel => getComputedStyle(document.querySelector(sel));
-    const side = css('#sidebar');
-    const composer = css('#composer-shell');
+    const css = selector => getComputedStyle(document.querySelector(selector));
     return {
-      sideBackground: side.backgroundColor,
-      composerBackground: composer.backgroundColor,
-      composerBorderWidth: composer.borderTopWidth,
-      composerBorderColor: composer.borderTopColor,
-      monoLoaded: [...document.styleSheets].some(sheet => String(sheet.href || '').includes('monochrome.css')),
+      orbitalLoaded: [...document.styleSheets].some(sheet => String(sheet.href || '').includes('z-orbital.css')),
+      sideGradient: css('#sidebar').backgroundImage,
+      composerBorderWidth: css('#composer-shell').borderTopWidth,
+      composerBorderColor: css('#composer-shell').borderTopColor,
+      composerBackground: css('#composer-shell').backgroundColor,
+      textColor: css('#user-input').color,
     };
   });
-  expect(style.monoLoaded).toBe(true);
-  expect(style.sideBackground).toBe('rgb(0, 0, 0)');
-  expect(style.composerBackground).toBe('rgb(0, 0, 0)');
+  expect(style.orbitalLoaded).toBe(true);
+  expect(style.sideGradient).toContain('gradient');
   expect(style.composerBorderWidth).toBe('1px');
-  expect(style.composerBorderColor).toMatch(/rgba?\(/);
+  expect(style.composerBorderColor).toContain('rgb');
+  expect(style.composerBackground).not.toBe('rgba(0, 0, 0, 0)');
+  expect(style.textColor).not.toBe('rgba(0, 0, 0, 0)');
 });
 
-test('MONO command center and research use the same black-and-white surfaces', async ({ page }) => {
+test('Command Center and research load the matching Orbital panels', async ({ page }) => {
   for (const path of ['/command-center.html', '/research.html']) {
     await page.goto(path);
-    const colors = await page.evaluate(() => ({
-      body: getComputedStyle(document.body).backgroundColor,
+    const style = await page.evaluate(() => ({
+      orbitalLoaded: [...document.styleSheets].some(sheet => String(sheet.href || '').includes('z-orbital.css')),
       section: getComputedStyle(document.querySelector('section')).backgroundColor,
-      text: getComputedStyle(document.querySelector('h1')).color,
+      heading: getComputedStyle(document.querySelector('h1')).color,
+      particles: document.querySelectorAll('body > .z-particle-field .z-mote').length,
     }));
-    expect(colors.body).toBe('rgb(0, 0, 0)');
-    expect(colors.section).toBe('rgb(0, 0, 0)');
-    expect(colors.text).toBe('rgb(255, 255, 255)');
+    expect(style.orbitalLoaded).toBe(true);
+    expect(style.section).not.toBe('rgba(0, 0, 0, 0)');
+    expect(style.heading).not.toBe('rgba(0, 0, 0, 0)');
+    expect(style.particles).toBe(16);
   }
 });
