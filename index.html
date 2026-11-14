@@ -1247,8 +1247,14 @@
     <div class="z-safe-card">
       <div class="z-safe-logo" aria-hidden="true">Z</div>
       <h1>Project Z</h1>
-      <p>Your saved chats stay on this device. Choose Z Chat or jump straight into Personal Mode.</p>
-      <button id="z-launch-open" type="button">Open Z Chat</button><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:11px"><a style="display:block;padding:13px 5px;margin:0;border-radius:12px;border:1px solid #4b5e80" href="./personal.html">Personal</a><a style="display:block;padding:13px 5px;margin:0;border-radius:12px;border:1px solid #4b5e80" href="./quick.html">🎙 Talk</a><a style="display:block;padding:13px 5px;margin:0;border-radius:12px;border:1px solid #4b5e80" href="./plugins.html">Plugins</a><a style="display:block;padding:13px 5px;margin:0;border-radius:12px;border:1px solid #4b5e80" href="./notes.html">Notes</a></div>
+      <p>Your saved chats stay on this device. You can type a question right away.</p>
+      <form id="z-launch-ask-form">
+        <label for="z-launch-question">Ask Z anything</label>
+        <textarea id="z-launch-question" rows="3" maxlength="5000" placeholder="What's on your mind?"></textarea>
+        <button type="submit">Ask Z</button>
+      </form>
+      <p class="z-launch-hint">The first answer may still take time while your phone loads the local AI model.</p>
+      <button id="z-launch-open" type="button">Open saved chats</button><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:11px"><a style="display:block;padding:13px 5px;margin:0;border-radius:12px;border:1px solid #4b5e80" href="./personal.html">Personal</a><a style="display:block;padding:13px 5px;margin:0;border-radius:12px;border:1px solid #4b5e80" href="./quick.html">🎙 Talk</a><a style="display:block;padding:13px 5px;margin:0;border-radius:12px;border:1px solid #4b5e80" href="./plugins.html">Plugins</a><a style="display:block;padding:13px 5px;margin:0;border-radius:12px;border:1px solid #4b5e80" href="./notes.html">Notes</a></div>
       <a href="./recovery.html">Having trouble? Open recovery</a>
       <p id="z-launch-error" hidden>The app couldn't start. Use recovery for a safer way in.</p>
     </div>`;
@@ -1263,19 +1269,40 @@
     #z-safe-start h1{font-size:28px;margin:6px 0 12px}
     #z-safe-start p{color:#a5b7d2;margin:12px 0 20px}
     #z-safe-start button{background:#b6d1ff;color:#0b1628;border:0;border-radius:12px;
-      min-height:52px;width:100%;font:600 16px system-ui;cursor:pointer}
+      min-height:48px;width:100%;font:600 16px system-ui;cursor:pointer}
+    #z-safe-start label{display:block;text-align:left;color:#d7e5fc;font-size:14px;font-weight:650;margin-bottom:7px}
+    #z-safe-start textarea{display:block;width:100%;box-sizing:border-box;min-height:86px;resize:vertical;
+      border:1px solid #5c7192;border-radius:13px;background:#0c1728;color:#f0f6ff;
+      padding:12px;font:16px/1.45 -apple-system,BlinkMacSystemFont,system-ui,sans-serif;margin:0 0 10px}
+    #z-safe-start textarea:focus-visible{outline:3px solid #6a98d3;outline-offset:2px}
+    #z-safe-start #z-launch-open{background:#253c5d;color:#e4efff;border:1px solid #526c8f;margin-top:10px}
+    #z-safe-start .z-launch-hint{font-size:12px;margin:10px 0;color:#aebdd3}
     #z-safe-start a{display:block;margin:18px 0 0;color:#c5d8f7}
     #z-safe-start #z-launch-error{color:#aa3333}
     #z-safe-start button:focus-visible,#z-safe-start a:focus-visible{outline:3px solid #6a98d3;outline-offset:3px}
   `;
   document.head.append(style);
   document.body.append(gate);
-  gate.querySelector("#z-launch-open").addEventListener("click", () => {
+  let opening = false;
+  const openChat = () => {
+    if (opening) return;
+    opening = true;
     gate.remove();
     style.remove();
     if (app) app.style.display = "";
     loadApp();
-  }, { once: true });
+  };
+  gate.querySelector("#z-launch-open").addEventListener("click", openChat);
+  gate.querySelector("#z-launch-ask-form").addEventListener("submit", event => {
+    event.preventDefault();
+    const draft = gate.querySelector("#z-launch-question").value.trim();
+    if (!draft || opening) return;
+    // Keep the draft in memory. Never persist a question from the launch screen
+    // unless the user explicitly sends it in the chat.
+    window.__zLaunchDraft = draft;
+    window.__zLaunchSend = true;
+    openChat();
+  });
 })();
 </script>
 <a href="./plugins.html" id="z-tool-link" style="position:fixed;right:12px;top:calc(66px + env(safe-area-inset-top));z-index:900;background:#a9c7ff;color:#0b1627;border:1px solid #e0eaff;border-radius:999px;padding:9px 13px;font:700 13px system-ui,-apple-system,sans-serif;text-decoration:none;box-shadow:0 8px 28px #0009" aria-label="Open Z Apps and Plugins">✦ Tools</a>
