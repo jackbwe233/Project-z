@@ -737,3 +737,160 @@ body:not(:has(#app)) select { border-radius:8px!important; }
 @media(prefers-reduced-motion:reduce){
   .z-intro {display:none!important;}
 }
+
+/* ATELIER TYPE / 0.4.3
+   Luxury, restrained typography: elegant geometries and quiet technical labels.
+   No changes to inference, memory, animation or app controls. */
+:root {
+  --sans:"Manrope",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono","SFMono-Regular",Consolas,monospace;
+}
+html,body,button,input,textarea,select {
+  font-family:var(--sans)!important;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+body {
+  font-weight:400;
+  letter-spacing:-.014em;
+  line-height:1.62;
+}
+.brand-text h1 {
+  font-family:var(--sans)!important;
+  font-size:13px!important;
+  font-weight:700!important;
+  letter-spacing:.135em!important;
+  line-height:1.35;
+}
+.brand-tagline {
+  font-size:10px!important;
+  font-weight:400!important;
+  letter-spacing:.007em;
+  line-height:1.6!important;
+}
+.brand-tagline strong { font-weight:600!important;letter-spacing:.075em; }
+.chat-title {
+  font-family:var(--sans)!important;
+  font-size:14px!important;
+  font-weight:600!important;
+  letter-spacing:-.025em!important;
+}
+.empty-state h2 {
+  font-family:var(--sans)!important;
+  font-size:clamp(27px,3.3vw,39px)!important;
+  font-weight:600!important;
+  letter-spacing:-.055em!important;
+  line-height:1.22!important;
+}
+.empty-state p {
+  font-size:14px!important;
+  font-weight:400;
+  letter-spacing:-.01em;
+  line-height:1.75!important;
+}
+.msg-content,.response-content {
+  font-family:var(--sans)!important;
+  font-size:14.5px!important;
+  font-weight:400;
+  letter-spacing:-.009em;
+  line-height:1.78!important;
+}
+.response-content h1,.response-content h2,.response-content h3,
+.response-content h4,.response-content h5,.response-content h6 {
+  font-family:var(--sans)!important;
+  font-weight:600!important;
+  letter-spacing:-.037em;
+  line-height:1.34!important;
+}
+.response-content strong,.msg-content strong {font-weight:650;}
+.msg-role,.field-label,.session-group-label,.sidebar-section-label,
+.side-block > summary,.version-label,.version-num,
+.loader-status,.status-chip,.z-controls strong {
+  font-family:var(--mono)!important;
+  letter-spacing:.075em!important;
+  font-weight:500!important;
+}
+.msg-role,.field-label,.session-group-label,.sidebar-section-label,
+.side-block > summary,.version-label,.z-controls strong {
+  text-transform:uppercase;
+}
+.session-title,.model-option-name {
+  font-family:var(--sans)!important;
+  font-size:12.5px!important;
+  font-weight:600!important;
+  letter-spacing:-.018em;
+}
+.session-meta,.model-option-meta,.hint-box,.field-hint {
+  font-family:var(--sans)!important;
+  font-size:11px;
+  line-height:1.6;
+  letter-spacing:-.005em;
+}
+.btn,.btn-new,.send-btn,.menu-btn,.theme-toggle-btn,
+.z-buttons button,.z-learning-actions button,
+#command-center-link,#stock-research-link,
+body:not(:has(#app)) button {
+  font-family:var(--sans)!important;
+  font-size:12px;
+  font-weight:600!important;
+  letter-spacing:.002em;
+}
+#user-input {
+  font-family:var(--sans)!important;
+  font-weight:400!important;
+  letter-spacing:-.01em;
+  line-height:1.6;
+}
+#system-prompt,.response-content code,.response-content pre,
+code,pre,.z-intro-caption {
+  font-family:var(--mono)!important;
+}
+#system-prompt {font-size:12px;line-height:1.65;}
+#user-input::placeholder {font-weight:400;letter-spacing:-.004em;}
+body:not(:has(#app)) {
+  font-family:var(--sans)!important;
+  font-weight:400;
+  letter-spacing:-.012em;
+}
+body:not(:has(#app)) h1 {
+  font-family:var(--sans)!important;
+  font-weight:600!important;
+  font-size:clamp(29px,4.3vw,45px)!important;
+  letter-spacing:-.065em!important;
+  line-height:1.19!important;
+}
+body:not(:has(#app)) h2 {
+  font-family:var(--sans)!important;
+  font-weight:600!important;
+  font-size:clamp(17px,2.3vw,21px)!important;
+  letter-spacing:-.038em!important;
+  line-height:1.32!important;
+}
+body:not(:has(#app)) p,
+body:not(:has(#app)) small {
+  font-family:var(--sans)!important;
+  line-height:1.75!important;
+  letter-spacing:-.005em;
+}
+body:not(:has(#app)) label {
+  font-family:var(--sans)!important;
+  font-weight:600!important;
+  font-size:12px;
+  letter-spacing:-.005em;
+}
+body:not(:has(#app)) .eyebrow,
+body:not(:has(#app)) .tag {
+  font-family:var(--mono)!important;
+  font-size:10px!important;
+  font-weight:500;
+  letter-spacing:.08em!important;
+  text-transform:uppercase;
+}
+@media(max-width:768px) {
+  .chat-title {font-size:12px!important;letter-spacing:-.02em!important;}
+  .empty-state h2 {font-size:clamp(26px,6vw,34px)!important;}
+  .msg-content,.response-content {font-size:14px!important;line-height:1.74!important;}
+  #user-input {font-size:16px!important;}
+  .status-chip {font-size:9px!important;letter-spacing:.015em!important;}
+  body:not(:has(#app)) h1 {font-size:clamp(27px,7vw,38px)!important;}
+}
