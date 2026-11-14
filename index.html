@@ -880,9 +880,15 @@
   @keyframes bob { 0%,60%,100% { opacity: 0.4; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-4px); } }
   @keyframes toastIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
+  #sidebar-close { display: none; }
+  #sidebar-backdrop[hidden] { display: none !important; }
   @media (max-width: 768px) {
     #sidebar { position: fixed; inset: 0 auto 0 0; transform: translateX(-100%); transition: transform 0.25s ease; box-shadow: var(--shadow-lg); }
     #sidebar.open { transform: translateX(0); }
+    #sidebar { width: min(88vw, 340px); max-width: 100%; z-index: 102; overflow: hidden; }
+    #sidebar-backdrop:not([hidden]) { position: fixed; inset: 0; z-index: 101; display: block; background: rgba(1, 6, 13, .72); border: 0; cursor: pointer; }
+    #sidebar-close { display: grid; place-items: center; margin-left: auto; width: 42px; height: 42px; flex: none; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-2); color: var(--text); font-size: 27px; line-height: 1; cursor: pointer; }
+    #sidebar .sidebar-brand { align-items: center; flex-wrap: wrap; }
     .menu-btn { display: grid; place-items: center; }
     #chat-inner .msg-inner { padding: 0 16px; }
     #composer-shell { padding-left: 16px; padding-right: 16px; }
@@ -894,8 +900,9 @@
 </head>
 <body>
 <div id="app">
-  <aside id="sidebar">
+  <aside id="sidebar" aria-label="Navigation">
     <div class="sidebar-brand">
+      <button type="button" id="sidebar-close" aria-label="Close menu and return to chat" title="Close menu">×</button>
       <div class="brand-icon" id="brand-icon"></div>
       <div class="brand-text">
         <h1>Project Z</h1>
@@ -1032,6 +1039,7 @@
       <div class="version-badge" id="app-version" aria-label="App version"></div>
     </div>
   </aside>
+  <button type="button" id="sidebar-backdrop" aria-label="Close navigation" hidden></button>
 
   <div id="main">
     <div class="topbar">
