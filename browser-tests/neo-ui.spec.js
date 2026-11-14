@@ -131,3 +131,33 @@ test('Simplified memory tools stay discoverable and advanced actions stay tucked
   await expect(page.getByRole('button', { name: 'Delete all memories' })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });
+
+test('iPhone opens Z without probing or auto-loading the AI', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'userAgent', {
+      configurable: true,
+      value: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148',
+    });
+    Object.defineProperty(navigator, 'maxTouchPoints', { configurable: true, value: 5 });
+    window.__gpuProbes = 0;
+    Object.defineProperty(navigator, 'gpu', {
+      configurable: true,
+      value: {
+        requestAdapter: async () => {
+          window.__gpuProbes += 1;
+          return null;
+        },
+      },
+    });
+  });
+  await page.goto('/');
+  await expect(page.locator('#chat-scroll')).toBeVisible();
+  await expect(page.locator('#model-status-text')).toHaveText('Tap Load model');
+  await expect(page.locator('#load-model-btn')).toBeEnabled();
+  expect(await page.evaluate(() => window.__gpuProbes)).toBe(0);
+
+  // An explicit tap, not app startup, is what initiates the graphics probe.
+  await page.locator('#load-model-btn').click();
+  await expect(page.locator('#model-status-text')).toHaveText('Graphics unavailable', { timeout: 15000 });
+  expect(await page.evaluate(() => window.__gpuProbes)).toBeGreaterThan(0);
+});
