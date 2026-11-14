@@ -894,3 +894,33 @@ body:not(:has(#app)) .tag {
   .status-chip {font-size:9px!important;letter-spacing:.015em!important;}
   body:not(:has(#app)) h1 {font-size:clamp(27px,7vw,38px)!important;}
 }
+
+/* FAST CHAT / 0.4.4 — unobtrusive paging for long conversation histories. */
+#chat-messages > .chat-load-older {
+  display:block;
+  width:max-content;
+  max-width:calc(100% - 30px);
+  margin:14px auto 23px!important;
+  padding:9px 17px!important;
+  font-size:11px!important;
+  letter-spacing:.016em!important;
+  font-weight:500!important;
+  line-height:1.5;
+  border:1px solid var(--line)!important;
+  background:var(--surface)!important;
+  color:var(--text-secondary)!important;
+  border-radius:999px!important;
+  box-shadow:none!important;
+}
+#chat-messages > .chat-load-older:hover {
+  border-color:var(--accent)!important;
+  color:var(--text)!important;
+  background:var(--surface-2)!important;
+}
+@media(max-width:768px){
+  #chat-messages > .chat-load-older {
+    max-width:calc(100% - 22px);
+    min-height:44px;
+    font-size:11px!important;
+  }
+}
