@@ -155,6 +155,10 @@ test('iPhone opens Z without probing or auto-loading the AI', async ({ page }) =
   await expect(page.locator('#model-status-text')).toHaveText('Tap Load model');
   await expect(page.locator('#load-model-btn')).toBeEnabled();
   expect(await page.evaluate(() => window.__gpuProbes)).toBe(0);
+  // Reopening the page must not start the same crash loop again.
+  await page.reload();
+  await expect(page.locator('#model-status-text')).toHaveText('Tap Load model');
+  expect(await page.evaluate(() => window.__gpuProbes)).toBe(0);
 
   // An explicit tap, not app startup, is what initiates the graphics probe.
   await page.locator('#load-model-btn').click();
