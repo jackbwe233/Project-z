@@ -3521,7 +3521,10 @@ async function init() {
     // Safari can terminate the tab without a catchable error if GPU memory is exhausted.
     // Prefer the smallest existing local model on iPhone, without deleting chats.
     if (state.selectedModelId !== "lfm2") {
-      await applyModelSelection("lfm2", { silent: true });
+      state.selectedModelId = "lfm2";
+      const chat = activeSession();
+      if (chat) await patchSessionFields(chat, { modelId: "lfm2" });
+      renderModelPicker();
       toast("iPhone safe mode: using Z's smaller AI model to help prevent restarts.", { duration: 6500 });
     }
     state.maxNewTokens = Math.min(state.maxNewTokens, 256);
