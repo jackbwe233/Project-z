@@ -1,4 +1,25 @@
-:root { --bg:#f4f5f6; --surface-2:#eef0f2; --border:#d9dde2; --border-soft:#e9ebee; --accent:#505c6d; --accent-hover:#303a49; --accent-soft:rgba(80,92,109,.1); --accent-glow:rgba(80,92,109,.16); --user-bg:linear-gradient(135deg,#526071,#333e4d); --text-muted:#697380; }
+:root {
+  color-scheme: dark;
+  --bg:#0b111a; --bg-chat:#0c131e; --surface:#111a27; --surface-2:#182536;
+  --border:#28394d; --border-soft:#1c2a3a; --text:#e7eef8; --text-secondary:#9aabc0;
+  --text-muted:#73869d; --accent:#79b9ff; --accent-hover:#a7d2ff;
+  --accent-soft:rgba(91,166,239,.14); --accent-glow:rgba(76,155,235,.23);
+  --user-bg:linear-gradient(135deg,#496f98,#324d70); --think-bg:#101a27;
+  --shadow-sm:0 2px 8px #02071166; --shadow:0 12px 36px #02071170;
+  --shadow-lg:0 22px 60px #02071199;
+}
+[data-theme="dark"] { --bg:#0b111a; --bg-chat:#0c131e; --surface:#111a27; --surface-2:#182536; --border:#28394d; --border-soft:#1c2a3a; --text:#e7eef8; --text-secondary:#9aabc0; --text-muted:#73869d; --accent:#79b9ff; --accent-hover:#a7d2ff; --accent-soft:rgba(91,166,239,.14); --accent-glow:rgba(76,155,235,.23); --user-bg:linear-gradient(135deg,#496f98,#324d70); --think-bg:#101a27; }
+body { background:radial-gradient(ellipse at 50% -20%,#21344b 0%,var(--bg) 58%); }
+#sidebar { background:linear-gradient(180deg,#111b29,#0e1723 72%); }
+.brand-icon { border-radius:12px; background:linear-gradient(145deg,#b9dfff,#5088bd 70%,#315478); color:#07111c; }
+.sidebar-brand { border-bottom:1px solid var(--border-soft); }
+.btn-new,.send-btn { background:linear-gradient(135deg,#76baff,#4b82b8); color:#07111c; box-shadow:0 6px 22px #438ac044; }
+.btn-new:hover,.send-btn:hover:not(:disabled) { background:linear-gradient(135deg,#a6d4ff,#72a9dd); }
+#chat-main { background:linear-gradient(180deg,#0d1520cc,#0b111a 48%); }
+#composer-shell { background:#121d2b; border-color:#31465e; box-shadow:0 12px 36px #02071170,0 0 0 1px #75b9ff0b; }
+#composer-shell:focus-within { border-color:#6da9df; box-shadow:0 0 0 3px #79b9ff20,0 14px 38px #02071188; }
+.message-bubble { border-color:var(--border-soft); }
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
 #app { height:100dvh; }
 .z-companion { display:flex; align-items:center; flex-wrap:wrap; gap:14px; padding:12px 24px; border-bottom:1px solid var(--border); background:var(--surface); }
 .z-controls strong { font-size:11px; letter-spacing:.18em; color:var(--text-secondary); }
