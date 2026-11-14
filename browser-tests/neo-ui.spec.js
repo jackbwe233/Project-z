@@ -157,3 +157,31 @@ test('iPhone startup leaves graphics idle even after reopening the page', async 
   await expect(page.locator('#model-status-text')).toHaveText('Graphics unavailable', { timeout: 15000 });
   expect(await page.evaluate(() => window.__gpuProbes)).toBe(1);
 });
+
+test('Failed chat deletion keeps the saved conversation visible', async ({ page }) => {
+  await page.goto('/');
+  if ((await page.viewportSize()).width < 769) {
+    await page.locator('#sidebar-toggle').click();
+  }
+  const row = page.locator('#session-list .session-item').first();
+  await expect(row).toBeVisible();
+  const originalTitle = await row.locator('.session-title').textContent();
+  // Simulate a Safari IndexedDB transaction failure without clearing saved data.
+  await page.evaluate(() => {
+    const original = IDBDatabase.prototype.transaction;
+    IDBDatabase.prototype.transaction = function (stores, mode, ...args) {
+      if (mode === 'readwrite' && Array.isArray(stores) && stores.includes('sessions')) {
+        throw new DOMException('Simulated storage failure', 'InvalidStateError');
+      }
+      return original.call(this, stores, mode, ...args);
+    };
+  });
+  await row.getByRole('button', { name: 'Delete', exact: true }).click();
+  await row.getByRole('button', { name: 'Confirm delete' }).click();
+  await expect(page.locator('#toast-stack')).toContainText('Could not delete this chat');
+  await expect(page.locator('#session-list .session-item')).toHaveCount(1);
+  await expect(page.locator('#session-list .session-item').first().locator('.session-title')).toHaveText(originalTitle);
+  await page.reload();
+  if ((await page.viewportSize()).width < 769) await page.locator('#sidebar-toggle').click();
+  await expect(page.locator('#session-list .session-item').first().locator('.session-title')).toHaveText(originalTitle);
+});
