@@ -3147,6 +3147,7 @@ async function runAssistantGeneration(session) {
       finalAssistantMessage = {
         role: "assistant",
         content: output || raw || (wasAborted ? "(stopped)" : "(no output)"),
+        ...(generationError ? { generationError } : {}),
         thinking: thinking || "",
         meta,
       };
@@ -3160,6 +3161,7 @@ async function runAssistantGeneration(session) {
       toolCalls: result?.toolCalls ?? 0,
       aborted: wasAborted,
       error: generationError,
+      tokenDiagnostics: state.model?.lastGenerationDiagnostics ? structuredClone(state.model.lastGenerationDiagnostics) : null,
       completedAt: Date.now(),
     };
     if (requestTrace.length) {
