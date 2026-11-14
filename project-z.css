@@ -400,3 +400,71 @@ body { background:var(--bg); font-family:var(--sans); letter-spacing:-.009em; }
   #empty-icon::after { font-size:40px; }
   #brand-icon::after { font-size:22px; }
 }
+
+
+/* Project Z Learning Vault — discreet, legible and touch-friendly */
+.z-memory-panel { width:100%; }
+.z-memory-panel[open] {
+  flex-basis:100%; max-height:min(68dvh,560px);
+  overflow-y:auto; padding-bottom:10px; scrollbar-gutter:stable;
+}
+.z-memory-panel > summary {
+  display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap;
+  gap:6px; padding:9px 10px; color:var(--text); font-weight:650;
+}
+#z-knowledge-count {
+  color:var(--text-muted); background:var(--surface-2);
+  border-radius:99px; padding:4px 9px; font-size:10px; font-weight:600;
+}
+.z-learning-optin {
+  display:flex !important; gap:12px; padding:14px !important;
+  border:1px solid var(--border); border-radius:13px;
+  background:var(--surface-2); cursor:pointer;
+  align-items:flex-start; margin:16px 0 !important;
+  text-transform:none !important; letter-spacing:normal !important;
+}
+.z-learning-optin input {
+  appearance:auto; flex:none; width:21px; height:21px; accent-color:var(--accent);
+  margin:0; padding:0; cursor:pointer;
+}
+.z-learning-optin > span { flex:1; min-width:0; display:block; }
+.z-learning-optin strong { color:var(--text); display:block; font-size:12px; line-height:1.4; }
+.z-learning-optin small { color:var(--text-secondary); display:block; font-size:11px; line-height:1.55; margin-top:5px; }
+.z-learning-section {
+  margin:17px 0; padding:12px; background:var(--bg-chat);
+  border:1px solid var(--border-soft); border-radius:13px;
+}
+.z-learning-section h3 {
+  margin:0 0 11px; color:var(--text-secondary); font-size:11px; font-weight:700;
+  text-transform:uppercase; letter-spacing:.07em;
+}
+.z-learning-list { display:flex; flex-direction:column; gap:8px; max-height:225px; overflow-y:auto; }
+.z-learning-empty { color:var(--text-muted); font-size:11px; line-height:1.6; margin:0; }
+.z-learning-row {
+  display:flex; align-items:flex-start; flex-wrap:wrap; gap:9px;
+  padding:11px; background:var(--surface); border:1px solid var(--border-soft);
+  border-radius:10px;
+}
+.z-learning-row-content { flex:1; min-width:145px; display:flex; flex-direction:column; gap:4px; }
+.z-learning-kind { color:var(--accent); font-size:9px; letter-spacing:.08em; text-transform:uppercase; }
+.z-learning-text { color:var(--text); font-size:12px; line-height:1.5; overflow-wrap:anywhere; }
+.z-learning-actions { display:flex; flex-wrap:wrap; gap:6px; }
+.z-learning-actions button {
+  border:1px solid var(--border); background:var(--surface-2);
+  color:var(--text-secondary); border-radius:9px; padding:7px 10px;
+  font:600 11px var(--sans); min-height:33px; cursor:pointer;
+}
+.z-learning-actions button:first-child:hover { color:var(--accent); border-color:var(--accent); }
+.z-learning-actions button:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+.z-learning-toolbar { margin:14px 0 12px; }
+.z-learning-toolbar button { min-height:39px; }
+#z-memory { max-width:100%; font-size:13px; background:var(--bg-chat); }
+#z-status { display:block; color:var(--text-secondary); line-height:1.6; overflow-wrap:anywhere; }
+@media(max-width:768px) {
+  .z-memory-panel[open] { max-height:61dvh; width:100%; }
+  .z-learning-optin { padding:12px !important; }
+  .z-learning-section { padding:9px; }
+  .z-learning-row { padding:10px; }
+  .z-learning-actions button { min-height:40px; }
+  .z-learning-list { max-height:180px; }
+}
