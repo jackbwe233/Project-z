@@ -39,3 +39,18 @@ describe('repetition guard', () => {
     await expect(generateLfmAssistant({model,messages:[],tools:[],maxNewTokens:100})).rejects.toBeInstanceOf(RepetitionError);
   });
 });
+describe('empty token diagnostics', () => {
+  it('stops initial invisible-token loops and records bounded token IDs', async () => {
+    let closed = false;
+    const model = withRepetitionGuard({ async *generate() { try { for(let i=0;i<4096;i++) yield {token:0,text:'',rawText:''}; } finally {closed=true;} }, reset:vi.fn() });
+    await expect((async()=>{for await(const chunk of model.generate([],{})) expect(chunk.text).toBe('');})()).rejects.toMatchObject({name:'EmptyGenerationError'});
+    expect(closed).toBe(true); expect(model.reset).toHaveBeenCalledOnce();
+    expect(model.lastGenerationDiagnostics.tokens).toBe(64); expect(model.lastGenerationDiagnostics.firstTokenIds).toHaveLength(32);
+  });
+  it('does not count prefill or mistake a cancelled request for an empty failure', async () => {
+    const signal = {aborted:true};
+    const model = withRepetitionGuard({async *generate(){yield {phase:'prefill',status:'start'};}});
+    const chunks=[]; for await(const chunk of model.generate([],{signal})) chunks.push(chunk);
+    expect(chunks).toHaveLength(1); expect(model.lastGenerationDiagnostics.tokens).toBe(0);
+  });
+});

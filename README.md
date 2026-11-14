@@ -10,6 +10,10 @@ Project Z adds a silver-and-white companion interface to the existing browser AI
 - **Dictate** uses browser speech recognition where supported and inserts text for review before sending. **Read reply** speaks the most recent reply on tap. **Stop voice** cancels speech and dictation. Speech recognition may use the browser provider’s online service; no paid API or key is added. iPhone Safari support and permission behavior require device testing.
 - A stylized human-like avatar blinks, breathes and changes during thinking, dictation and speech. Reduced-motion preferences disable animation. The avatar is stylized, not photorealistic.
 
+## Failed conversation turns
+
+Model prompts exclude turns containing recorded generation errors, legacy repetition warnings, obvious repeated output, or `(no output)`/`(stopped)` placeholders. Saved chats and exports remain unchanged. Both ordinary and tool-enabled chat use this filtering. Streams producing 64 initial blank decoded tokens stop as failures; an empty completed stream is also a failure. Debug traces record up to 32 generated token IDs and the count so invisible-token failures can be investigated. These changes address prompt contamination and failure detection, not an unverified GPU-kernel repair.
+
 ## Repeating replies
 
 All three runtimes stop generation when the output ends in twelve consecutive copies of a word or short phrase (or a long repeated character block). The repeating output is replaced with a recovery message, and a runtime cache reset is requested where supported. This also stops voice mode from reading a failed reply. Start a new conversation after a loop; switching models can help if it persists. This guard also limits intentionally repetitive output and is not a guarantee of answer quality.
