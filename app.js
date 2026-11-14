@@ -1267,7 +1267,8 @@ async function removeAttachment(id) {
 }
 
 function updateComposerState() {
-  const canSend = state.model && !state.busy && !state.loading;
+  // Let users compose a question before the local model is loaded. Sending loads it on demand.
+  const canSend = !state.busy && !state.loading;
   // Model initialization must never lock saved-chat navigation or editing.
   // Only an active generation needs to lock conversation mutations.
   const sessionLocked = state.busy;
@@ -3366,6 +3367,13 @@ async function sendMessage() {
   const input = $("user-input");
   const text = input.value.trim();
   const session = activeSession();
+  // On iPhone we intentionally defer the expensive model load until the user acts.
+  // Keep the draft untouched while loading so a failed load can be retried safely.
+  if (text && session && !state.model && !state.loading && !state.busy) {
+    toast("Starting Z’s AI brain. Your question will send when it’s ready.", { duration: 5000 });
+    await loadModel();
+    if (!state.model) return;
+  }
   const expectedModelId = resolveModelIdForSession(session, state.selectedModelId);
   const sendCheck = canSendToModel({
     text,
