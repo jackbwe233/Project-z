@@ -146,11 +146,17 @@ test('iPhone startup leaves graphics idle even after reopening the page', async 
     });
   });
   await page.goto('/');
+  await expect(page.locator('#z-launch-open')).toBeVisible();
+  expect(await page.evaluate(() => window.__gpuProbes)).toBe(0);
+  await page.locator('#z-launch-open').click();
   await expect(page.locator('#chat-scroll')).toBeVisible();
   await expect(page.locator('#model-status-text')).toHaveText('Tap Load model');
   await expect(page.locator('#load-model-btn')).toBeEnabled();
   expect(await page.evaluate(() => window.__gpuProbes)).toBe(0);
   await page.reload();
+  await expect(page.locator('#z-launch-open')).toBeVisible();
+  expect(await page.evaluate(() => window.__gpuProbes)).toBe(0);
+  await page.locator('#z-launch-open').click();
   await expect(page.locator('#model-status-text')).toHaveText('Tap Load model');
   expect(await page.evaluate(() => window.__gpuProbes)).toBe(0);
   await page.locator('#load-model-btn').click();
@@ -184,4 +190,13 @@ test('Failed chat deletion keeps the saved conversation visible', async ({ page 
   await page.reload();
   if ((await page.viewportSize()).width < 769) await page.locator('#sidebar-toggle').click();
   await expect(page.locator('#session-list .session-item').first().locator('.session-title')).toHaveText(originalTitle);
+});
+
+test('Recovery page starts without the main app or touching stored chats', async ({ page }) => {
+  await page.goto('/recovery.html');
+  await expect(page.getByRole('heading', { name: 'Project Z · Safe Start' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Open Project Z safely' })).toBeVisible();
+  await expect(page.locator('#chat-scroll')).toHaveCount(0);
+  expect(await page.evaluate(() => [...document.scripts].some(s => s.src.includes('/app.js')))).toBe(false);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
