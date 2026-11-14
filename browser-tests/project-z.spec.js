@@ -45,3 +45,13 @@ test('Command Center decisions and validated backup restore', async ({ page }) =
   await expect(page.locator('#queue')).toContainText('Research workflow');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });
+
+test('Simplified Command Center stays usable on phone and desktop', async ({ page }) => {
+  await page.goto('/command-center.html');
+  await expect(page.getByRole('heading', { name: 'Project Z · Command Center' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Propose a change' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Changes awaiting a decision' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Download backup' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Save proposal' })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
