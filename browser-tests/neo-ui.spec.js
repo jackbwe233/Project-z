@@ -36,3 +36,16 @@ test('Mobile navigation can close with X and outside tap', async ({ page }, test
   await expect(sidebar).not.toHaveClass(/open/);
   await expect(page.locator('#composer-shell')).toBeVisible();
 });
+
+test('Unavailable WebGPU exits checking and leaves Load actionable', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'gpu', {
+      configurable: true,
+      value: { requestAdapter: async () => null },
+    });
+  });
+  await page.goto('/');
+  await expect(page.locator('#model-status-text')).toHaveText('Graphics unavailable', { timeout: 15000 });
+  await expect(page.locator('#load-model-btn')).toBeEnabled();
+  await expect(page.locator('#webgpu-banner')).toHaveClass(/show/);
+});
