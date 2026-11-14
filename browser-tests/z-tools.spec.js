@@ -96,7 +96,7 @@ test('Focus timer and notes save control work', async ({ page }) => {
 test('Stock research creates draft preview without triggering navigation', async ({ page }) => {
   await page.route('https://mcp.exa.ai/mcp', route => route.fulfill({
     contentType: 'application/json',
-    body: JSON.stringify({ result: { content: [{ type: 'text', text: 'Title: Official source\\nURL: https://example.com/filing\\nText: Document excerpt' }] } }),
+    body: JSON.stringify({ result: { content: [{ type: 'text', text: 'Title: Official source\nURL: https://example.com/filing\nText: Document excerpt' }] } }),
   }));
   await page.goto('/research.html');
   await page.locator('#symbol').fill('MSFT');
