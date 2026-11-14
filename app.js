@@ -3518,6 +3518,15 @@ async function init() {
   // scanning heavyweight model caches, or auto-loading model weights.
   // An explicit Load model tap still runs the same GPU/model initialization.
   if (isIOSDevice(navigator.userAgent, navigator.maxTouchPoints)) {
+    // Safari can terminate the tab without a catchable error if GPU memory is exhausted.
+    // Prefer the smallest existing local model on iPhone, without deleting chats.
+    if (state.selectedModelId !== "lfm2") {
+      await applyModelSelection("lfm2", { silent: true });
+      toast("iPhone safe mode: using Z's smaller AI model to help prevent restarts.", { duration: 6500 });
+    }
+    state.maxNewTokens = Math.min(state.maxNewTokens, 256);
+    if ($("max-tokens")) $("max-tokens").value = state.maxNewTokens;
+    savePrefs();
     state.webgpuChecking = false;
     state.storageChecking = false;
     setModelStatus("", "Ask Z a question to start");
