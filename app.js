@@ -1269,7 +1269,7 @@ async function removeAttachment(id) {
 
 function updateComposerState() {
   // Let users compose a question before the local model is loaded. Sending loads it on demand.
-  const canSend = !state.busy && !state.loading;
+  const canSend = !state.busy; // Keep typing available even while weights download.
   // Model initialization must never lock saved-chat navigation or editing.
   // Only an active generation needs to lock conversation mutations.
   const sessionLocked = state.busy;
@@ -3385,6 +3385,8 @@ async function sendMessage() {
     if (!state.loading) {
       toast("Starting Z’s AI brain. Your question stays here and will send once the model is ready.", { duration: 6000 });
       void loadModel();
+    } else {
+      toast("Question queued. Z will send it once the model is ready.", { duration: 4000 });
     }
     return;
   }
