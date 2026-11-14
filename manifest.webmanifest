@@ -7,8 +7,8 @@
   "id": "./index.html",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#010203",
-  "theme_color": "#010203",
+  "background_color": "#0a111d",
+  "theme_color": "#0a111d",
   "icons": [
     {
       "src": "./z-logo.png",
@@ -21,6 +21,44 @@
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Z Personal",
+      "short_name": "Personal",
+      "description": "Your daily briefing and reminders",
+      "url": "./personal.html",
+      "icons": [
+        {
+          "src": "./z-logo.png",
+          "sizes": "128x128"
+        }
+      ]
+    },
+    {
+      "name": "Talk to Z",
+      "short_name": "Talk",
+      "description": "Capture ideas with your voice",
+      "url": "./quick.html",
+      "icons": [
+        {
+          "src": "./z-logo.png",
+          "sizes": "128x128"
+        }
+      ]
+    },
+    {
+      "name": "Z Plugins",
+      "short_name": "Plugins",
+      "description": "Your apps and tools",
+      "url": "./plugins.html",
+      "icons": [
+        {
+          "src": "./z-logo.png",
+          "sizes": "128x128"
+        }
+      ]
     }
   ]
 }
