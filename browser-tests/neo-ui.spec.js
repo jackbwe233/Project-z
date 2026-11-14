@@ -55,7 +55,7 @@ test('Personal memory is opt-in and reviewable without an active AI model', asyn
   const voiceDrawer = page.locator('.z-voice-drawer');
   await voiceDrawer.locator('summary').first().click();
   const memoryPanel = page.locator('.z-memory-panel');
-  await memoryPanel.locator('summary').click();
+  await memoryPanel.locator(':scope > summary').click();
   await expect(page.locator('#z-learning-toggle')).not.toBeChecked();
   await expect(page.locator('#z-learning-saved')).toContainText('Nothing approved yet');
 
@@ -116,4 +116,18 @@ test('Command Center and research load the matching Orbital panels', async ({ pa
     expect(style.heading).not.toBe('rgba(0, 0, 0, 0)');
     expect(style.particles).toBe(16);
   }
+});
+
+test('Simplified memory tools stay discoverable and advanced actions stay tucked away', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('.z-voice-drawer > summary').click();
+  await expect(page.locator('.z-voice-drawer > summary')).toContainText('Voice & memory');
+  await page.locator('.z-memory-panel > summary').click();
+  await expect(page.getByLabel('Notes for Z (saved as you type)')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Download backup' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Restore backup' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Delete all memories' })).toBeHidden();
+  await page.locator('.z-memory-tools > summary').click();
+  await expect(page.getByRole('button', { name: 'Delete all memories' })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });
