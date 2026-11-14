@@ -1,3 +1,19 @@
+# Project Z
+
+Project Z adds a silver-and-white companion interface to the existing browser AI app. All model bundles, model selection, cache keys, and existing chat databases are preserved.
+
+- Chats continue saving automatically to IndexedDB; settings retain their existing localStorage keys.
+- Cross-chat memory is an editable local note (up to 2,000 characters). Start a message with **Remember that …** or **My preference is …** to add a note automatically. It does not infer personal facts from every message. Notes are supplied to both standard and tool-enabled chat prompts.
+- New chats use Z’s casual, honest personality. The old generic prompt also adopts it at inference time; custom prompts are preserved.
+- Open **Memory** to edit, clear, export, or request persistent storage. Restore exported text by pasting it into the note box. Clearing notes does not erase their original chat messages. Existing chat export controls remain available separately.
+- Local storage survives ordinary browser restarts, but private browsing, website-data clearing, storage pressure, or browser policies can remove it. Storage is device/browser specific; no cloud sync is added.
+- **Dictate** uses browser speech recognition where supported and inserts text for review before sending. **Read reply** speaks the most recent reply on tap. **Stop voice** cancels speech and dictation. Speech recognition may use the browser provider’s online service; no paid API or key is added. iPhone Safari support and permission behavior require device testing.
+- A stylized human-like avatar blinks, breathes and changes during thinking, dictation and speech. Reduced-motion preferences disable animation. This is a foundation, not a photorealistic avatar or hands-free continuous conversation.
+
+Deploy the repository root with GitHub Pages as before. Run `npm ci`, `npm run lint`, and `npm test` to validate.
+
+---
+
 # WebLLM
 
 Private, on-device AI with an agent loop that runs in the browser.
