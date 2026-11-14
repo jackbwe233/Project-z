@@ -407,8 +407,8 @@ function inheritedSessionSettings() {
 }
 
 async function createSession(title = "New chat") {
-  if (state.busy || state.loading) {
-    toast("Wait until the current operation finishes.");
+  if (state.busy) {
+    toast("Wait until the current response finishes.");
     return null;
   }
   const inherited = inheritedSessionSettings();
@@ -753,8 +753,10 @@ async function requestPersistentStorage() {
 }
 
 async function repairBrokenModelCacheLocal() {
+  // Only the selected model can block the current launch. Scanning every
+  // model's database on an iPhone can make reopening a chat feel stalled.
   const env = cacheEnv();
-  const repaired = await Promise.all(Object.values(MODELS).map(def => repairBrokenModelCache(
+  const repaired = await Promise.all([activeModelDef()].map(def => repairBrokenModelCache(
     def,
     env,
     modelDef => deleteModelCacheDatabases(modelDef, env).catch(() => {}),
@@ -915,6 +917,9 @@ async function selectModel(modelId) {
 
 function syncModelFromSession(session = activeSession()) {
   if (!session) return;
+  // Do not change which model is being loaded if a user browses other chats
+  // during a download/warmup. canSendToModel still guards mismatched sessions.
+  if (state.loading) return;
   state.selectedModelId = resolveModelIdForSession(session, state.selectedModelId);
   renderModelPicker();
 }
@@ -1252,7 +1257,9 @@ async function removeAttachment(id) {
 
 function updateComposerState() {
   const canSend = state.model && !state.busy && !state.loading;
-  const sessionLocked = state.busy || state.loading;
+  // Model initialization must never lock saved-chat navigation or editing.
+  // Only an active generation needs to lock conversation mutations.
+  const sessionLocked = state.busy;
   const canStop = state.busy && !!state.abort;
   $("user-input").disabled = !canSend;
   $("send-btn").disabled = !canSend;
@@ -3024,8 +3031,8 @@ function stopActiveGeneration() {
 /* ── Send ── */
 
 async function switchSession(id) {
-  if (state.busy || state.loading) {
-    toast("Wait until the current operation finishes.");
+  if (state.busy) {
+    toast("Wait until the current response finishes.");
     return;
   }
   if (id === state.activeSessionId) {
@@ -3049,8 +3056,12 @@ async function switchSession(id) {
   focusComposerInput($("user-input"));
   const modelId = resolveModelIdForSession(session, state.selectedModelId);
   if (!session.modelId) await patchSessionFields(session, { modelId });
-  await applyModelSelection(modelId, { silent: true, persistToSession: false });
-  resetLoadedModel();
+  // Loading can continue while a different saved chat is displayed. Never
+  // interrupt it or switch model adapters mid-load.
+  if (!state.loading) {
+    await applyModelSelection(modelId, { silent: true, persistToSession: false });
+    resetLoadedModel();
+  }
   $("sidebar").classList.remove("open");
   focusComposerInput($("user-input"));
 }
@@ -3399,7 +3410,8 @@ async function init() {
 
   try {
     state.db = await openDB();
-    await dbCleanupOrphanAttachments(state.db);
+    // Read chats immediately. Orphan attachment cleanup can be expensive on
+    // mobile storage and must not delay the initial conversation display.
     state.sessions = (await dbGetAll(state.db))
       .map(record => normalizeSessionRecord(record, MODELS))
       .filter(Boolean)
@@ -3433,10 +3445,18 @@ async function init() {
 
   if (state.fileOrigin) $("file-origin-note").hidden = false;
 
+  // Let Safari paint the restored conversation before doing graphics work.
+  await new Promise(resolve => requestAnimationFrame(() => resolve()));
   await probeWebGPU();
   try {
     await repairBrokenModelCacheLocal();
-    await refreshStorageUI();
+    // Checking one cache is sufficient to decide whether to auto-load.
+    // Full cache-size scans can deserialize gigabytes of data on iPhone.
+    state.modelCached = await checkModelCached(activeModelDef());
+    const storageText = $("storage-status-text");
+    if (storageText) storageText.textContent = "Open Model storage for detailed usage.";
+    updateStorageButtons();
+    updateEmptyCacheHint();
   } finally {
     state.storageChecking = false;
     updateComposerState();
@@ -3445,8 +3465,21 @@ async function init() {
       if (state.webgpuOk) setTimeout(() => { void loadModel(); }, 0);
     }
   }
-  // Restore cached local model automatically on return, without another tap.
+  // Restore a cached model automatically. Saved chats are already readable.
   if (state.modelCached && state.webgpuOk) void loadModel();
+  // Cleanup is maintenance, not part of the chat-opening critical path.
+  // Defer it until the browser is idle, without blocking any foreground action.
+  const cleanup = () => {
+    if (!state.db || state.loading || state.busy) return;
+    void dbCleanupOrphanAttachments(state.db).catch(err => {
+      console.warn("Deferred attachment cleanup did not finish.", err);
+    });
+  };
+  if (typeof requestIdleCallback === "function") {
+    requestIdleCallback(cleanup, { timeout: 10000 });
+  } else {
+    setTimeout(cleanup, 3000);
+  }
 }
 
 $("theme-toggle").addEventListener("click", () => {
@@ -3454,6 +3487,11 @@ $("theme-toggle").addEventListener("click", () => {
 });
 $("load-model-btn").addEventListener("click", loadModel);
 $("load-model-btn-hero").addEventListener("click", loadModel);
+// Detailed cache stats are opt-in, not part of opening a conversation.
+$("storage-block").addEventListener("toggle", () => {
+  if (!$("storage-block").open || state.loading || state.busy || state.storageChecking) return;
+  void refreshStorageUI().catch(err => recordDiagnostic("Model storage", err));
+});
 $("diagnostics-retry").addEventListener("click", async () => {
   if (state.loading || state.busy) { toast("Finish the current task before running checks."); return; }
   await probeWebGPU();
