@@ -814,7 +814,7 @@ function updateEmptyCacheHint() {
     return;
   }
   if (state.modelCached) {
-    hint.textContent = `${def.name} cached locally · loads in seconds.`;
+    hint.textContent = `${def.name} cached locally · startup may still take a moment.`;
   } else {
     hint.textContent = `First load downloads ${def.downloadHint} (one-time).`;
   }
@@ -3507,8 +3507,15 @@ async function init() {
   if (state.modelCached && state.webgpuOk) void loadModel();
   // Cleanup is maintenance, not part of the chat-opening critical path.
   // Defer it until the browser is idle, without blocking any foreground action.
+  let cleanupRetries = 0;
   const cleanup = () => {
-    if (!state.db || state.loading || state.busy) return;
+    if (!state.db) return;
+    if (state.loading || state.busy) {
+      // A cached model may be warming up during our first idle slot.
+      // Try again later rather than abandoning maintenance indefinitely.
+      if (cleanupRetries++ < 4) setTimeout(cleanup, 15000);
+      return;
+    }
     void dbCleanupOrphanAttachments(state.db).catch(err => {
       console.warn("Deferred attachment cleanup did not finish.", err);
     });
