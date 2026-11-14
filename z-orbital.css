@@ -576,3 +576,164 @@ body:not(:has(#app)) :is(button,a,input,textarea,select):focus-visible {
   :root:not([data-theme="light"]) .z-particle-field .z-mote:nth-child(n+6),
   :root[data-theme="dark"] .z-particle-field .z-mote:nth-child(n+6) { opacity:.24; }
 }
+
+/* OBSIDIAN / STUDIO — restrained premium UI, without playful illustration.
+   Decorative effects are intentionally removed; functional controls stay intact. */
+:root {
+  --radius:10px;
+  --radius-sm:8px;
+  --radius-xs:6px;
+}
+#main::before,
+.empty-state::before,
+.empty-state::after,
+.z-particle-field {
+  display:none!important;
+}
+#main,#chat-scroll {
+  background:var(--bg)!important;
+  background-image:none!important;
+}
+#sidebar {
+  background:var(--surface)!important;
+  background-image:none!important;
+}
+#main > .topbar,
+:root[data-theme="dark"] #main > .topbar,
+:root:not([data-theme="light"]) #main > .topbar {
+  background:var(--bg)!important;
+  background-image:none!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+#main > .topbar::after { display:none!important; }
+.z-intro {
+  animation:z-studio-intro-out .5s ease-out both!important;
+  background:var(--bg)!important;
+}
+.z-intro-ring,.z-intro-grid,.z-intro-flash,.z-intro-caption { display:none!important; }
+.z-intro-mark {
+  animation:none!important;
+  font-size:clamp(110px,24vw,240px)!important;
+  font-style:normal!important;
+  font-weight:700!important;
+  letter-spacing:-.075em!important;
+  color:var(--text)!important;
+  opacity:.8;
+  text-shadow:none!important;
+  filter:none!important;
+  transform:none!important;
+}
+@keyframes z-studio-intro-out {
+  0%,38% { opacity:1;visibility:visible; }
+  100% { opacity:0;visibility:hidden; }
+}
+/* The uploaded silver Z is the single visual identity on every surface. */
+#brand-icon,#empty-icon,.z-avatar {
+  background:#05080c url("./z-logo.png") center/cover no-repeat!important;
+  background-image:url("./z-logo.png")!important;
+  color:transparent!important;
+  border:1px solid var(--line-quiet)!important;
+  border-radius:10px!important;
+  box-shadow:none!important;
+}
+#brand-icon::before,#brand-icon::after,
+#empty-icon::before,#empty-icon::after { display:none!important; }
+#brand-icon > *,#empty-icon > * { visibility:hidden!important; }
+#brand-icon { width:42px!important;height:42px!important; }
+#empty-icon { width:70px!important;height:70px!important; }
+.z-avatar {
+  width:40px!important;
+  height:40px!important;
+  overflow:visible!important;
+  position:relative!important;
+  flex:none!important;
+  transform:none!important;
+}
+.z-avatar .z-head,.z-avatar .z-shoulders,
+.z-avatar .z-head * { display:none!important;animation:none!important; }
+.z-avatar::after {
+  content:"";
+  position:absolute;
+  right:-2px;
+  bottom:-2px;
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:var(--text-muted);
+  border:2px solid var(--surface);
+}
+.z-avatar[data-state="listening"]::after { background:var(--accent); }
+.z-avatar[data-state="speaking"]::after,
+.z-avatar[data-state="thinking"]::after { background:var(--success); }
+.empty-state h2 {
+  font-size:clamp(25px,3vw,36px)!important;
+  letter-spacing:-.04em!important;
+  font-weight:600!important;
+}
+.empty-state p { font-size:13px!important;line-height:1.65; }
+#composer-shell,#composer-shell:focus-within,
+:root[data-theme="light"] #composer-shell {
+  border-radius:11px!important;
+  box-shadow:none!important;
+}
+#composer-shell:focus-within { box-shadow:0 0 0 1px var(--accent-soft)!important; }
+.msg-card,
+:root[data-theme="light"] .msg-card,
+.msg:hover .msg-card,
+:root:not([data-theme="light"]) .msg-card,
+:root[data-theme="dark"] .msg-card {
+  border-radius:10px!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+.avatar,.avatar.user,.avatar.assistant,.avatar.thinking,.avatar.tool {
+  border-radius:9px!important;
+  box-shadow:none!important;
+  background-image:none!important;
+}
+#main .btn.primary,#main .send-btn,
+#main .btn.primary:hover,#main .send-btn:hover:not(:disabled) {
+  background:var(--z-metal)!important;
+  box-shadow:none!important;
+  filter:none!important;
+  border-radius:8px!important;
+}
+#sidebar .btn-new,#sidebar #command-center-link,#sidebar #stock-research-link,
+.menu-btn,.theme-toggle-btn,.z-buttons button,.btn {
+  border-radius:8px!important;
+  box-shadow:none!important;
+}
+.z-voice-drawer,.z-voice-drawer > summary,.z-companion,
+.z-memory-panel,.z-learning-section,.z-learning-row,.z-learning-optin {
+  border-radius:8px!important;
+  box-shadow:none!important;
+}
+#sidebar .sidebar-brand { box-shadow:none!important; }
+.status-chip { border-radius:7px!important; }
+body:not(:has(#app))::before { display:none!important; }
+body:not(:has(#app)) > header,
+body:not(:has(#app)) > main {
+  background:transparent!important;
+  background-image:none!important;
+  box-shadow:none!important;
+}
+body:not(:has(#app)) section,body:not(:has(#app)) .stock,
+body:not(:has(#app)) .note {
+  border-radius:9px!important;
+  box-shadow:none!important;
+}
+body:not(:has(#app)) button,
+body:not(:has(#app)) input,
+body:not(:has(#app)) textarea,
+body:not(:has(#app)) select { border-radius:8px!important; }
+@media(max-width:768px){
+  #empty-icon {width:60px!important;height:60px!important;}
+  #main > .topbar { border-bottom:1px solid var(--line-quiet)!important; }
+  .z-intro-mark {font-size:clamp(95px,34vw,160px)!important;}
+}
+@media(prefers-reduced-motion:reduce){
+  .z-intro {display:none!important;}
+}
