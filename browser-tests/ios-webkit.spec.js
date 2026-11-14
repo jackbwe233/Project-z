@@ -1,0 +1,59 @@
+import { test, expect } from '@playwright/test';
+
+test('iPhone WebKit: start Z without loading a model, then enter chat', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto('/');
+  await expect(page.locator('#z-safe-start')).toBeVisible();
+  await expect(page.locator('#z-launch-question')).toBeEditable();
+  await page.locator('#z-launch-open').click();
+  await expect(page.locator('#chat-scroll')).toBeVisible();
+  await expect(page.locator('#user-input')).toBeEditable();
+  expect(errors).toEqual([]);
+});
+
+test('iPhone WebKit: import calendar and school deadlines without account sign-in', async ({ page }) => {
+  await page.goto('/personal.html');
+  const ics = [
+    'BEGIN:VCALENDAR','VERSION:2.0','BEGIN:VEVENT',
+    'SUMMARY:Physics project','DTSTART;VALUE=DATE:20261117',
+    'END:VEVENT','END:VCALENDAR',
+  ].join('\r\n');
+  await page.locator('#import-ics').setInputFiles({
+    name: 'events.ics', mimeType: 'text/calendar', buffer: Buffer.from(ics),
+  });
+  await expect(page.locator('#import-status')).toContainText('Added 1 item');
+  await expect(page.locator('#tasks')).toContainText('Physics project');
+  await page.locator('#import-csv').setInputFiles({
+    name: 'assignments.csv', mimeType: 'text/csv',
+    buffer: Buffer.from('Title,Due Date,Class\nRead chapter 5,2026-11-18,Psychology\n'),
+  });
+  await expect(page.locator('#import-status')).toContainText('Added 1 item');
+  await expect(page.locator('#tasks')).toContainText('Psychology: Read chapter 5');
+  await page.reload();
+  await expect(page.locator('#tasks')).toContainText('Physics project');
+  await expect(page.locator('#tasks')).toContainText('Psychology: Read chapter 5');
+});
+
+test('iPhone WebKit: import exported Google Docs text and save a note', async ({ page }) => {
+  await page.goto('/notes.html');
+  await page.locator('#import-doc').setInputFiles({
+    name: 'My essay.txt', mimeType: 'text/plain',
+    buffer: Buffer.from('An essay draft exported from Google Docs.'),
+  });
+  await expect(page.locator('#body')).toHaveValue('An essay draft exported from Google Docs.');
+  await expect(page.locator('#title')).toHaveValue('My essay');
+  await page.getByRole('button', { name: 'Save note' }).click();
+  await expect(page.locator('#status')).toContainText('Note saved');
+});
+
+test('iPhone WebKit: built-in tools stay in Z without a page restart', async ({ page }) => {
+  await page.goto('/?z_start=1');
+  await expect(page.locator('#chat-scroll')).toBeVisible();
+  await page.locator('#z-tool-link').click();
+  await expect(page.locator('#z-tools-overlay')).toBeVisible();
+  await expect(page.frameLocator('#z-tools-frame').getByRole('heading', { name: 'Apps & Plugins.' })).toBeVisible();
+  await page.locator('#z-tools-back').click();
+  await expect(page.locator('#z-tools-overlay')).toHaveCount(0);
+  await expect(page.locator('#chat-scroll')).toBeVisible();
+});
