@@ -1196,13 +1196,8 @@ function updateComposerState() {
   updateLocalFileToolsUI();
   if (sessionLocked) hideFileAutocomplete();
 
-  const loadDisabled =
-    state.loading
-    || state.busy
-    || !state.webgpuOk
-    || state.webgpuChecking
-    || state.storageChecking
-    || !!state.model;
+  // Keep Load clickable to explain failed capability checks.
+  const loadDisabled = state.loading || state.busy || !!state.model;
   for (const btn of [$("load-model-btn"), $("load-model-btn-hero")]) {
     if (!btn) continue;
     btn.disabled = loadDisabled;
@@ -1219,7 +1214,7 @@ function updateComposerState() {
   const topbarBtn = $("load-model-btn");
   if (topbarBtn) {
     topbarBtn.classList.toggle("primary", !isEmptyStateVisible() && !state.model);
-    topbarBtn.hidden = isEmptyStateVisible() && !state.model && !state.loading;
+    topbarBtn.hidden = false;
   }
 
   updateEmptyLoader();
@@ -1227,7 +1222,23 @@ function updateComposerState() {
 }
 
 async function loadModel() {
-  if (state.model || state.loading || state.storageChecking || !state.webgpuOk) return;
+  if (state.model || state.loading) return;
+  if (state.webgpuChecking) {
+    toast("Checking graphics support. Try Load Model again in a moment.", { duration: 5000 });
+    return;
+  }
+  if (!state.webgpuOk) {
+    toast("Checking WebGPU again…");
+    await probeWebGPU();
+    if (!state.webgpuOk) {
+      toast("This browser cannot run the local AI model. Check the WebGPU warning above, or try updated Chrome / Edge.", { duration: 8000 });
+      return;
+    }
+  }
+  if (state.storageChecking) {
+    toast("Finishing storage setup. Try again shortly.", { duration: 5000 });
+    return;
+  }
   const def = activeModelDef();
   state.loading = true;
   updateComposerState();
@@ -3367,7 +3378,28 @@ $("model-picker").addEventListener("change", e => {
   const input = e.target.closest('input[name="model-id"]');
   if (input?.checked) selectModel(input.value);
 });
-$("sidebar-toggle").addEventListener("click", () => $("sidebar").classList.toggle("open"));
+// Mobile navigation: close button, outside tap, Escape, and selected conversations.
+function setSidebarOpen(open) {
+  const expanded = Boolean(open);
+  $("sidebar").classList.toggle("open", expanded);
+  $("sidebar-toggle").setAttribute("aria-expanded", String(expanded));
+  $("sidebar-backdrop").hidden = !expanded;
+}
+$("sidebar-toggle").setAttribute("aria-expanded", "false");
+$("sidebar-toggle").addEventListener("click", () => setSidebarOpen(!$("sidebar").classList.contains("open")));
+$("sidebar-close").addEventListener("click", () => setSidebarOpen(false));
+$("sidebar-backdrop").addEventListener("click", () => setSidebarOpen(false));
+$("session-list").addEventListener("click", e => {
+  if (e.target.closest(".session-item") && !e.target.closest(".session-actions, input")) {
+    setSidebarOpen(false);
+  }
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && $("sidebar").classList.contains("open")) setSidebarOpen(false);
+});
+window.matchMedia("(min-width: 769px)").addEventListener("change", e => {
+  if (e.matches) setSidebarOpen(false);
+});
 $("chat-title").addEventListener("dblclick", startRenameActiveChat);
 $("chat-title-edit").addEventListener("click", startRenameActiveChat);
 $("session-search").addEventListener("input", () => {
