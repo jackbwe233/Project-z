@@ -22,6 +22,8 @@ Voice uses the browser's Web Speech APIs and may require HTTPS, permission and a
 
 ## Command Center
 
+The Command Center uses larger touch targets and simpler headings for iPhone and desktop. The underlying proposal records, local backups, and creator approval rules are unchanged. For a manual check, open `command-center.html`, add an idea and a low-risk proposal, verify that votes still appear, then export a backup. This is a layout-only upgrade, not authenticated shared approvals.
+
 Open **Command Center** from chat for local proposals, creator vote records, validation notes and ideas. Any rejection blocks a proposal. Major/high-risk proposals require both approvals. Low-risk proposals require both approvals or one approval plus a written validation note. Legacy checkbox-only validations no longer qualify as evidence. Votes can be reset.
 
 These are local records, not authenticated approvals: anyone using the browser can enter either vote. The page neither contacts the other creator nor executes approved changes. Export/restore JSON backups preserve the queue and ideas. Restore validates all records before replacement and asks before overwriting. Invalid stored data disables new entries until it has been exported and restored or explicitly deleted. Entries are limited to 200 proposals and 500 ideas.
