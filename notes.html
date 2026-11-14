@@ -2,12 +2,27 @@
 <header><a href="./plugins.html">← Apps & Plugins</a><nav class="nav"><a href="./quick.html">Talk</a><a href="./personal.html">Personal</a></nav></header><h1>Notes & Docs.</h1><p class="muted">Write things down and find them later. All notes are stored only in this browser until you export or share them.</p>
 <section class="panel"><div class="between"><h2>My notes</h2><button id="new" class="primary">+ New</button></div><input id="search" aria-label="Search notes" placeholder="Search notes..."><div id="list"></div></section>
 <section class="panel"><h2 id="editor-heading">New note</h2><label>Title<input id="title" maxlength="140" placeholder="Study notes, idea, daily journal..."></label><label>Content<textarea id="body" class="editor" maxlength="25000" placeholder="Start writing..."></textarea></label><div class="actions"><button id="save" class="primary">Save note</button><button id="download">Export .md</button><button id="share">Share</button><button id="send-chat">Send to Z Chat</button><button id="delete" class="danger">Delete</button></div><p id="status" class="muted" role="status"></p></section>
+<section class="panel"><h2>Import a document</h2><p class="muted">Export a Google Doc as a plain text (.txt) file or Markdown (.md), then import it here. Z cannot directly read your Google Docs account yet.</p><label>Choose a text file<input id="import-doc" type="file" accept=".txt,.md,text/plain,text/markdown"></label><p class="muted" id="import-doc-status" role="status"></p></section>
 <section class="panel"><h2>Google Docs</h2><p class="muted">You can export a Markdown file and manually import or paste content into Google Docs. Automatic Docs access is not connected yet.</p><a href="https://docs.google.com/document/u/0/" rel="noopener noreferrer" target="_blank">Open Google Docs ↗</a></section>
 </main><script>
 (()=>{'use strict';const K='z-notes-v1',$=id=>document.getElementById(id),uid=()=>crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random();let notes=[];let selected=null;try{const n=JSON.parse(localStorage.getItem(K)||'[]');if(Array.isArray(n))notes=n.filter(x=>x&&typeof x.id==='string'&&typeof x.title==='string'&&typeof x.body==='string').slice(0,200)}catch{}
 const notify=m=>$('status').textContent=m;const persist=()=>localStorage.setItem(K,JSON.stringify(notes));function clear(){selected=null;$('title').value='';$('body').value='';$('editor-heading').textContent='New note';render()}function edit(n){selected=n.id;$('title').value=n.title;$('body').value=n.body;$('editor-heading').textContent='Edit note';notify('Loaded for editing.');render()}
 function render(){const root=$('list');root.replaceChildren();const query=$('search').value.toLowerCase().trim();const found=notes.filter(n=>(n.title+' '+n.body).toLowerCase().includes(query)).sort((a,b)=>(b.updated||'').localeCompare(a.updated||''));if(!found.length){const p=document.createElement('p');p.className='muted';p.textContent='No matching notes.';root.append(p)}for(const n of found){const row=document.createElement('div');row.className='note-row';const button=document.createElement('button');button.className='list-btn';const heading=document.createElement('h3');heading.textContent=n.title||'Untitled';const small=document.createElement('small');small.textContent=n.updated?new Date(n.updated).toLocaleDateString():'';button.append(heading,small);button.addEventListener('click',()=>edit(n));if(n.id===selected)button.style.color='#bdd4ff';row.append(button);root.append(row)}}
-$('new').addEventListener('click',()=>{clear();notify('Ready for a new note.')});$('search').addEventListener('input',render);
+$('new').addEventListener('click',()=>{clear();notify('Ready for a new note.')});$('import-doc').addEventListener('change',async e=>{
+  const file=e.target.files?.[0];if(!file)return;
+  try{
+    if(file.size>900000)throw Error('The file must be under 900 KB.');
+    if(!/\.(txt|md)$/i.test(file.name))throw Error('Please select a .txt or .md file.');
+    const content=await file.text();
+    if(!content.trim())throw Error('This file is empty.');
+    clear();$('title').value=file.name.replace(/\.(txt|md)$/i,'').slice(0,140);
+    $('body').value=content.slice(0,25000);
+    $('import-doc-status').textContent=content.length>25000?'Imported first 25,000 characters. Review before saving.':'Imported into the editor. Press Save note to keep it.';
+    $('body').focus();
+  }catch(err){$('import-doc-status').textContent='Import failed: '+err.message}
+  finally{e.target.value=''}
+});
+$('search').addEventListener('input',render);
 $('save').addEventListener('click',()=>{const title=$('title').value.trim()||'Untitled';const body=$('body').value;if(!body.trim()){notify('Write something before saving.');return}if(!selected&&notes.length>=200){notify('You have 200 notes. Export and remove an old one to make room.');return}const id=selected||uid();notes=notes.filter(n=>n.id!==id);notes.unshift({id,title,body,updated:new Date().toISOString()});selected=id;persist();render();notify('Note saved locally.')});
 $('delete').addEventListener('click',()=>{if(!selected){clear();notify('Unsaved draft cleared.');return}if(!confirm('Delete this note?'))return;notes=notes.filter(n=>n.id!==selected);persist();clear();notify('Note deleted.')});
 function current(){return '# '+($('title').value.trim()||'Untitled')+'\n\n'+$('body').value}
