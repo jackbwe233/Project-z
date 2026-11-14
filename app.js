@@ -436,7 +436,11 @@ async function deleteSession(id) {
     try {
       await dbDelete(state.db, id);
     } catch (err) {
+      // Keep the chat in the UI if the database could not delete it.
+      // Otherwise it appears gone now but returns after Safari reopens.
       disableSessionPersistence(err);
+      toast("Could not delete this chat from device storage. Your chat is still here.");
+      return false;
     }
   }
   const deletingActive = state.activeSessionId === id;
