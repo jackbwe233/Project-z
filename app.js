@@ -536,15 +536,15 @@ function applyTheme(theme) {
 }
 
 function initTheme() {
-  const migrationKey = "project-z:neo-theme-v1";
+  const migrationKey = "project-z:mono-theme-v1";
   let saved = null;
   let upgraded = false;
   try {
     saved = localStorage.getItem(THEME_KEY);
     upgraded = localStorage.getItem(migrationKey) === "1";
   } catch { /* private browsing */ }
-  // Earlier versions saved the old light default; migrate it once to Neo dark.
-  // After migration, a user's explicit light/dark toggle remains respected.
+  // Give existing installs the new pure-black appearance once.
+  // An explicit future light-mode toggle remains an inverse monochrome option.
   applyTheme(upgraded && (saved === "dark" || saved === "light") ? saved : "dark");
   try { localStorage.setItem(migrationKey, "1"); } catch { /* optional */ }
 }

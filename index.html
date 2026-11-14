@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#090e15">
+<meta name="theme-color" content="#000000">
 <title>Project Z</title>
-<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.svg?v=mono-0.3.0" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -898,8 +898,11 @@
   }
 </style>
 <link rel="stylesheet" href="./project-z.css?v=memory-0.2.1-20261114">
+<link rel="stylesheet" href="./monochrome.css?v=mono-0.3.0">
+<link rel="stylesheet" href="./future-motion.css?v=2080-2">
 </head>
 <body>
+<div class="z-intro" aria-hidden="true"><div class="z-intro-ring"></div><span class="z-intro-mark">Z</span><span class="z-intro-caption">PROJECT Z / INITIALIZING</span></div>
 <div id="app">
   <aside id="sidebar" aria-label="Navigation">
     <div class="sidebar-brand">
@@ -1051,6 +1054,7 @@
   <button type="button" id="sidebar-backdrop" aria-label="Close navigation" hidden></button>
 
   <div id="main">
+    <div class="z-particle-field" aria-hidden="true"><i class="z-mote"></i><i class="z-mote"></i><i class="z-mote"></i><i class="z-mote"></i><i class="z-mote"></i><i class="z-mote"></i><i class="z-mote"></i><i class="z-mote"></i><i class="z-mote"></i><i class="z-mote"></i><i class="z-mote"></i><i class="z-mote"></i><i class="z-mote"></i><i class="z-mote"></i><i class="z-mote"></i><i class="z-mote"></i></div>
     <div class="topbar">
       <button type="button" class="menu-btn" id="sidebar-toggle" aria-label="Menu"></button>
       <div class="chat-title-wrap">
@@ -1199,6 +1203,6 @@
   </div>
 </dialog>
 
-<script type="module" src="./app.js?v=memory-0.2.1-20261114"></script>
+<script type="module" src="./app.js?v=mono-0.3.0"></script>
 </body>
 </html>

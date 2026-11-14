@@ -1,0 +1,245 @@
+/* Z / 2080: restrained, GPU-friendly monochrome atmospherics.
+   Ambient lights are decorative, pointer-inert, and motion-accessibility aware. */
+#main { position:relative; isolation:isolate; }
+#main > .z-particle-field {
+  position:absolute; inset:0; z-index:0;
+  overflow:hidden; pointer-events:none;
+}
+#main > :not(.z-particle-field) {
+  position:relative; z-index:1;
+}
+#main > #chat-scroll {
+  background:transparent!important;
+  background-image:none!important;
+}
+.z-particle-field {
+  contain:paint;
+  user-select:none;
+  pointer-events:none!important;
+}
+.z-particle-field .z-mote {
+  --size:4px;
+  position:absolute;
+  display:block;
+  width:var(--size);
+  height:var(--size);
+  left:var(--x);
+  top:var(--y);
+  border-radius:50%;
+  background:radial-gradient(circle at 35% 32%,
+    rgba(255,255,255,.97) 0%,
+    rgba(255,255,255,.76) 18%,
+    rgba(255,255,255,.26) 52%,
+    rgba(255,255,255,0) 82%);
+  box-shadow:0 0 4px rgba(255,255,255,.28),
+    0 0 16px rgba(255,255,255,.13);
+  opacity:var(--alpha,.55);
+  will-change:transform,opacity;
+  animation:
+    z-mote-float var(--speed,13s) ease-in-out var(--delay,0s) infinite alternate,
+    z-mote-breathe var(--pulse,7s) ease-in-out var(--delay,0s) infinite alternate;
+}
+.z-particle-field .z-mote::before {
+  content:"";
+  position:absolute;
+  width:calc(var(--size) * 5);
+  height:calc(var(--size) * 5);
+  left:-200%;
+  top:-200%;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.18) 0%,rgba(255,255,255,.065) 32%,transparent 70%);
+}
+.z-particle-field .z-mote:nth-child(3n) {
+  background:radial-gradient(circle,rgba(255,255,255,.72),rgba(255,255,255,.20) 26%,transparent 75%);
+  filter:blur(.28px);
+}
+.z-particle-field .z-mote:nth-child(4n) { filter:blur(.6px); }
+.z-particle-field .z-mote:nth-child(1) { --x:7%;--y:16%;--size:5px;--speed:16s;--pulse:8s;--alpha:.68;--delay:-2s; }
+.z-particle-field .z-mote:nth-child(2) { --x:84%;--y:15%;--size:3px;--speed:12s;--pulse:9s;--alpha:.64;--delay:-4s; }
+.z-particle-field .z-mote:nth-child(3) { --x:92%;--y:33%;--size:7px;--speed:20s;--pulse:12s;--alpha:.38;--delay:-6s; }
+.z-particle-field .z-mote:nth-child(4) { --x:12%;--y:44%;--size:4px;--speed:18s;--pulse:7s;--alpha:.49;--delay:-10s; }
+.z-particle-field .z-mote:nth-child(5) { --x:79%;--y:54%;--size:4px;--speed:14s;--pulse:9s;--alpha:.65;--delay:-5s; }
+.z-particle-field .z-mote:nth-child(6) { --x:17%;--y:68%;--size:3px;--speed:22s;--pulse:8s;--alpha:.57;--delay:-8s; }
+.z-particle-field .z-mote:nth-child(7) { --x:93%;--y:78%;--size:4px;--speed:15s;--pulse:11s;--alpha:.66;--delay:-3s; }
+.z-particle-field .z-mote:nth-child(8) { --x:61%;--y:12%;--size:3px;--speed:19s;--pulse:13s;--alpha:.35;--delay:-13s; }
+.z-particle-field .z-mote:nth-child(9) { --x:31%;--y:27%;--size:2px;--speed:17s;--pulse:6s;--alpha:.5;--delay:-8s; }
+.z-particle-field .z-mote:nth-child(10) { --x:72%;--y:82%;--size:5px;--speed:23s;--pulse:8s;--alpha:.43;--delay:-14s; }
+.z-particle-field .z-mote:nth-child(11) { --x:9%;--y:84%;--size:4px;--speed:16s;--pulse:12s;--alpha:.35;--delay:-11s; }
+.z-particle-field .z-mote:nth-child(12) { --x:48%;--y:76%;--size:3px;--speed:18s;--pulse:10s;--alpha:.42;--delay:-7s; }
+.z-particle-field .z-mote:nth-child(13) { --x:26%;--y:88%;--size:2px;--speed:19s;--pulse:9s;--alpha:.42;--delay:-10s; }
+.z-particle-field .z-mote:nth-child(14) { --x:89%;--y:63%;--size:6px;--speed:24s;--pulse:9s;--alpha:.36;--delay:-12s; }
+.z-particle-field .z-mote:nth-child(15) { --x:19%;--y:11%;--size:3px;--speed:16s;--pulse:11s;--alpha:.41;--delay:-6s; }
+.z-particle-field .z-mote:nth-child(16) { --x:56%;--y:92%;--size:2px;--speed:18s;--pulse:8s;--alpha:.37;--delay:-15s; }
+@keyframes z-mote-float {
+  0% { transform:translate3d(-7px,7px,0) scale(.9); }
+  48% { transform:translate3d(3px,-5px,0) scale(1.12); }
+  100% { transform:translate3d(11px,6px,0) scale(.95); }
+}
+@keyframes z-mote-breathe {
+  from { opacity:.17; }
+  to { opacity:var(--alpha,.55); }
+}
+
+/* Technical drawing cues: hairlines, a barely visible orbit,
+   and typography rather than additional bulky cards. */
+#main > .topbar {
+  border-bottom:1px solid rgba(255,255,255,.26)!important;
+}
+#main > .topbar::after {
+  content:"Z / SYSTEM 01";
+  display:block;
+  position:absolute;
+  bottom:4px;
+  right:24px;
+  font:500 8px/1 var(--mono,monospace);
+  letter-spacing:.2em;
+  color:rgba(255,255,255,.37);
+  pointer-events:none;
+}
+.empty-state { position:relative; }
+.empty-state::before {
+  content:"";
+  position:absolute;
+  width:min(440px,76vw);
+  height:min(440px,76vw);
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-55%);
+  border:1px solid rgba(255,255,255,.045);
+  border-radius:50%;
+  box-shadow:0 0 85px rgba(255,255,255,.028);
+  pointer-events:none;
+}
+.empty-state > * { position:relative; z-index:1; }
+#empty-icon {
+  border:1px solid rgba(255,255,255,.65)!important;
+  box-shadow:0 0 40px rgba(255,255,255,.035)!important;
+  transform:translateZ(0);
+}
+#empty-icon::before {
+  content:"";
+  position:absolute;
+  inset:-9px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:22px;
+  pointer-events:none;
+}
+#composer-shell {
+  box-shadow:0 0 0 1px rgba(255,255,255,.025)!important;
+}
+#composer-shell:focus-within {
+  box-shadow:0 0 0 1px rgba(255,255,255,.18),0 0 25px rgba(255,255,255,.025)!important;
+}
+#chat-messages .msg-card { backdrop-filter:none; }
+
+/* Every app opening: oversized Z collapses to the chat.
+   Intro never captures taps, even on slow devices or when scripts fail. */
+.z-intro {
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  pointer-events:none!important;
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+  background:#000;
+  color:#fff;
+  animation:z-intro-out 1800ms cubic-bezier(.22,.8,.26,1) both;
+}
+.z-intro-mark {
+  display:block;
+  position:absolute;
+  font-family:var(--sans,system-ui);
+  font-weight:800;
+  font-style:italic;
+  font-size:clamp(180px,31vw,440px);
+  letter-spacing:-.13em;
+  padding-right:.15em;
+  line-height:.9;
+  color:#fff;
+  text-shadow:0 0 24px rgba(255,255,255,.16);
+  transform-origin:50% 50%;
+  animation:z-intro-zoom 1650ms cubic-bezier(.18,.9,.3,1) both;
+}
+.z-intro-ring {
+  position:absolute;
+  width:min(62vmin,540px);
+  aspect-ratio:1;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:50%;
+  box-shadow:0 0 100px rgba(255,255,255,.035),inset 0 0 65px rgba(255,255,255,.025);
+  animation:z-intro-ring 1700ms cubic-bezier(.2,.7,.3,1) both;
+}
+.z-intro-ring::before,.z-intro-ring::after {
+  content:""; position:absolute; inset:12%; border:1px solid rgba(255,255,255,.055); border-radius:50%;
+}
+.z-intro-ring::after { inset:-12%; border-style:dashed; border-color:rgba(255,255,255,.045); }
+.z-intro-caption {
+  position:absolute;
+  top:calc(50% + min(36vmin,270px));
+  font:500 clamp(9px,1vw,12px)/1.5 var(--mono,monospace);
+  letter-spacing:.42em;
+  color:rgba(255,255,255,.75);
+  text-align:center;
+  padding-left:.42em;
+  animation:z-intro-caption 1250ms ease both;
+}
+@keyframes z-intro-zoom {
+  0% { transform:scale(2.35); opacity:.08; filter:blur(10px); }
+  22% { transform:scale(1.18); opacity:1; filter:blur(0); }
+  48% { transform:scale(1); opacity:1; filter:blur(0); }
+  100% { transform:scale(.055); opacity:0; filter:blur(1px); }
+}
+@keyframes z-intro-ring {
+  0% { transform:scale(1.35); opacity:0; }
+  33% { transform:scale(1); opacity:1; }
+  100% { transform:scale(.2); opacity:0; }
+}
+@keyframes z-intro-caption {
+  0%,35% { opacity:0; transform:translateY(7px); }
+  50% { opacity:1; transform:translateY(0); }
+  100% { opacity:0; transform:translateY(-10px); }
+}
+@keyframes z-intro-out {
+  0%,55% { opacity:1; visibility:visible; }
+  92% { opacity:.2; visibility:visible; }
+  100% { opacity:0; visibility:hidden; }
+}
+
+/* Space is part of the design on dashboard pages too. */
+body:not(:has(#app)) { position:relative; isolation:isolate; }
+body:not(:has(#app)) > .z-particle-field {
+  position:fixed;
+  inset:0;
+  z-index:0;
+  overflow:hidden;
+  pointer-events:none;
+}
+body:not(:has(#app)) > header,
+body:not(:has(#app)) > main {
+  position:relative;
+  z-index:1;
+  background:transparent!important;
+  background-image:none!important;
+}
+body:not(:has(#app)) > main section,
+body:not(:has(#app)) > main .stock {
+  background:#000!important;
+}
+body:not(:has(#app)) h1 { letter-spacing:-.055em; }
+body:not(:has(#app)) .eyebrow { letter-spacing:.3em; }
+@media (max-width:768px) {
+  #main > .topbar::after { display:none; }
+  .z-particle-field .z-mote:nth-child(n+10) { display:none; }
+  .z-particle-field .z-mote:nth-child(3),
+  .z-particle-field .z-mote:nth-child(7) { opacity:.3; }
+  .empty-state::before { opacity:.55; }
+  .z-intro-mark { font-size:clamp(170px,52vw,290px); }
+  .z-intro-caption { letter-spacing:.23em; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .z-intro { display:none!important; animation:none!important; }
+  .z-intro-mark,.z-intro-ring,.z-intro-caption,
+  .z-particle-field .z-mote { animation:none!important; }
+  .z-particle-field .z-mote { will-change:auto; }
+}

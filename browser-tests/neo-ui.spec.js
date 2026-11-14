@@ -80,3 +80,39 @@ test('Personal memory is opt-in and reviewable without an active AI model', asyn
   await page.locator('#z-learning-saved').getByRole('button', { name: 'Forget' }).click();
   await expect(page.locator('#z-learning-saved')).not.toContainText('I prefer concise study guides.');
 });
+
+test('MONO chat uses black surfaces and thin white outlines', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('#sidebar')).toHaveCount(1);
+  const style = await page.evaluate(() => {
+    const css = sel => getComputedStyle(document.querySelector(sel));
+    const side = css('#sidebar');
+    const composer = css('#composer-shell');
+    return {
+      sideBackground: side.backgroundColor,
+      composerBackground: composer.backgroundColor,
+      composerBorderWidth: composer.borderTopWidth,
+      composerBorderColor: composer.borderTopColor,
+      monoLoaded: [...document.styleSheets].some(sheet => String(sheet.href || '').includes('monochrome.css')),
+    };
+  });
+  expect(style.monoLoaded).toBe(true);
+  expect(style.sideBackground).toBe('rgb(0, 0, 0)');
+  expect(style.composerBackground).toBe('rgb(0, 0, 0)');
+  expect(style.composerBorderWidth).toBe('1px');
+  expect(style.composerBorderColor).toMatch(/rgba?\(/);
+});
+
+test('MONO command center and research use the same black-and-white surfaces', async ({ page }) => {
+  for (const path of ['/command-center.html', '/research.html']) {
+    await page.goto(path);
+    const colors = await page.evaluate(() => ({
+      body: getComputedStyle(document.body).backgroundColor,
+      section: getComputedStyle(document.querySelector('section')).backgroundColor,
+      text: getComputedStyle(document.querySelector('h1')).color,
+    }));
+    expect(colors.body).toBe('rgb(0, 0, 0)');
+    expect(colors.section).toBe('rgb(0, 0, 0)');
+    expect(colors.text).toBe('rgb(255, 255, 255)');
+  }
+});
