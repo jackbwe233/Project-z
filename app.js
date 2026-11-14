@@ -592,6 +592,7 @@ const DIAGNOSTICS_KEY = "project-z:diagnostics";
 let webgpuProbeTask = null;
 let pendingLoadAfterProbe = false;
 let pendingLoadAfterStorage = false;
+let queuedFirstSendFor = null;
 const diagnostics = [];
 
 function updateDiagnosticsUI() {
@@ -1408,6 +1409,16 @@ async function loadModel() {
     updateWebSearchUI();
     updateLocalFileToolsUI();
     renderModelPicker();
+    if (state.model && queuedFirstSendFor) {
+      const intendedSession = queuedFirstSendFor;
+      queuedFirstSendFor = null;
+      // Only send to the original conversation, never a different chat opened during loading.
+      if (state.activeSessionId === intendedSession && $("user-input").value.trim()) {
+        setTimeout(() => { if (!state.busy) void sendMessage(); }, 0);
+      } else if ($("user-input").value.trim()) {
+        toast("Your draft is still here. Press Send when you're ready.");
+      }
+    }
     if (shouldTryLightweightFallback) {
       toast("Z detected a model memory issue. Trying the lightweight model automatically.", { duration: 6500 });
       setTimeout(() => {
@@ -3369,11 +3380,16 @@ async function sendMessage() {
   const session = activeSession();
   // On iPhone we intentionally defer the expensive model load until the user acts.
   // Keep the draft untouched while loading so a failed load can be retried safely.
-  if (text && session && !state.model && !state.loading && !state.busy) {
-    toast("Starting Z’s AI brain. Your question will send when it’s ready.", { duration: 5000 });
-    await loadModel();
-    if (!state.model) return;
+  if (text && session && !state.model && !state.busy) {
+    queuedFirstSendFor = session.id;
+    if (!state.loading) {
+      toast("Starting Z’s AI brain. Your question stays here and will send once the model is ready.", { duration: 6000 });
+      void loadModel();
+    }
+    return;
   }
+  // A manually submitted draft takes precedence over any previously queued send.
+  if (state.model && queuedFirstSendFor === session?.id) queuedFirstSendFor = null;
   const expectedModelId = resolveModelIdForSession(session, state.selectedModelId);
   const sendCheck = canSendToModel({
     text,
