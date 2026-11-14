@@ -924,7 +924,7 @@ function syncModelFromSession(session = activeSession()) {
   renderModelPicker();
 }
 
-async function refreshStorageUI() {
+async function refreshStorageUI({ detailed = false } = {}) {
   const def = activeModelDef();
   state.modelCached = await checkModelCached(def);
   const statusText = $("storage-status-text");
@@ -941,9 +941,15 @@ async function refreshStorageUI() {
       });
       if (!cacheOk) {
         statusText.textContent = "Caching not available";
-      } else {
+      } else if (detailed) {
+        // Potentially expensive: only calculate full usage when explicitly
+        // inspecting Model storage, never on every chat or model change.
         const stats = await getAllModelsCacheStatsLocal();
         statusText.textContent = formatAllModelsCacheStatus(stats);
+      } else {
+        statusText.textContent = state.modelCached
+          ? `${def.name} is cached on this device.`
+          : `${def.name} is not cached yet.`;
       }
     }
   }
@@ -3490,7 +3496,7 @@ $("load-model-btn-hero").addEventListener("click", loadModel);
 // Detailed cache stats are opt-in, not part of opening a conversation.
 $("storage-block").addEventListener("toggle", () => {
   if (!$("storage-block").open || state.loading || state.busy || state.storageChecking) return;
-  void refreshStorageUI().catch(err => recordDiagnostic("Model storage", err));
+  void refreshStorageUI({ detailed: true }).catch(err => recordDiagnostic("Model storage", err));
 });
 $("diagnostics-retry").addEventListener("click", async () => {
   if (state.loading || state.busy) { toast("Finish the current task before running checks."); return; }
