@@ -436,7 +436,11 @@ async function deleteSession(id) {
     try {
       await dbDelete(state.db, id);
     } catch (err) {
+      // Do not hide a chat when IndexedDB fails to delete it.
+      // Otherwise it may reappear after reopening Safari.
       disableSessionPersistence(err);
+      toast("Could not delete this chat from device storage. Your chat is still here.");
+      return false;
     }
   }
   const deletingActive = state.activeSessionId === id;
