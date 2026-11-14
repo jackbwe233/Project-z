@@ -19,6 +19,7 @@ test('research, persistence, responsive layout and chat handoff', async ({ page 
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   await page.getByRole('button', { name: 'Draft summary in Z Chat' }).click();
   await expect(page.locator('#user-input')).toHaveValue(/Summarize this research for Apple/);
+  await page.locator('.z-voice-drawer > summary').click();
   await expect(page.getByRole('button', { name: 'Talk to Z', exact: true })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   expect(errors).toEqual([]);
