@@ -373,3 +373,13 @@ body:not(:has(#app)) :is(button,a,input,textarea,select):focus-visible { outline
 @media (prefers-reduced-motion:reduce) {
   *,*::before,*::after { animation-duration:.01ms!important; transition-duration:.01ms!important; }
 }
+
+
+/* Keep the active voice control readable in both inverse monochrome modes. */
+#z-talk[aria-pressed="true"],
+.z-buttons #z-talk[aria-pressed="true"] {
+  background:var(--text)!important;
+  color:var(--inverse)!important;
+  border-color:var(--text)!important;
+}
+:root[data-theme="light"] #sidebar-backdrop:not([hidden]) { background:rgba(0,0,0,.48)!important; }
