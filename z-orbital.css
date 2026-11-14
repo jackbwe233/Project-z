@@ -1167,3 +1167,61 @@ html body .z-intro-flash {display:block!important;animation:z-boot-flare 6200ms 
 @media(prefers-reduced-motion:reduce) {
   html body .z-intro {display:none!important;animation:none!important;}
 }
+
+/* Z DEPTH TRANSITION — centered letter travels away into the chat */
+html body .z-intro {
+  display:grid!important;
+  place-items:center!important;
+  perspective:1100px!important;
+  background:radial-gradient(ellipse at 50% 50%,#13263a 0%,#060d16 52%,#010204 100%)!important;
+  animation:z-depth-overlay 4600ms linear both!important;
+}
+html body .z-intro-grid,
+html body .z-intro-ring,
+html body .z-intro-flash,
+html body .z-intro-caption {display:none!important;animation:none!important;}
+html body .z-intro-mark {
+  position:absolute!important;
+  top:50%!important;
+  left:50%!important;
+  width:auto!important;
+  height:auto!important;
+  min-width:0!important;
+  min-height:0!important;
+  padding:0!important;
+  margin:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:none!important;
+  background-image:none!important;
+  color:#e8f1f8!important;
+  -webkit-text-fill-color:#e8f1f8!important;
+  font-family:Arial,Helvetica,sans-serif!important;
+  font-size:clamp(180px,47vw,420px)!important;
+  font-style:normal!important;
+  font-weight:800!important;
+  line-height:1!important;
+  letter-spacing:-.07em!important;
+  text-shadow:0 0 35px rgba(145,198,236,.25),0 0 100px rgba(76,146,205,.14)!important;
+  box-shadow:none!important;
+  filter:none!important;
+  transform-origin:center center!important;
+  animation:z-depth-letter 4600ms cubic-bezier(.45,0,.75,1) both!important;
+}
+@keyframes z-depth-letter {
+  0% {opacity:0;transform:translate(-50%,-50%) translateZ(220px) scale(1.35);filter:blur(10px);}
+  14% {opacity:1;transform:translate(-50%,-50%) translateZ(90px) scale(1.08);filter:blur(0);}
+  34% {opacity:1;transform:translate(-50%,-50%) translateZ(0) scale(1);}
+  52% {opacity:1;transform:translate(-50%,-50%) translateZ(-180px) scale(.82);}
+  76% {opacity:.9;transform:translate(-50%,-50%) translateZ(-950px) scale(.36);}
+  95% {opacity:0;transform:translate(-50%,-50%) translateZ(-1800px) scale(.08);filter:blur(4px);}
+  100% {opacity:0;transform:translate(-50%,-50%) translateZ(-2000px) scale(.03);}
+}
+@keyframes z-depth-overlay {
+  0%,77% {opacity:1;visibility:visible;}
+  96% {opacity:0;visibility:visible;}
+  100% {opacity:0;visibility:hidden;}
+}
+@media(prefers-reduced-motion:reduce) {
+  html body .z-intro {display:none!important;animation:none!important;}
+}
