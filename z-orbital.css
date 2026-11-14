@@ -924,3 +924,73 @@ body:not(:has(#app)) .tag {
     font-size:11px!important;
   }
 }
+
+/* SIGNATURE INTRO / 0.4.5 — restore a fast, understated silver-Z entrance.
+   No floating particles, retro HUD rings, or interruption of chat startup. */
+.z-intro {
+  display:grid!important;
+  place-items:center!important;
+  pointer-events:none!important;
+  animation:z-signature-overlay 1150ms ease-out both!important;
+}
+.z-intro-mark {
+  display:block!important;
+  position:absolute!important;
+  width:clamp(112px,17vw,158px)!important;
+  height:clamp(112px,17vw,158px)!important;
+  box-sizing:border-box;
+  padding:0!important;
+  font-size:0!important;
+  line-height:0!important;
+  background:#070b10 url("./z-logo.png") center / cover no-repeat!important;
+  border:1px solid rgba(212,225,237,.18);
+  border-radius:25%!important;
+  box-shadow:0 12px 38px rgba(0,0,0,.28)!important;
+  text-shadow:none!important;
+  filter:none;
+  animation:z-signature-logo 1120ms cubic-bezier(.2,.78,.28,1) both!important;
+  will-change:transform,opacity;
+}
+.z-intro-grid,.z-intro-ring,.z-intro-flash {
+  display:none!important;
+}
+.z-intro-caption {
+  display:block!important;
+  position:absolute;
+  top:calc(50% + clamp(75px,10.2vw,104px));
+  width:100%;
+  padding:0 20px!important;
+  color:rgba(204,217,228,.66)!important;
+  font-family:var(--mono,monospace)!important;
+  font-size:9px!important;
+  font-weight:500!important;
+  letter-spacing:.18em!important;
+  text-align:center;
+  animation:z-signature-caption 1120ms ease-out both!important;
+}
+@keyframes z-signature-overlay {
+  0%,58% {opacity:1;visibility:visible;}
+  100% {opacity:0;visibility:hidden;}
+}
+@keyframes z-signature-logo {
+  0% {opacity:0;transform:translateY(10px) scale(1.18);}
+  24% {opacity:1;transform:translateY(0) scale(1);}
+  55% {opacity:1;transform:translateY(0) scale(1);}
+  100% {opacity:0;transform:translateY(-7px) scale(.92);}
+}
+@keyframes z-signature-caption {
+  0%,20% {opacity:0;transform:translateY(6px);}
+  37%,58% {opacity:1;transform:translateY(0);}
+  100% {opacity:0;transform:translateY(-5px);}
+}
+@media(max-width:768px) {
+  .z-intro-mark {
+    width:116px!important;
+    height:116px!important;
+    border-radius:28px!important;
+  }
+  .z-intro-caption {top:calc(50% + 77px);}
+}
+@media(prefers-reduced-motion:reduce) {
+  .z-intro,.z-intro-mark,.z-intro-caption {display:none!important;animation:none!important;}
+}
