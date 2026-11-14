@@ -3785,7 +3785,22 @@ document.addEventListener("click", event => {
 
 const projectZ = initProjectZ({ input: $("user-input"), notify: toast, send: sendMessage, ready: () => !$("user-input").disabled && !state.busy && !!state.model });
 
-init().catch(err => {
+init().then(() => {
+  // Handoff from the stock research page is explicit and never sent automatically.
+  try {
+    const draftKey = "project-z:research-draft:v1";
+    const draft = sessionStorage.getItem(draftKey);
+    if (draft && draft.length <= 20000) {
+      const input = $("user-input");
+      input.value = draft;
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      sessionStorage.removeItem(draftKey);
+      toast("Research draft imported. Review it before sending.");
+    }
+  } catch (err) {
+    console.warn("Could not import stock research draft.", err);
+  }
+}).catch(err => {
   console.error("WebLLM initialization failed.", err);
   recordDiagnostic("App startup", err);
   state.loading = false;
