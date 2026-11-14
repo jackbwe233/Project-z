@@ -1,5 +1,5 @@
 import { withMemory } from "./lib/project-z.js";
-import { initProjectZ } from "./lib/project-z-ui.js?v=memory-0.2.0-20261114";
+import { initProjectZ } from "./lib/project-z-ui.js?v=memory-0.2.1-20261114";
 import {
   PREFS_KEY,
   THEME_KEY,
