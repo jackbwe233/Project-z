@@ -907,7 +907,7 @@
     </div>
     <div class="sidebar-actions">
       <button type="button" class="btn-new" id="new-chat-btn"></button>
-      <a href="./command-center.html" id="command-center-link" style="display:block;margin-top:10px;padding:10px 14px;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);color:var(--text);font-size:13px;font-weight:600;text-align:center;text-decoration:none" aria-label="Open Z Command Center">◈ Open Command Center</a>
+      <a href="./command-center.html" id="command-center-link" style="display:block;margin-top:10px;padding:10px 14px;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);color:var(--text);font-size:13px;font-weight:600;text-align:center;text-decoration:none" aria-label="Open Z Command Center">◈ Open Command Center</a><a href="./research.html" style="display:block;padding:12px;text-align:center;color:var(--text)">Stock research →</a>
     </div>
     <details class="side-block" id="conversations-block" open>
       <summary>Conversations <span class="conv-count" id="conv-count"></span></summary>
@@ -1055,8 +1055,8 @@
 
     <section class="z-companion" aria-label="Project Z companion">
       <div id="z-avatar" class="z-avatar" data-state="idle" role="img" aria-label="Animated Z avatar"><div class="z-head"><i></i><i></i><b></b></div><div class="z-shoulders"></div></div>
-      <div class="z-controls"><strong>PROJECT Z</strong><div class="z-buttons"><button id="z-mic" type="button">Dictate</button><button id="z-speak" type="button">Read reply</button><button id="z-quiet" type="button">Stop voice</button></div></div>
-      <details class="z-memory-panel"><summary>Memory</summary><label for="z-memory">What Z should remember across chats</label><textarea id="z-memory" maxlength="2000" rows="5" placeholder="Preferences, goals, and things you want Z to know"></textarea><p>Say “Remember that …” to save a note automatically, or edit here. Chats and settings save on this device. Clearing website data removes them. Voice may use your browser’s speech service.</p><div class="z-buttons"><button id="z-backup" type="button">Export memory</button><button id="z-clear" type="button">Clear memory</button><button id="z-persist" type="button">Keep device storage</button></div><small id="z-status" role="status">Memory stays on this device. Paste a backup into this box to restore it.</small></details>
+      <div class="z-controls"><strong>PROJECT Z</strong><div class="z-buttons"><button id="z-talk" type="button" aria-pressed="false">Talk to Z</button><button id="z-mic" type="button">Dictate</button><button id="z-speak" type="button">Read reply</button><button id="z-quiet" type="button">Stop voice</button></div></div>
+      <p id="z-voice-status" role="status" aria-live="polite">Voice off</p><small>Talk to Z sends recognized speech automatically and reads replies. Stop voice ends listening; switching apps pauses it. Dictate lets you review first.</small><details class="z-memory-panel"><summary>Memory</summary><label for="z-memory">What Z should remember across chats</label><textarea id="z-memory" maxlength="2000" rows="5" placeholder="Preferences, goals, and things you want Z to know"></textarea><p>Say “Remember that …” to save a note automatically, or edit here. Chats and settings save on this device. Clearing website data removes them. Voice may use your browser’s speech service.</p><div class="z-buttons"><button id="z-backup" type="button">Export memory</button><button id="z-clear" type="button">Clear memory</button><button id="z-persist" type="button">Keep device storage</button></div><small id="z-status" role="status">Memory stays on this device. Paste a backup into this box to restore it.</small></details>
     </section>
     <div id="banner-top-mount"></div>
     <div id="load-bar-wrap"><div id="load-bar"></div></div>

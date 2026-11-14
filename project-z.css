@@ -25,3 +25,7 @@
 @keyframes z-talk { to { height:6px; } }
 @media(max-width:600px) { .z-companion { padding:8px 12px; gap:8px; } .z-buttons button { min-height:40px; } #user-input { font-size:16px; } }
 @media(prefers-reduced-motion:reduce) { .z-avatar * { animation:none!important; } }
+
+#z-voice-status { margin:0; font-size:12px; color:var(--text-secondary); }
+.z-companion > small { flex-basis:100%; font-size:11px; color:var(--text-secondary); }
+#z-talk[aria-pressed="true"] { background:var(--accent); color:white; }
