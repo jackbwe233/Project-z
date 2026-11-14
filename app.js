@@ -3502,8 +3502,10 @@ async function init() {
   if (isIOSDevice(navigator.userAgent, navigator.maxTouchPoints)) {
     state.webgpuChecking = false;
     state.storageChecking = false;
-    setModelStatus("", "Tap Load model");
+    setModelStatus("loading", "Starting Z automatically…");
     updateComposerState();
+    // Let Safari display saved chats before initializing the local model.
+    setTimeout(() => { if (!state.model && !state.loading) void loadModel(); }, 250);
     return;
   }
 
