@@ -1225,3 +1225,70 @@ html body .z-intro-mark {
 @media(prefers-reduced-motion:reduce) {
   html body .z-intro {display:none!important;animation:none!important;}
 }
+
+/* ISOLATED BOOT: fixed viewport center, independent of legacy .z-intro CSS */
+#z-cinematic-boot {
+  position:fixed!important;inset:0!important;width:100%!important;height:100dvh!important;
+  z-index:2147483000!important;display:flex!important;align-items:center!important;
+  justify-content:center!important;overflow:hidden!important;pointer-events:none!important;
+  background:radial-gradient(ellipse at center,#14273c 0%,#070f1a 43%,#010307 86%)!important;
+  perspective:1000px;transform-style:preserve-3d;
+  animation:z-boot-curtain 4800ms ease-in-out both;
+}
+#z-cinematic-boot .z-boot-glyph {
+  position:relative!important;inset:auto!important;display:block!important;
+  flex:none!important;margin:0!important;padding:0!important;
+  width:auto!important;height:auto!important;
+  color:#e7f3ff!important;-webkit-text-fill-color:#e7f3ff!important;
+  background:none!important;border:0!important;box-shadow:none!important;
+  font:900 clamp(190px,46vmin,400px)/.85 Arial,Helvetica,sans-serif!important;
+  letter-spacing:-.065em!important;
+  text-shadow:0 0 32px rgba(184,226,255,.48),0 0 100px rgba(94,174,237,.28)!important;
+  transform-origin:center center!important;
+  animation:z-boot-dive 4800ms cubic-bezier(.22,.72,.2,1) both!important;
+  will-change:transform,opacity,filter;
+}
+#z-cinematic-boot .z-boot-halo {
+  position:absolute;left:50%;top:50%;width:min(78vmin,580px);aspect-ratio:1;
+  border:1px solid rgba(147,205,245,.28);border-radius:50%;
+  box-shadow:0 0 90px rgba(79,162,225,.17),inset 0 0 75px rgba(84,170,233,.11);
+  animation:z-boot-halo 4800ms ease-in-out both;
+}
+#z-cinematic-boot .z-boot-track {
+  position:absolute;inset:0;opacity:0;
+  background:repeating-radial-gradient(circle at center,transparent 0 65px,rgba(145,205,245,.12) 66px,transparent 68px);
+  animation:z-boot-tunnel 4800ms ease-in-out both;
+}
+#z-cinematic-boot .z-boot-vignette {
+  position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(circle,transparent 15%,rgba(1,3,7,.42) 85%);
+}
+@keyframes z-boot-dive {
+  0% {opacity:0;transform:translateZ(200px) scale(1.45);filter:blur(16px);}
+  16% {opacity:1;transform:translateZ(0) scale(1);filter:blur(0);}
+  34% {opacity:1;transform:translateZ(0) scale(1);filter:blur(0);}
+  52% {opacity:1;transform:translateZ(-190px) scale(.78);}
+  73% {opacity:1;transform:translateZ(-950px) scale(.32);}
+  93% {opacity:0;transform:translateZ(-1900px) scale(.06);filter:blur(5px);}
+  100% {opacity:0;transform:translateZ(-2000px) scale(.03);}
+}
+@keyframes z-boot-halo {
+  0% {opacity:0;transform:translate(-50%,-50%) scale(.4) rotate(-30deg);}
+  22% {opacity:.8;transform:translate(-50%,-50%) scale(1) rotate(0);}
+  62% {opacity:.7;transform:translate(-50%,-50%) scale(1.3) rotate(25deg);}
+  100% {opacity:0;transform:translate(-50%,-50%) scale(3) rotate(80deg);}
+}
+@keyframes z-boot-tunnel {
+  0%,25% {opacity:0;transform:scale(.5);}
+  55% {opacity:.36;}
+  86% {opacity:.6;transform:scale(2.2);}
+  100% {opacity:0;transform:scale(3);}
+}
+@keyframes z-boot-curtain {
+  0%,72% {opacity:1;visibility:visible;}
+  97% {opacity:0;visibility:visible;}
+  100% {opacity:0;visibility:hidden;}
+}
+@media(prefers-reduced-motion:reduce) {
+  #z-cinematic-boot {display:none!important;animation:none!important;}
+}
