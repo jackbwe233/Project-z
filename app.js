@@ -3518,7 +3518,7 @@ async function init() {
   if (isIOSDevice(navigator.userAgent, navigator.maxTouchPoints)) {
     state.webgpuChecking = false;
     state.storageChecking = false;
-    setModelStatus("", "Tap Load model");
+    setModelStatus("", "Ask Z a question to start");
     updateComposerState();
     return;
   }
