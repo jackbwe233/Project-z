@@ -1,5 +1,5 @@
-Warning: truncated output (original token count: 30921)
-Total output lines: 3558
+Warning: truncated output (original token count: 31098)
+Total output lines: 3577
 
 import { withMemory } from "./lib/project-z.js";
 import { initProjectZ } from "./lib/project-z-ui.js";
@@ -1048,7 +1048,7 @@ function updateFileAutocomplete() {
   if (!range || !state.attachments.length || input.disabled || !localReferencesEnabled()) {
     hideFileAutocomplete();
     return;
-…12921 tokens truncated…sages");
+…13098 tokens truncated…sages");
   const empty = $("empty-state");
   const wasPinned = isPinnedToBottom(chatScrollEl());
   container.replaceChildren();
