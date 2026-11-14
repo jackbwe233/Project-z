@@ -2936,6 +2936,7 @@ async function switchSession(id) {
   }
   const session = state.sessions.find(s => s.id === id);
   if (!session) return;
+  projectZ.stopVoice();
   state.activeSessionId = id;
   state.pendingFileRefs.clear();
   hideFileAutocomplete();
@@ -3261,6 +3262,8 @@ async function sendMessage() {
   renderChat({ scrollForce: true, animateLast: true });
 
   await runAssistantGeneration(session);
+  if (session.lastExecution?.error || session.lastExecution?.aborted) return '';
+  return [...session.messages].reverse().find(m => m.role === 'assistant')?.content || '';
 }
 
 /* ── Init ── */
@@ -3345,6 +3348,7 @@ $("theme-toggle").addEventListener("click", () => {
 $("load-model-btn").addEventListener("click", loadModel);
 $("load-model-btn-hero").addEventListener("click", loadModel);
 $("new-chat-btn").addEventListener("click", async () => {
+  projectZ.stopVoice();
   focusComposerInput($("user-input"));
   const inherited = inheritedSessionSettings();
   const session = await createSession();
@@ -3455,7 +3459,7 @@ $("download-dialog").addEventListener("close", () => {
   pendingDownloadSessionId = null;
 });
 
-$("send-btn").addEventListener("click", sendMessage);
+$("send-btn").addEventListener("click", () => { projectZ.stopVoice(); sendMessage(); });
 $("stop-btn").addEventListener("click", stopActiveGeneration);
 $("add-files-btn").addEventListener("click", () => $("file-picker").click());
 $("attach-files-btn").addEventListener("click", () => $("file-picker").click());
@@ -3536,7 +3540,7 @@ document.addEventListener("click", event => {
   if (!event.target.closest("#composer-wrap")) hideFileAutocomplete();
 });
 
-const projectZ = initProjectZ({ input: $("user-input"), notify: toast });
+const projectZ = initProjectZ({ input: $("user-input"), notify: toast, send: sendMessage, ready: () => !$("user-input").disabled && !state.busy && !!state.model });
 
 init().catch(err => {
   console.error("WebLLM initialization failed.", err);

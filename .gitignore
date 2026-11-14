@@ -55,3 +55,7 @@ local-analysis.js
 
 # E4B research pack — local work in progress, not shipped
 research-e4b/
+
+# Browser test output
+playwright-report/
+test-results/

@@ -8,7 +8,33 @@ Project Z adds a silver-and-white companion interface to the existing browser AI
 - Open **Memory** to edit, clear, export, or request persistent storage. Restore exported text by pasting it into the note box. Clearing notes does not erase their original chat messages. Existing chat export controls remain available separately.
 - Local storage survives ordinary browser restarts, but private browsing, website-data clearing, storage pressure, or browser policies can remove it. Storage is device/browser specific; no cloud sync is added.
 - **Dictate** uses browser speech recognition where supported and inserts text for review before sending. **Read reply** speaks the most recent reply on tap. **Stop voice** cancels speech and dictation. Speech recognition may use the browser provider’s online service; no paid API or key is added. iPhone Safari support and permission behavior require device testing.
-- A stylized human-like avatar blinks, breathes and changes during thinking, dictation and speech. Reduced-motion preferences disable animation. This is a foundation, not a photorealistic avatar or hands-free continuous conversation.
+- A stylized human-like avatar blinks, breathes and changes during thinking, dictation and speech. Reduced-motion preferences disable animation. The avatar is stylized, not photorealistic.
+
+## Voice conversations
+
+Load a model, clear any unsent draft, then tap **Talk to Z**. This opt-in mode sends final recognized speech automatically, waits for the model, speaks the completed reply, and listens for the next turn. **Dictate** still inserts text for review without sending. **Stop voice**, changing chats, typing, or leaving the page stops the voice session; it does not cancel a model response already running (use the chat Stop control for that). Late callbacks cannot restart a stopped session. Silence, recognition errors and playback errors end the session instead of repeatedly requesting microphone access. Listening times out after 30 seconds; playback after two minutes.
+
+Voice uses the browser's Web Speech APIs and may require HTTPS, permission and an online speech service. Browser support varies; real microphone/speaker testing on the target iPhone and desktop is still required. There is no wake word or background microphone. Long model replies may exceed the playback timeout.
+
+## Command Center
+
+Open **Command Center** from chat for local proposals, creator vote records, validation notes and ideas. Any rejection blocks a proposal. Major/high-risk proposals require both approvals. Low-risk proposals require both approvals or one approval plus a written validation note. Legacy checkbox-only validations no longer qualify as evidence. Votes can be reset.
+
+These are local records, not authenticated approvals: anyone using the browser can enter either vote. The page neither contacts the other creator nor executes approved changes. Export/restore JSON backups preserve the queue and ideas. Restore validates all records before replacement and asks before overwriting. Invalid stored data disables new entries until it has been exported and restored or explicitly deleted. Entries are limited to 200 proposals and 500 ideas.
+
+## Stock research agents
+
+Open **Stock research**, enter the ticker plus company/exchange, and add up to ten research agents. Each agent is a bounded search job: **Run research** or **Run all** retrieves three groups of evidence (company filings, recent news, risks) through the existing Exa MCP provider. Jobs run sequentially and searches time out after 25 seconds. Stop cancels the current request and preserves previously completed reports. Search failures and empty results are displayed explicitly.
+
+Reports contain source links, excerpts and retrieval timestamps, not verified publication dates, live prices or trading signals. Query terms are sent to Exa only when you run research. Results may be stale or identify the wrong company; check source documents. **Draft summary in Z Chat** transfers a bounded evidence prompt through sessionStorage for review, then the user sends it to the loaded local model. Small models/context windows may not reliably summarize every source. No report is automatically sent to chat.
+
+Watchlists and reports save locally, with JSON export/validated restore. Imported links are restricted to HTTP(S); excerpts render as text. These jobs do not trade, manage a portfolio, monitor in the background, or create autonomous agents. Shared memory, remote creator identities, scheduled monitoring, vehicle access and self-modifying code require separate services and are not implemented here.
+
+### Validation
+
+`npm run lint` and `npm test` cover the voice state machine (including stop races), approval rules, backup validation, research cancellation/timeouts, and DOM workflows. Browser rendering, real speech recognition/playback and live model inference must also be checked on target devices before deploying. Live Exa availability is an external dependency, not guaranteed by mocked provider tests.
+
+Run `npx playwright install chromium` and `npm run test:browser` for desktop and 390px layout checks, research-to-chat handoff and Command Center workflows. GitHub CI includes these checks when repository workflows are enabled. These tests use mocked search results and do not simulate real microphone hardware.
 
 Deploy the repository root with GitHub Pages as before. Run `npm ci`, `npm run lint`, and `npm test` to validate.
 
@@ -18,7 +44,7 @@ Deploy the repository root with GitHub Pages as before. Run `npm ci`, `npm run l
 
 Private, on-device AI with an agent loop that runs in the browser.
 
-**[Try the live demo](https://jovanveljanoski.github.io/webllm/)**
+**[Open Project Z](https://jackbwe233.github.io/Project-z/)**
 
 ![WebLLM running locally in the browser — model load, chat, and web search](docs/webllm-x.gif)
 
@@ -51,7 +77,7 @@ and no build step.
 Use Chrome 113+, Edge 113+, or Safari 18+. Firefox is not supported by the current
 WebGPU runtimes.
 
-1. Open the [live demo](https://jovanveljanoski.github.io/webllm/).
+1. Open [Project Z](https://jackbwe233.github.io/Project-z/).
 2. Choose a model in the sidebar.
 3. Select **Load model**.
 4. Wait for the first download and warm-up, then send a message.
