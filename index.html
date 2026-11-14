@@ -1136,12 +1136,12 @@
         <div class="empty-state" id="empty-state">
           <div class="empty-icon" id="empty-icon"></div>
           <h2>Think bigger with Z.</h2>
-          <p>A quieter space for big ideas, questions, and projects. Load an AI model to begin.</p>
+          <p>Ask Z anything. His AI brain starts automatically when you open chat.</p>
           <p class="empty-cache-hint" id="empty-cache-hint"></p>
           <div class="empty-state-loader" id="empty-loader">
             <div id="empty-banner-mount"></div>
             <div id="empty-loader-idle">
-              <button type="button" class="btn primary btn-lg" id="load-model-btn-hero">Load model</button>
+              <button type="button" class="btn primary btn-lg" id="load-model-btn-hero">Retry starting Z</button>
             </div>
             <div id="empty-loader-progress" hidden>
               <div class="loader-status" id="loader-status">Preparing…</div>
@@ -1220,7 +1220,7 @@
 
 <script>
 (() => {
-  const appModule = "./app.js?v=fast-chat-0.4.4";
+  const appModule = "./app.js?v=ask-z-auto-0.4.6";
   const ua = navigator.userAgent || "";
   const ios = /iPhone|iPad|iPod/i.test(ua)
     || (/Macintosh/i.test(ua) && navigator.maxTouchPoints > 1);
