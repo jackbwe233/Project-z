@@ -3796,15 +3796,31 @@ const projectZ = initProjectZ({ input: $("user-input"), notify: toast, send: sen
 init().then(() => {
   // Handoff from the stock research page is explicit and never sent automatically.
   try {
+    const launchDraft = typeof window.__zLaunchDraft === "string"
+      ? window.__zLaunchDraft.slice(0, 5000) : "";
     const keys = ["project-z:research-draft:v1", "project-z:tool-draft:v1"];
-    const draftKey = keys.find(key => sessionStorage.getItem(key));
-    const draft = draftKey && sessionStorage.getItem(draftKey);
+    const draftKey = !launchDraft && keys.find(key => sessionStorage.getItem(key));
+    const draft = launchDraft || (draftKey && sessionStorage.getItem(draftKey));
     if (draft && draft.length <= 20000) {
       const input = $("user-input");
       input.value = draft;
       input.dispatchEvent(new Event("input", { bubbles: true }));
-      sessionStorage.removeItem(draftKey);
-      toast("Draft imported. Review it before sending.");
+      if (draftKey) sessionStorage.removeItem(draftKey);
+      if (launchDraft) {
+        window.__zLaunchDraft = null;
+        const shouldSend = window.__zLaunchSend === true;
+        window.__zLaunchSend = false;
+        if (shouldSend) {
+          // This is a user-submitted question. Model loading starts on demand;
+          // keep the draft visible if the device cannot load local AI.
+          void sendMessage().catch(err => {
+            recordDiagnostic("Launch question", err);
+            toast("Could not send your question. It is still in the text box.");
+          });
+        }
+      } else {
+        toast("Draft imported. Review it before sending.");
+      }
     }
   } catch (err) {
     console.warn("Could not import stock research draft.", err);
