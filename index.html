@@ -923,7 +923,7 @@
         <p class="brand-tagline"><strong>LOCAL INTELLIGENCE</strong> · Private chats on this device. Optional web searches use Exa.</p>
       </div>
     </div>
-    <div class="sidebar-actions">
+    <div class="sidebar-actions"><div class="z-feature-links" style="display:flex;gap:6px;margin:8px 0;flex-wrap:wrap"><a href="./personal.html" style="flex:1 1 45%;padding:11px 8px;text-align:center;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);color:var(--text);font:600 12px system-ui;text-decoration:none">✦ Personal</a><a href="./plugins.html" style="flex:1 1 45%;padding:11px 8px;text-align:center;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);color:var(--text);font:600 12px system-ui;text-decoration:none">⚙ Apps & Plugins</a><a href="./quick.html" style="flex:1 1 45%;padding:11px 8px;text-align:center;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);color:var(--text);font:600 12px system-ui;text-decoration:none">🎙 Talk</a><a href="./notes.html" style="flex:1 1 45%;padding:11px 8px;text-align:center;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);color:var(--text);font:600 12px system-ui;text-decoration:none">▤ Notes</a></div>
       <button type="button" class="btn-new" id="new-chat-btn"></button>
       <a href="./command-center.html" id="command-center-link" style="display:block;margin-top:10px;padding:10px 14px;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);color:var(--text);font-size:13px;font-weight:600;text-align:center;text-decoration:none" aria-label="Open Z Command Center">◈ Open Command Center</a><a id="stock-research-link" href="./research.html" style="display:block;padding:12px;text-align:center;color:var(--text)">Stock research →</a>
     </div>
@@ -1247,24 +1247,24 @@
     <div class="z-safe-card">
       <div class="z-safe-logo" aria-hidden="true">Z</div>
       <h1>Project Z</h1>
-      <p>Safe start is on. Your saved chats stay on this device. Open Z when you're ready.</p>
-      <button id="z-launch-open" type="button">Open Project Z</button>
+      <p>Your saved chats stay on this device. Choose Z Chat or jump straight into Personal Mode.</p>
+      <button id="z-launch-open" type="button">Open Z Chat</button><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:11px"><a style="display:block;padding:13px 5px;margin:0;border-radius:12px;border:1px solid #4b5e80" href="./personal.html">Personal</a><a style="display:block;padding:13px 5px;margin:0;border-radius:12px;border:1px solid #4b5e80" href="./quick.html">🎙 Talk</a><a style="display:block;padding:13px 5px;margin:0;border-radius:12px;border:1px solid #4b5e80" href="./plugins.html">Plugins</a><a style="display:block;padding:13px 5px;margin:0;border-radius:12px;border:1px solid #4b5e80" href="./notes.html">Notes</a></div>
       <a href="./recovery.html">Having trouble? Open recovery</a>
       <p id="z-launch-error" hidden>The app couldn't start. Use recovery for a safer way in.</p>
     </div>`;
   const style = document.createElement("style");
   style.textContent = `
     #z-safe-start{min-height:100dvh;position:fixed;inset:0;z-index:99999;
-      display:grid;place-items:center;padding:20px;background:linear-gradient(150deg,#fff,#e9eef5);
-      color:#243249;font:16px/1.5 -apple-system,BlinkMacSystemFont,system-ui,sans-serif}
-    #z-safe-start .z-safe-card{width:min(100%,420px);padding:26px;border:1px solid #d6e0ed;
-      border-radius:22px;background:#fff;box-shadow:0 12px 40px #283c5215;text-align:center}
-    #z-safe-start .z-safe-logo{font-size:36px;font-weight:750;color:#63778e}
+      display:grid;place-items:center;padding:20px;background:linear-gradient(150deg,#0a111d,#192a43);
+      color:#edf4ff;font:16px/1.5 -apple-system,BlinkMacSystemFont,system-ui,sans-serif}
+    #z-safe-start .z-safe-card{width:min(100%,420px);padding:26px;border:1px solid #3c5271;
+      border-radius:22px;background:#172338;box-shadow:0 12px 40px #283c5215;text-align:center}
+    #z-safe-start .z-safe-logo{font-size:36px;font-weight:750;color:#bed4f8}
     #z-safe-start h1{font-size:28px;margin:6px 0 12px}
-    #z-safe-start p{color:#526275;margin:12px 0 20px}
-    #z-safe-start button{background:#293b51;color:white;border:0;border-radius:12px;
+    #z-safe-start p{color:#a5b7d2;margin:12px 0 20px}
+    #z-safe-start button{background:#b6d1ff;color:#0b1628;border:0;border-radius:12px;
       min-height:52px;width:100%;font:600 16px system-ui;cursor:pointer}
-    #z-safe-start a{display:block;margin:18px 0 0;color:#283f5b}
+    #z-safe-start a{display:block;margin:18px 0 0;color:#c5d8f7}
     #z-safe-start #z-launch-error{color:#aa3333}
     #z-safe-start button:focus-visible,#z-safe-start a:focus-visible{outline:3px solid #6a98d3;outline-offset:3px}
   `;
@@ -1278,6 +1278,6 @@
   }, { once: true });
 })();
 </script>
-<a href="./personal.html" id="z-personal-link" style="position:fixed;right:16px;bottom:calc(18px + env(safe-area-inset-bottom));z-index:99999;background:#a9c7ff;color:#0b1627;border:1px solid #e0eaff;border-radius:999px;padding:12px 17px;font:700 14px system-ui,-apple-system,sans-serif;text-decoration:none;box-shadow:0 8px 28px #0009" aria-label="Open Z Personal assistant">✦ Personal</a>
+<a href="./plugins.html" id="z-tool-link" style="position:fixed;right:12px;top:calc(66px + env(safe-area-inset-top));z-index:900;background:#a9c7ff;color:#0b1627;border:1px solid #e0eaff;border-radius:999px;padding:9px 13px;font:700 13px system-ui,-apple-system,sans-serif;text-decoration:none;box-shadow:0 8px 28px #0009" aria-label="Open Z Apps and Plugins">✦ Tools</a>
 </body>
 </html>
