@@ -76,7 +76,7 @@
   100% { transform:translate3d(11px,6px,0) scale(.95); }
 }
 @keyframes z-mote-breathe {
-  from { opacity:calc(var(--alpha,.55) * .55); }
+  from { opacity:.17; }
   to { opacity:var(--alpha,.55); }
 }
 
