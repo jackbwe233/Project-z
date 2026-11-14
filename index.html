@@ -1082,39 +1082,44 @@
 
 
     <details class="z-voice-drawer">
-      <summary>Voice, memory &amp; learning</summary>
+      <summary>Voice &amp; memory</summary>
     <section class="z-companion" aria-label="Project Z companion">
       <div id="z-avatar" class="z-avatar" data-state="idle" role="img" aria-label="Animated Z avatar"><div class="z-head"><i></i><i></i><b></b></div><div class="z-shoulders"></div></div>
       <div class="z-controls"><strong>PROJECT Z</strong><div class="z-buttons"><button id="z-talk" type="button" aria-pressed="false">Talk to Z</button><button id="z-mic" type="button">Dictate</button><button id="z-speak" type="button">Read reply</button><button id="z-quiet" type="button">Stop voice</button></div></div>
-      <p id="z-voice-status" role="status" aria-live="polite">Voice off</p><small>Talk to Z sends recognized speech automatically and reads replies. Stop voice ends listening; switching apps pauses it. Dictate lets you review first.</small><details class="z-memory-panel">
-  <summary>Personal memory & learning <span id="z-knowledge-count">0 saved</span></summary>
-  <label for="z-memory">Manual memory notes</label>
+      <p id="z-voice-status" role="status" aria-live="polite">Voice off</p><small>Talk to Z sends speech and reads replies. Dictate adds text without sending.</small><details class="z-memory-panel">
+  <summary>My memory <span id="z-knowledge-count">0 saved</span></summary>
+  <label for="z-memory">Notes for Z (saved as you type)</label>
   <textarea id="z-memory" maxlength="2000" rows="4" placeholder="Only add details you want Z to remember. Avoid passwords, addresses, and private information."></textarea>
-  <p>These notes stay in this browser and can influence answers across conversations. You control what is saved.</p>
+  <p>These notes stay on this device. Never save passwords or private information.</p>
   <label class="z-learning-optin" for="z-learning-toggle">
     <input type="checkbox" id="z-learning-toggle">
     <span>
-      <strong>Suggest memories from what I say</strong>
-      <small>Off by default. Z proposes preferences, goals, and projects; nothing suggested is remembered without approval.</small>
+      <strong>Suggest new memories</strong>
+      <small>Off by default. You choose what Z saves.</small>
     </span>
   </label>
   <div class="z-learning-section">
-    <h3>Suggestions to review</h3>
+    <h3>Review suggestions</h3>
     <div id="z-learning-suggestions" class="z-learning-list"></div>
   </div>
   <div class="z-learning-section">
-    <h3>Saved memories</h3>
+    <h3>What Z remembers</h3>
     <input type="search" id="z-memory-filter" class="z-learning-filter" placeholder="Find an approved memory…" aria-label="Search saved memories">
     <p id="z-memory-showing" class="z-learning-count"></p>
     <div id="z-learning-saved" class="z-learning-list"></div>
   </div>
-  <p>To save a fact directly, say “Remember that …”. Z picks relevant memories for each conversation. Learned memories are limited, not guaranteed facts. Delete outdated information anytime.</p>
+  <p>Tip: Say “Remember that …” in chat to save something. You can edit or forget it here.</p>
   <div class="z-buttons z-learning-toolbar">
-    <button id="z-backup" type="button">Export backup</button>
-    <button id="z-import" type="button">Import backup</button>
-    <button id="z-clear" type="button">Clear all memories</button>
-    <button id="z-persist" type="button">Keep device storage</button>
+    <button id="z-backup" type="button">Download backup</button>
+    <button id="z-import" type="button">Restore backup</button>
   </div>
+  <details class="z-memory-tools">
+    <summary>More memory options</summary>
+    <div class="z-buttons z-learning-toolbar">
+      <button id="z-persist" type="button">Request protected storage</button>
+      <button id="z-clear" type="button">Delete all memories</button>
+    </div>
+  </details>
   <input type="file" id="z-memory-import-file" accept=".json,application/json" hidden>
   <small id="z-status" role="status">Your saved data remains on this device unless you export or share it. Browser data clearing may erase it.</small>
 </details>
