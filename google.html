@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a111d">
+<title>Z · Connect Google Calendar</title>
+<style>
+:root{color-scheme:dark;background:#0a111d;color:#edf4ff;font:15px/1.5 system-ui,-apple-system,sans-serif}
+*{box-sizing:border-box}body{margin:0}main{max-width:820px;margin:auto;padding:22px 16px 110px}
+a{color:#bed3fc;text-decoration:none}a:hover{text-decoration:underline}
+header,.between,.buttons{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+header{margin-bottom:26px}h1{font-size:30px;letter-spacing:-.035em;margin:0 0 7px}
+h2{font-size:19px;margin:0 0 13px}h3{font-size:16px;margin:0 0 6px}p{line-height:1.55}
+.muted,small{color:#a3b5cf}.box{background:#152236;border:1px solid #344b6c;border-radius:19px;padding:20px;margin:16px 0}
+.field{display:block;margin:15px 0}input{width:100%;background:#0d1828;border:1px solid #516783;border-radius:11px;padding:12px;color:white;font:inherit;margin-top:7px}
+button{background:#283f60;border:1px solid #516989;border-radius:11px;padding:11px 15px;color:#eaf3ff;cursor:pointer;font:600 14px system-ui}
+button.primary{background:#b9d1ff;color:#0b1829;border-color:#b9d1ff}
+button:disabled{opacity:.5;cursor:not-allowed}a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid #a9c9ff;outline-offset:2px}
+.tag{font-size:12px;color:#c8dcf9;background:#263b55;border-radius:999px;padding:6px 10px}
+.event{border-top:1px solid #32455f;padding:14px 0}.event:first-child{border-top:0}
+.event .when{font-size:13px;color:#b9cff0}.event strong{display:block;font-size:16px;overflow-wrap:anywhere}
+.note{border-left:3px solid #8fb4ea;padding-left:12px}
+code{color:#d0e4ff;background:#203550;padding:3px 6px;border-radius:6px;overflow-wrap:anywhere}
+ol{padding-left:23px}li{margin:10px 0}#status{min-height:26px;overflow-wrap:anywhere}
+@media(max-width:480px){main{padding:16px 13px 80px}.box{padding:15px}h1{font-size:27px}.buttons button{flex:1 1 120px}}
+</style>
+<script src="https://accounts.google.com/gsi/client" async defer id="google-identity-script"></script>
+</head>
+<body><main>
+<header><a href="./plugins.html">← Z Apps & Plugins</a><a href="./personal.html">Personal Mode</a></header>
+<h1>Connect Google Calendar</h1>
+<p class="muted">Read your next events in Z with Google's official authorization window. You choose whether to grant access.</p>
+<section class="box">
+  <div class="between"><h2>Google Calendar</h2><span id="connection-badge" class="tag">Not connected</span></div>
+  <p class="note">This connection is <strong>read-only</strong>. Z can't create, change, or delete your Google events. No Google password is entered into Z.</p>
+  <label class="field" for="client-id">Google OAuth Web Client ID
+    <input id="client-id" type="text" autocomplete="off" spellcheck="false" placeholder="123456789-abc.apps.googleusercontent.com">
+  </label>
+  <div class="buttons">
+    <button type="button" id="save-id">Save client ID</button>
+    <button type="button" id="connect" class="primary">Connect Google</button>
+    <button type="button" id="disconnect" disabled>Disconnect</button>
+  </div>
+  <p id="status" role="status" aria-live="polite" class="muted">To connect, configure a Google OAuth client below and click Connect Google.</p>
+  <p class="muted"><small>Z saves only your public OAuth client ID to this browser. Access tokens are kept in memory, are not written to localStorage, and disappear when you close this page. If you reopen it, connect again.</small></p>
+</section>
+<section class="box">
+  <div class="between"><h2>Upcoming events</h2><button id="refresh" type="button" disabled>Refresh</button></div>
+  <div id="events"><p class="muted">Connect to see your Google Calendar events.</p></div>
+  <div class="buttons"><button id="import" type="button" disabled>Copy events to Z Personal</button></div>
+  <p class="muted"><small>Copying events is optional. It saves a one-time snapshot on this device, not a live sync. Z won't update or remove those copies when your Google Calendar changes.</small></p>
+</section>
+<section class="box">
+  <h2>One-time Google setup</h2>
+  <p>Google requires the website owner to configure an OAuth client before sign-in will work. You'll need access to a Google Cloud project:</p>
+  <ol>
+    <li>Open <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer">Google Cloud credentials</a> and select or create a project.</li>
+    <li>Enable the <strong>Google Calendar API</strong> for that project.</li>
+    <li>Configure the <strong>Google Auth Platform / OAuth consent screen</strong>. If your app is in testing, add your own Google account as an authorized test user.</li>
+    <li>Create an OAuth client with application type <strong>Web application</strong>.</li>
+    <li>Under <strong>Authorized JavaScript origins</strong>, enter <code>https://jackbwe233.github.io</code> (no /Project-z path).</li>
+    <li>Copy the <strong>Client ID</strong> (not a client secret), paste it above, and click <strong>Connect Google</strong>.</li>
+  </ol>
+  <p class="muted">Your Google Workspace school administrator can block third-party connections. Public distribution or sensitive scopes may require Google's verification. Don't paste a client secret or an API key here.</p>
+  <p class="muted"><small>Current scope: <code>https://www.googleapis.com/auth/calendar.events.readonly</code>.</small></p>
+</section>
+<section class="box"><h2>Other Google apps</h2>
+<p><strong>Google Docs & Drive:</strong> not connected yet. Those need separate read/write permissions and integration work.</p>
+<p><strong>Google Classroom:</strong> not connected yet. School administrator approval and Classroom-specific permissions may be required.</p>
+<p>Z does not access Messages or your entire Google account through this Calendar connection.</p>
+</section>
+</main><script>
+(() => {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const CLIENT_KEY = 'z-google-calendar-client-id-v1';
+  const SCOPE = 'https://www.googleapis.com/auth/calendar.events.readonly';
+  const SAFE_CLIENT = /^[0-9]+-[a-zA-Z0-9_-]+\.apps\.googleusercontent\.com$/;
+  let accessToken = null, expiresAt = 0, events = [], connecting = false;
+  try { $('client-id').value = localStorage.getItem(CLIENT_KEY) || ''; } catch {}
+  const status = text => { $('status').textContent = text; };
+  const hasToken = () => Boolean(accessToken && Date.now() < expiresAt - 60000);
+  const make = (tag, className, text) => {
+    const el = document.createElement(tag);
+    if (className) el.className = className;
+    if (text != null) el.textContent = text;
+    return el;
+  };
+  function update() {
+    $('connection-badge').textContent = hasToken() ? 'Connected · This page' : 'Not connected';
+    $('connect').disabled = connecting;
+    $('disconnect').disabled = !accessToken;
+    $('refresh').disabled = !hasToken() || connecting;
+    $('import').disabled = !events.length || !hasToken() || connecting;
+  }
+  function clientId() {
+    const id = $('client-id').value.trim();
+    if (!SAFE_CLIENT.test(id)) throw new Error('Paste a valid Google OAuth Web Client ID ending in .apps.googleusercontent.com.');
+    return id;
+  }
+  $('save-id').addEventListener('click', () => {
+    try {
+      const id = clientId();
+      localStorage.setItem(CLIENT_KEY, id);
+      status('Saved the public OAuth client ID on this device. Now tap Connect Google.');
+    } catch (error) { status(error.message); }
+  });
+  async function loadEvents() {
+    if (!hasToken()) {
+      status('Your Google session expired. Tap Connect Google to authorize again.');
+      accessToken = null; events = []; update(); return;
+    }
+    status('Reading your upcoming Calendar events…');
+    $('refresh').disabled = true;
+    try {
+      const args = new URLSearchParams({
+        timeMin: new Date().toISOString(),
+        singleEvents: 'true',
+        orderBy: 'startTime',
+        maxResults: '25',
+        fields: 'items(id,summary,start,end,location,htmlLink),nextPageToken'
+      });
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 16000);
+      let response;
+      try {
+        response = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events?' + args.toString(), {
+          headers: { Authorization: 'Bearer ' + accessToken },
+          cache: 'no-store', signal: controller.signal
+        });
+      } finally { clearTimeout(timeout); }
+      if (response.status === 401) {
+        accessToken = null; expiresAt = 0; events = []; renderEvents(); update();
+        status('Google authorization expired. Please connect again.');
+        return;
+      }
+      if (!response.ok) {
+        let detail = '';
+        try { detail = (await response.json()).error?.message || ''; } catch {}
+        throw new Error('Google Calendar returned ' + response.status + (detail ? ': ' + detail.slice(0, 180) : '') + '.');
+      }
+      const body = await response.json();
+      events = Array.isArray(body.items)
+        ? body.items.filter(x => x && typeof x.id === 'string' && x.start && typeof x.summary !== 'undefined').slice(0, 25)
+        : [];
+      renderEvents();
+      status('Connected. Showing ' + events.length + ' upcoming event(s) from your primary Google Calendar.');
+    } catch (error) {
+      status(error.name === 'AbortError' ? 'Google Calendar timed out. Try Refresh.' : 'Could not load events: ' + error.message);
+    } finally { update(); }
+  }
+  function renderEvents() {
+    const root = $('events'); root.replaceChildren();
+    if (!events.length) {
+      root.append(make('p', 'muted', hasToken() ? 'No upcoming events found in your primary calendar.' : 'Connect to see your Google Calendar events.'));
+      return;
+    }
+    for (const event of events) {
+      const row = make('div', 'event');
+      const start = event.start.dateTime || event.start.date;
+      const when = event.start.dateTime
+        ? new Date(start).toLocaleString(undefined, { weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit' })
+        : new Date(start + 'T12:00:00').toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' }) + ' · All day';
+      row.append(make('div', 'when', when), make('strong', '', event.summary || '(No title)'));
+      if (event.location) row.append(make('small', '', event.location));
+      if (typeof event.htmlLink === 'string' && /^https:\/\/calendar\.google\.com\//.test(event.htmlLink)) {
+        const link = make('a', '', 'Open in Google Calendar');
+        link.href = event.htmlLink; link.target = '_blank'; link.rel = 'noopener noreferrer'; row.append(link);
+      }
+      root.append(row);
+    }
+  }
+  $('connect').addEventListener('click', () => {
+    let id;
+    try { id = clientId(); } catch (error) { status(error.message); return; }
+    if (!window.google?.accounts?.oauth2?.initTokenClient) {
+      status('Google sign-in did not load. Check your connection and reopen this page in Safari.');
+      return;
+    }
+    connecting = true; update(); status('Opening Google's permission window…');
+    try {
+      const client = google.accounts.oauth2.initTokenClient({
+        client_id: id, scope: SCOPE, include_granted_scopes: false,
+        callback: async reply => {
+          connecting = false;
+          if (!reply || reply.error || !reply.access_token) {
+            status('Google did not authorize Calendar: ' + (reply?.error_description || reply?.error || 'No access token returned.'));
+            update(); return;
+          }
+          accessToken = reply.access_token;
+          expiresAt = Date.now() + Math.max(0, Number(reply.expires_in) || 3500) * 1000;
+          try { localStorage.setItem(CLIENT_KEY, id); } catch {}
+          update();
+          await loadEvents();
+        },
+        error_callback: error => {
+          connecting = false; update();
+          status(error.type === 'popup_closed' ? 'Google sign-in was closed.' : 'Could not open Google sign-in. Try Safari or disable popup blocking for this page.');
+        }
+      });
+      client.requestAccessToken({ prompt: 'consent' });
+    } catch (error) {
+      connecting = false; update();
+      status('Google sign-in could not start: ' + error.message);
+    }
+  });
+  $('refresh').addEventListener('click', () => { void loadEvents(); });
+  $('disconnect').addEventListener('click', () => {
+    const token = accessToken;
+    accessToken = null; expiresAt = 0; events = [];
+    if (token && window.google?.accounts?.oauth2?.revoke) {
+      try { google.accounts.oauth2.revoke(token, () => {}); } catch {}
+    }
+    renderEvents(); update();
+    status('Disconnected. No calendar access token was saved. Imported Z Personal tasks, if any, remain until you delete them.');
+  });
+  $('import').addEventListener('click', () => {
+    if (!events.length || !hasToken()) return;
+    if (!confirm('Copy ' + events.length + ' upcoming Calendar event(s) into Z Personal? This saves one-time copies on this device, not a live sync.')) return;
+    try {
+      const key = 'z-personal-tasks-v1';
+      const raw = JSON.parse(localStorage.getItem(key) || '[]');
+      if (!Array.isArray(raw)) throw new Error('Existing Z tasks are not a list.');
+      const existing = raw.slice(0, 500);
+      let count = 0;
+      for (const item of events) {
+        if (existing.length >= 500) break;
+        if (existing.some(task => task.googleId === item.id)) continue;
+        const time = item.start?.dateTime ? new Date(item.start.dateTime) : null;
+        const date = time
+          ? [time.getFullYear(), String(time.getMonth()+1).padStart(2,'0'), String(time.getDate()).padStart(2,'0')].join('-')
+          : item.start?.date;
+        if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
+        const clock = time ? [String(time.getHours()).padStart(2,'0'), String(time.getMinutes()).padStart(2,'0')].join(':') : '';
+        const id = crypto.randomUUID?.() || 'google-' + item.id;
+        existing.push({ id, googleId: item.id, title: String(item.summary || '(No title)').slice(0,160), date, time: clock, type:'Event', done:false });
+        count++;
+      }
+      localStorage.setItem(key, JSON.stringify(existing));
+      status('Copied ' + count + ' event(s) into Z Personal on this device. This is not a live sync.');
+    } catch (error) { status('Import failed. No tasks were overwritten: ' + error.message); }
+  });
+  update();
+})();
+</script></body></html>
