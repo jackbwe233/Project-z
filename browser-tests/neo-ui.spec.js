@@ -150,14 +150,14 @@ test('iPhone startup leaves graphics idle even after reopening the page', async 
   expect(await page.evaluate(() => window.__gpuProbes)).toBe(0);
   await page.locator('#z-launch-open').click();
   await expect(page.locator('#chat-scroll')).toBeVisible();
-  await expect(page.locator('#model-status-text')).toHaveText('Tap Load model');
+  await expect(page.locator('#model-status-text')).toHaveText('Ask Z a question to start');
   await expect(page.locator('#load-model-btn')).toBeEnabled();
   expect(await page.evaluate(() => window.__gpuProbes)).toBe(0);
   await page.reload();
   await expect(page.locator('#z-launch-open')).toBeVisible();
   expect(await page.evaluate(() => window.__gpuProbes)).toBe(0);
   await page.locator('#z-launch-open').click();
-  await expect(page.locator('#model-status-text')).toHaveText('Tap Load model');
+  await expect(page.locator('#model-status-text')).toHaveText('Ask Z a question to start');
   expect(await page.evaluate(() => window.__gpuProbes)).toBe(0);
   await page.locator('#load-model-btn').click();
   await expect(page.locator('#model-status-text')).toHaveText('Graphics unavailable', { timeout: 15000 });
