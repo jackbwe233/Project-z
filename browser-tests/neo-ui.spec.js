@@ -49,3 +49,34 @@ test('Unavailable WebGPU exits checking and leaves Load actionable', async ({ pa
   await expect(page.locator('#load-model-btn')).toBeEnabled();
   await expect(page.locator('#webgpu-banner')).toHaveClass(/show/);
 });
+
+test('Personal memory is opt-in and reviewable without an active AI model', async ({ page }) => {
+  await page.goto('/');
+  const voiceDrawer = page.locator('.z-voice-drawer');
+  await voiceDrawer.locator('summary').first().click();
+  const memoryPanel = page.locator('.z-memory-panel');
+  await memoryPanel.locator('summary').click();
+  await expect(page.locator('#z-learning-toggle')).not.toBeChecked();
+  await expect(page.locator('#z-learning-saved')).toContainText('Nothing approved yet');
+
+  await page.locator('#z-learning-toggle').check();
+  await expect(page.locator('#z-status')).toContainText('You approve each memory');
+  const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('project-z:learning:v1')));
+  expect(stored.learnEnabled).toBe(true);
+
+  // Inject a well-formed local saved memory, as though it had been explicitly approved.
+  await page.evaluate(() => {
+    localStorage.setItem('project-z:learning:v1', JSON.stringify({
+      version: 1, learnEnabled: true,
+      saved: [{ kind: 'preference', text: 'I prefer concise study guides.', createdAt: Date.now(), source: 'explicit' }],
+      pending: [],
+    }));
+  });
+  await page.reload();
+  await page.locator('.z-voice-drawer > summary').click();
+  await page.locator('.z-memory-panel > summary').click();
+  await expect(page.locator('#z-learning-saved')).toContainText('I prefer concise study guides.');
+
+  await page.locator('#z-learning-saved').getByRole('button', { name: 'Forget' }).click();
+  await expect(page.locator('#z-learning-saved')).not.toContainText('I prefer concise study guides.');
+});
