@@ -83,7 +83,7 @@ test('Personal memory is opt-in and reviewable without an active AI model', asyn
 
 test('MONO chat uses black surfaces and thin white outlines', async ({ page }) => {
   await page.goto('/');
-  await expect(page.locator('#sidebar')).toBeVisible().catch(() => {});
+  await expect(page.locator('#sidebar')).toHaveCount(1);
   const style = await page.evaluate(() => {
     const css = sel => getComputedStyle(document.querySelector(sel));
     const side = css('#sidebar');
