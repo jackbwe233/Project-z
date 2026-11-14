@@ -3,35 +3,35 @@
    Loaded last to intentionally supersede the legacy monochrome reset. */
 :root, :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg:#070d15;
-  --bg-chat:#090f19;
-  --surface:#0d1722;
-  --surface-2:#152333;
-  --think-bg:#101b27;
-  --border:#304354;
-  --border-soft:#223344;
-  --line:rgba(170,202,226,.28);
-  --line-quiet:rgba(170,202,226,.14);
-  --text:#eef4fa;
-  --text-secondary:#b2c0d0;
-  --text-muted:#7e94a7;
-  --accent:#b6d6ea;
-  --accent-hover:#e2f0fa;
-  --accent-soft:rgba(160,202,232,.11);
-  --accent-glow:rgba(123,176,219,.16);
-  --user-bg:linear-gradient(145deg,#d9e9f3 0%,#8eb6d1 47%,#4e708c 100%);
+  --bg:#03060b;
+  --bg-chat:#04080e;
+  --surface:#090f18;
+  --surface-2:#111b27;
+  --think-bg:#0b131d;
+  --border:#273847;
+  --border-soft:#1a2936;
+  --line:rgba(147,180,205,.23);
+  --line-quiet:rgba(147,180,205,.11);
+  --text:#e8eff6;
+  --text-secondary:#a4b5c4;
+  --text-muted:#7e94a5;
+  --accent:#a9c5d9;
+  --accent-hover:#d6e7f1;
+  --accent-soft:rgba(149,184,212,.09);
+  --accent-glow:rgba(94,138,171,.10);
+  --user-bg:linear-gradient(145deg,#d0dfe9 0%,#89a7bb 47%,#466174 100%);
   --success:#9bd1bc;
   --warning:#e5c58e;
   --danger:#e7a3a5;
-  --inverse:#0b1420;
+  --inverse:#081019;
   --radius:14px;
   --radius-sm:10px;
   --radius-xs:8px;
   --sidebar-w:288px;
   --focus-ring:2px solid #b5dbf2;
-  --z-desk:radial-gradient(ellipse at 56% -12%,rgba(40,72,103,.39),transparent 55%),linear-gradient(150deg,#090f19 0%,#070c13 70%,#090f19 100%);
-  --z-metal:linear-gradient(135deg,#f0f6fa 0%,#c6d8e4 43%,#95b5cc 100%);
-  --z-glass:rgba(16,28,41,.9);
+  --z-desk:radial-gradient(ellipse at 52% -23%,rgba(24,49,72,.24),transparent 58%),linear-gradient(160deg,#050912 0%,#03060b 65%,#050911 100%);
+  --z-metal:linear-gradient(135deg,#e0ecf4 0%,#b2c7d5 44%,#819caf 100%);
+  --z-glass:rgba(8,14,23,.96);
 }
 :root[data-theme="light"] {
   color-scheme:light;
@@ -516,4 +516,63 @@ body:not(:has(#app)) :is(button,a,input,textarea,select):focus-visible {
   .z-intro { display:none!important;animation:none!important; }
   .z-intro-mark,.z-intro-ring,.z-intro-caption,.z-intro-flash { animation:none!important; }
   #main::before { opacity:.04; }
+}
+
+/* NOCTURNE / 0.4.1 — deeper atmosphere with crisp, readable controls.
+   These refinements apply only in dark mode; theme toggle still works. */
+:root:not([data-theme="light"]) #main,
+:root[data-theme="dark"] #main {
+  background:var(--z-desk)!important;
+}
+:root:not([data-theme="light"]) #sidebar,
+:root[data-theme="dark"] #sidebar {
+  background:linear-gradient(167deg,#0a111a 0%,#050910 61%,#03060b 100%)!important;
+}
+:root:not([data-theme="light"]) .z-particle-field .z-mote,
+:root[data-theme="dark"] .z-particle-field .z-mote {
+  filter:brightness(.7);
+}
+:root:not([data-theme="light"]) #main::before,
+:root[data-theme="dark"] #main::before { opacity:.055; }
+:root:not([data-theme="light"]) .empty-state::before,
+:root[data-theme="dark"] .empty-state::before { opacity:.42; }
+:root:not([data-theme="light"]) .empty-state::after,
+:root[data-theme="dark"] .empty-state::after { opacity:.28; }
+:root:not([data-theme="light"]) #empty-icon,
+:root:not([data-theme="light"]) .empty-icon,
+:root[data-theme="dark"] #empty-icon,
+:root[data-theme="dark"] .empty-icon {
+  background:linear-gradient(150deg,#111d2b 0%,#080e17 100%)!important;
+  box-shadow:inset 0 1px 0 rgba(220,240,255,.06),0 0 38px rgba(68,111,147,.065)!important;
+}
+:root:not([data-theme="light"]) .msg-card,
+:root[data-theme="dark"] .msg-card {
+  background:rgba(9,16,25,.92)!important;
+  border-color:var(--line-quiet)!important;
+  box-shadow:0 10px 35px rgba(0,0,0,.19)!important;
+}
+:root:not([data-theme="light"]) #composer-shell,
+:root[data-theme="dark"] #composer-shell {
+  background:rgba(10,17,27,.98)!important;
+  box-shadow:inset 0 1px 0 rgba(204,231,248,.035),0 9px 34px rgba(0,0,0,.23)!important;
+}
+:root:not([data-theme="light"]) #composer-shell:focus-within,
+:root[data-theme="dark"] #composer-shell:focus-within {
+  border-color:rgba(168,199,220,.7)!important;
+  box-shadow:0 0 0 2px rgba(119,162,192,.13),0 12px 34px rgba(0,0,0,.24)!important;
+}
+:root:not([data-theme="light"]) #main > .topbar,
+:root[data-theme="dark"] #main > .topbar {
+  background:rgba(7,13,21,.96)!important;
+  border-bottom:1px solid var(--line-quiet)!important;
+}
+:root:not([data-theme="light"]) .z-intro,
+:root[data-theme="dark"] .z-intro {
+  background:radial-gradient(circle at center,#0f1b2a 0%,#050911 48%,#020407 100%)!important;
+}
+@media(max-width:768px) {
+  :root:not([data-theme="light"]) #main::before,
+  :root[data-theme="dark"] #main::before { opacity:.035; }
+  :root:not([data-theme="light"]) .z-particle-field .z-mote:nth-child(n+6),
+  :root[data-theme="dark"] .z-particle-field .z-mote:nth-child(n+6) { opacity:.24; }
 }
