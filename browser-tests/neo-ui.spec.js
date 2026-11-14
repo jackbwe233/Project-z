@@ -5,7 +5,7 @@ test('Neo shell keeps chat controls and a usable model button', async ({ page })
   await expect(page.locator('#chat-scroll')).toBeVisible();
   await expect(page.locator('#composer-shell')).toBeVisible();
   await expect(page.locator('#load-model-btn')).toBeVisible();
-  await expect(page.locator('#z-voice-drawer')).toBeVisible();
+  await expect(page.locator('.z-voice-drawer')).toBeVisible();
   await expect(page.locator('#diagnostics-block')).toHaveCount(1);
 });
 
@@ -13,7 +13,7 @@ test('Voice panel stays collapsed until requested', async ({ page }) => {
   await page.goto('/');
   const drawer = page.locator('.z-voice-drawer');
   await expect(drawer).not.toHaveAttribute('open', '');
-  await drawer.locator('summary').click();
+  await drawer.locator(':scope > summary').click();
   await expect(drawer).toHaveAttribute('open', '');
   await expect(page.locator('#z-talk')).toBeVisible();
 });
