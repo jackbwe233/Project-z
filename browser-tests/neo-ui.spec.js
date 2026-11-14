@@ -55,7 +55,7 @@ test('Personal memory is opt-in and reviewable without an active AI model', asyn
   const voiceDrawer = page.locator('.z-voice-drawer');
   await voiceDrawer.locator('summary').first().click();
   const memoryPanel = page.locator('.z-memory-panel');
-  await memoryPanel.locator('summary').click();
+  await memoryPanel.locator(':scope > summary').click();
   await expect(page.locator('#z-learning-toggle')).not.toBeChecked();
   await expect(page.locator('#z-learning-saved')).toContainText('Nothing approved yet');
 
