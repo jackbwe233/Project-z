@@ -70,7 +70,7 @@ import {
   normalizeToolPreferences,
 } from "./lib/sessions.js";
 import { generationErrorFallback } from "./lib/generation.js";
-import { detectBrowser } from "./lib/browser.js";
+import { detectBrowser, isIOSDevice } from "./lib/browser.js";
 import { computeLoadProgress } from "./lib/progress.js";
 import {
   loadButtonLabel,
@@ -3482,6 +3482,17 @@ async function init() {
   updateComposerState();
 
   if (state.fileOrigin) $("file-origin-note").hidden = false;
+
+  // On iPhone/iPad, show the restored conversation without touching WebGPU,
+  // scanning heavyweight model caches, or auto-loading model weights.
+  // An explicit Load model tap still runs the same GPU/model initialization.
+  if (isIOSDevice(navigator.userAgent, navigator.maxTouchPoints)) {
+    state.webgpuChecking = false;
+    state.storageChecking = false;
+    setModelStatus("", "Tap Load model");
+    updateComposerState();
+    return;
+  }
 
   // Let Safari paint the restored conversation before doing graphics work.
   await new Promise(resolve => requestAnimationFrame(() => resolve()));
