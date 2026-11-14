@@ -3,22 +3,22 @@
    Loaded last to intentionally supersede the legacy monochrome reset. */
 :root, :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg:#03060b;
-  --bg-chat:#04080e;
-  --surface:#090f18;
-  --surface-2:#111b27;
-  --think-bg:#0b131d;
-  --border:#273847;
-  --border-soft:#1a2936;
-  --line:rgba(147,180,205,.23);
-  --line-quiet:rgba(147,180,205,.11);
+  --bg:#010203;
+  --bg-chat:#020305;
+  --surface:#06090d;
+  --surface-2:#0b1118;
+  --think-bg:#060a0f;
+  --border:#27313b;
+  --border-soft:#18222c;
+  --line:rgba(149,176,195,.19);
+  --line-quiet:rgba(149,176,195,.085);
   --text:#e8eff6;
   --text-secondary:#a4b5c4;
   --text-muted:#7e94a5;
   --accent:#a9c5d9;
   --accent-hover:#d6e7f1;
-  --accent-soft:rgba(149,184,212,.09);
-  --accent-glow:rgba(94,138,171,.10);
+  --accent-soft:rgba(149,184,212,.07);
+  --accent-glow:rgba(94,138,171,.065);
   --user-bg:linear-gradient(145deg,#d0dfe9 0%,#89a7bb 47%,#466174 100%);
   --success:#9bd1bc;
   --warning:#e5c58e;
@@ -29,9 +29,9 @@
   --radius-xs:8px;
   --sidebar-w:288px;
   --focus-ring:2px solid #b5dbf2;
-  --z-desk:radial-gradient(ellipse at 52% -23%,rgba(24,49,72,.24),transparent 58%),linear-gradient(160deg,#050912 0%,#03060b 65%,#050911 100%);
+  --z-desk:radial-gradient(ellipse at 52% -25%,rgba(14,29,45,.14),transparent 46%),linear-gradient(165deg,#030508 0%,#010203 69%,#020305 100%);
   --z-metal:linear-gradient(135deg,#e0ecf4 0%,#b2c7d5 44%,#819caf 100%);
-  --z-glass:rgba(8,14,23,.96);
+  --z-glass:rgba(4,7,11,.975);
 }
 :root[data-theme="light"] {
   color-scheme:light;
@@ -526,34 +526,34 @@ body:not(:has(#app)) :is(button,a,input,textarea,select):focus-visible {
 }
 :root:not([data-theme="light"]) #sidebar,
 :root[data-theme="dark"] #sidebar {
-  background:linear-gradient(167deg,#0a111a 0%,#050910 61%,#03060b 100%)!important;
+  background:linear-gradient(165deg,#06090e 0%,#030407 61%,#010203 100%)!important;
 }
 :root:not([data-theme="light"]) .z-particle-field .z-mote,
 :root[data-theme="dark"] .z-particle-field .z-mote {
-  filter:brightness(.7);
+  filter:brightness(.48);
 }
 :root:not([data-theme="light"]) #main::before,
-:root[data-theme="dark"] #main::before { opacity:.055; }
+:root[data-theme="dark"] #main::before { opacity:.027; }
 :root:not([data-theme="light"]) .empty-state::before,
-:root[data-theme="dark"] .empty-state::before { opacity:.42; }
+:root[data-theme="dark"] .empty-state::before { opacity:.25; }
 :root:not([data-theme="light"]) .empty-state::after,
-:root[data-theme="dark"] .empty-state::after { opacity:.28; }
+:root[data-theme="dark"] .empty-state::after { opacity:.15; }
 :root:not([data-theme="light"]) #empty-icon,
 :root:not([data-theme="light"]) .empty-icon,
 :root[data-theme="dark"] #empty-icon,
 :root[data-theme="dark"] .empty-icon {
-  background:linear-gradient(150deg,#111d2b 0%,#080e17 100%)!important;
-  box-shadow:inset 0 1px 0 rgba(220,240,255,.06),0 0 38px rgba(68,111,147,.065)!important;
+  background:linear-gradient(150deg,#0a121c 0%,#04080c 100%)!important;
+  box-shadow:inset 0 1px 0 rgba(220,240,255,.06),0 0 38px rgba(68,111,147,.035)!important;
 }
 :root:not([data-theme="light"]) .msg-card,
 :root[data-theme="dark"] .msg-card {
-  background:rgba(9,16,25,.92)!important;
+  background:rgba(5,8,12,.96)!important;
   border-color:var(--line-quiet)!important;
   box-shadow:0 10px 35px rgba(0,0,0,.19)!important;
 }
 :root:not([data-theme="light"]) #composer-shell,
 :root[data-theme="dark"] #composer-shell {
-  background:rgba(10,17,27,.98)!important;
+  background:rgba(6,10,15,.99)!important;
   box-shadow:inset 0 1px 0 rgba(204,231,248,.035),0 9px 34px rgba(0,0,0,.23)!important;
 }
 :root:not([data-theme="light"]) #composer-shell:focus-within,
@@ -563,16 +563,16 @@ body:not(:has(#app)) :is(button,a,input,textarea,select):focus-visible {
 }
 :root:not([data-theme="light"]) #main > .topbar,
 :root[data-theme="dark"] #main > .topbar {
-  background:rgba(7,13,21,.96)!important;
+  background:rgba(4,7,11,.985)!important;
   border-bottom:1px solid var(--line-quiet)!important;
 }
 :root:not([data-theme="light"]) .z-intro,
 :root[data-theme="dark"] .z-intro {
-  background:radial-gradient(circle at center,#0f1b2a 0%,#050911 48%,#020407 100%)!important;
+  background:radial-gradient(circle at center,#0a131c 0%,#030609 46%,#010203 100%)!important;
 }
 @media(max-width:768px) {
   :root:not([data-theme="light"]) #main::before,
-  :root[data-theme="dark"] #main::before { opacity:.035; }
+  :root[data-theme="dark"] #main::before { opacity:.018; }
   :root:not([data-theme="light"]) .z-particle-field .z-mote:nth-child(n+6),
   :root[data-theme="dark"] .z-particle-field .z-mote:nth-child(n+6) { opacity:.24; }
 }
