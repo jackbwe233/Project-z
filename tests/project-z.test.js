@@ -21,7 +21,7 @@ describe('Project Z memory', () => {
     expect(normalizeMemory('a'.repeat(3000))).toHaveLength(2000);
   });
   it('restores exported memory without changing the contents', () => {
-    const notes = 'I like lacrosse\\nI prefer short answers';
+    const notes = 'I like lacrosse\nI prefer short answers';
     const saved = new Map();
     const storage = { setItem: (k, v) => saved.set(k, v), getItem: k => saved.get(k) };
     expect(writeMemory(storage, parseMemoryBackup(notes))).toBe(true);
