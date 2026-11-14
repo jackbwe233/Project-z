@@ -1,0 +1,9 @@
+{
+  "appId": "com.projectz.privateassistant",
+  "appName": "Z",
+  "webDir": "www",
+  "ios": {
+    "contentInset": "automatic",
+    "backgroundColor": "#070d15"
+  }
+}
