@@ -1308,6 +1308,7 @@ async function loadModel() {
     return;
   }
   const def = activeModelDef();
+  let shouldTryLightweightFallback = false;
   state.loading = true;
   updateComposerState();
   renderModelPicker();
@@ -1356,6 +1357,8 @@ async function loadModel() {
   } catch (err) {
     console.error(err);
     recordDiagnostic("Model loading", err);
+    const errorText = String(err?.message || err);
+    shouldTryLightweightFallback = def.id !== "lfm2" && /out of memory|not enough memory|memory allocation|allocation failed|insufficient memory|device lost/i.test(errorText);
     setModelStatus("error", `Failed · ${err?.message || err}`);
     toast(`Model failed to load: ${err?.message || err}`);
     const failedModel = state.model;
@@ -1380,6 +1383,16 @@ async function loadModel() {
     updateWebSearchUI();
     updateLocalFileToolsUI();
     renderModelPicker();
+    if (shouldTryLightweightFallback) {
+      toast("Z detected a model memory issue. Trying the lightweight model automatically.", { duration: 6500 });
+      setTimeout(() => {
+        void (async () => {
+          await applyModelSelection("lfm2", { silent: true });
+          await loadModel();
+          if (state.model) recordDiagnostic("Automatic recovery", "Switched to lightweight model and loaded successfully.", { recovered: true });
+        })().catch(err => recordDiagnostic("Automatic recovery", err));
+      }, 300);
+    }
   }
 }
 
