@@ -540,7 +540,7 @@ function initTheme() {
   try { saved = localStorage.getItem(THEME_KEY); } catch { /* ignore */ }
   applyTheme(saved === "dark" || saved === "light"
     ? saved
-    : "light");
+    : "dark");
 }
 
 /* ── Banner mounting (P0-4) ── */
@@ -576,71 +576,136 @@ function hideWebGpuBanner() {
   banner.innerHTML = "";
 }
 
-async function probeWebGPU() {
-  state.webgpuChecking = true;
-  state.webgpuBrowser = detectBrowser(navigator.userAgent);
-  setModelStatus("loading", "Checking WebGPU…");
-  updateComposerState();
+/* Self-healing here means bounded, local repairs and diagnostic reporting.
+   It never edits source code, sends reports, or pushes unreviewed changes. */
+const DIAGNOSTICS_KEY = "project-z:diagnostics";
+let webgpuProbeTask = null;
+let pendingLoadAfterProbe = false;
+let pendingLoadAfterStorage = false;
+const diagnostics = [];
 
-  const browserLabel = BROWSER_LABELS[state.webgpuBrowser] || "this browser";
+function updateDiagnosticsUI() {
+  const status = $("diagnostics-status");
+  const count = $("diagnostics-count");
+  if (!status || !count) return;
+  const latest = diagnostics.at(-1);
+  count.textContent = diagnostics.length ? "(" + diagnostics.length + ")" : "";
+  status.textContent = latest
+    ? (latest.recovered ? "Auto-recovered: " : "Last issue: ") + latest.stage + " — " + latest.message
+    : "No issues detected. Z checks for recoverable problems on this device.";
+}
 
-  if (!navigator.gpu) {
-    state.webgpuOk = false;
-    const extra = state.webgpuBrowser === "firefox"
-      ? " Firefox exposes WebGPU only behind <code>dom.webgpu.enabled</code> in <code>about:config</code>."
-      : " Use Chrome 113+, Edge 113+, or Safari 18+.";
-    showWebGpuBanner(`<strong>WebGPU API not found.</strong> ${browserLabel} does not expose WebGPU.${extra}`, "error");
-    state.webgpuChecking = false;
-    setModelStatus("error", "WebGPU unavailable");
-    updateComposerState();
-    return;
+function recordDiagnostic(stage, problem, { recovered = false } = {}) {
+  const message = String(problem?.message || problem || "Unknown issue").slice(0, 400);
+  const record = { time: new Date().toISOString(), stage, message, recovered };
+  const previous = diagnostics.at(-1);
+  if (previous?.stage !== stage || previous.message !== message || previous.recovered !== recovered) {
+    diagnostics.push(record);
+    if (diagnostics.length > 20) diagnostics.shift();
   }
+  updateDiagnosticsUI();
+  try { localStorage.setItem(DIAGNOSTICS_KEY, JSON.stringify(diagnostics)); } catch { /* optional */ }
+}
 
-  if (state.webgpuBrowser === "firefox") {
-    state.webgpuOk = false;
-    showWebGpuBanner("<strong>Firefox is not supported.</strong> This WebGPU runtime is known to fail in Firefox. Use Chrome, Edge, or Safari 18+.", "warn");
-    state.webgpuChecking = false;
-    setModelStatus("error", "Use Chrome / Safari");
-    updateComposerState();
-    return;
-  }
-
+function restoreDiagnostics() {
   try {
-    const adapter = await navigator.gpu.requestAdapter();
-    if (!adapter) {
-      state.webgpuOk = false;
-      showWebGpuBanner(`<strong>No WebGPU adapter found.</strong> ${browserLabel} reported WebGPU but no compatible GPU is available.`, "error");
-      state.webgpuChecking = false;
-      setModelStatus("error", "No GPU adapter");
-      updateComposerState();
-      return;
+    const previous = JSON.parse(localStorage.getItem(DIAGNOSTICS_KEY) || "[]");
+    if (Array.isArray(previous)) {
+      diagnostics.push(...previous.slice(-20).filter(item =>
+        item && typeof item.stage === "string" && typeof item.message === "string"
+      ));
     }
+  } catch { /* no previous log */ }
+  updateDiagnosticsUI();
+}
 
-    let adapterLabel = "";
+function withDeadline(promise, ms, label) {
+  let timer;
+  return Promise.race([
+    Promise.resolve(promise),
+    new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error(label + " timed out after " + Math.ceil(ms / 1000) + " seconds")), ms);
+    }),
+  ]).finally(() => clearTimeout(timer));
+}
+
+async function probeWebGPU() {
+  if (webgpuProbeTask) return webgpuProbeTask;
+  webgpuProbeTask = (async () => {
+    state.webgpuChecking = true;
+    state.webgpuBrowser = detectBrowser(navigator.userAgent);
+    setModelStatus("loading", "Checking graphics…");
+    updateComposerState();
+
     try {
-      const info = adapter.info;
-      adapterLabel = info?.description || info?.device || "";
-    } catch { /* ignore */ }
+      const browserLabel = BROWSER_LABELS[state.webgpuBrowser] || "this browser";
+      if (!navigator.gpu || typeof navigator.gpu.requestAdapter !== "function") {
+        throw new Error("WebGPU is not available in this browser. On iPhone, try an updated Safari; older iOS devices may not support local models.");
+      }
+      if (state.webgpuBrowser === "firefox") {
+        throw new Error("This local model runtime does not currently support Firefox. Try updated Chrome, Edge, or Safari.");
+      }
 
-    state.webgpuOk = true;
-    hideWebGpuBanner();
+      // A stalled requestAdapter() must not leave the whole application checking forever.
+      // One automatic retry is safe; repeated attempts could drain battery and confuse users.
+      let adapter = null;
+      let previousError = null;
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          adapter = await withDeadline(
+            navigator.gpu.requestAdapter(),
+            attempt === 0 ? 6500 : 4000,
+            "Graphics check"
+          );
+          if (adapter) break;
+          previousError = new Error("No compatible GPU adapter was returned");
+        } catch (err) {
+          previousError = err;
+        }
+        if (attempt === 0) {
+          recordDiagnostic("Graphics", previousError, { recovered: false });
+          setModelStatus("loading", "Auto-retrying graphics…");
+          await new Promise(resolve => setTimeout(resolve, 350));
+        }
+      }
+      if (!adapter) throw previousError || new Error("No compatible GPU adapter");
 
-    if (state.webgpuBrowser === "safari") {
-      showWebGpuBanner(`<strong>WebGPU ready on Safari.</strong>${adapterLabel ? ` GPU: ${esc(adapterLabel)}.` : ""} Safari 18+ is supported.`, "ok");
-    } else if (state.webgpuBrowser === "other") {
-      showWebGpuBanner(`<strong>WebGPU detected.</strong>${adapterLabel ? ` GPU: ${esc(adapterLabel)}.` : ""} Chrome, Edge, and Safari work best.`, "warn");
+      let adapterLabel = "";
+      try {
+        const info = adapter.info;
+        adapterLabel = info?.description || info?.device || "";
+      } catch { /* GPU details are optional */ }
+      state.webgpuOk = true;
+      state.webgpuLabel = adapterLabel
+        ? "WebGPU · " + adapterLabel
+        : "WebGPU · " + browserLabel;
+      hideWebGpuBanner();
+      setModelStatus("", state.webgpuLabel);
+      if (previousError) recordDiagnostic("Graphics", "WebGPU check succeeded after automatic retry", { recovered: true });
+    } catch (err) {
+      state.webgpuOk = false;
+      state.webgpuLabel = "";
+      recordDiagnostic("Graphics", err);
+      setModelStatus("error", "Graphics unavailable");
+      showWebGpuBanner(
+        "<strong>Local model unavailable.</strong> " + esc(err?.message || err) +
+        " You can still view saved chats and settings. Use Diagnostics in the sidebar to check again.",
+        "error"
+      );
+    } finally {
+      state.webgpuChecking = false;
+      updateComposerState();
+      if (pendingLoadAfterProbe) {
+        pendingLoadAfterProbe = false;
+        if (state.webgpuOk) setTimeout(() => { void loadModel(); }, 0);
+      }
     }
-
-    state.webgpuChecking = false;
-    state.webgpuLabel = adapterLabel ? `WebGPU · ${adapterLabel}` : `WebGPU · ${browserLabel}`;
-    setModelStatus("", state.webgpuLabel);
-  } catch (err) {
-    state.webgpuOk = false;
-    showWebGpuBanner(`<strong>WebGPU check failed.</strong> ${esc(err?.message || err)}`, "error");
-    state.webgpuChecking = false;
-    setModelStatus("error", "WebGPU check failed");
+  })();
+  try {
+    await webgpuProbeTask;
+  } finally {
+    webgpuProbeTask = null;
   }
-  updateComposerState();
 }
 
 /* ── Model loading (P0-4) ── */
@@ -690,6 +755,7 @@ async function repairBrokenModelCacheLocal() {
   )));
   if (repaired.some(Boolean)) {
     console.warn("Removed incomplete model cache database (missing object stores).");
+    recordDiagnostic("Model cache", "Repaired an incomplete model cache automatically.", { recovered: true });
   }
 }
 
@@ -1224,7 +1290,8 @@ function updateComposerState() {
 async function loadModel() {
   if (state.model || state.loading) return;
   if (state.webgpuChecking) {
-    toast("Checking graphics support. Try Load Model again in a moment.", { duration: 5000 });
+    pendingLoadAfterProbe = true;
+    setModelStatus("loading", "Graphics check in progress…");
     return;
   }
   if (!state.webgpuOk) {
@@ -1236,7 +1303,8 @@ async function loadModel() {
     }
   }
   if (state.storageChecking) {
-    toast("Finishing storage setup. Try again shortly.", { duration: 5000 });
+    pendingLoadAfterStorage = true;
+    setModelStatus("loading", "Preparing model storage…");
     return;
   }
   const def = activeModelDef();
@@ -1287,6 +1355,7 @@ async function loadModel() {
     renderModelPicker();
   } catch (err) {
     console.error(err);
+    recordDiagnostic("Model loading", err);
     setModelStatus("error", `Failed · ${err?.message || err}`);
     toast(`Model failed to load: ${err?.message || err}`);
     const failedModel = state.model;
@@ -3306,6 +3375,7 @@ function initStaticIcons() {
 async function init() {
   initStaticIcons();
   initTheme();
+  restoreDiagnostics();
 
   try {
     state.db = await openDB();
@@ -3350,6 +3420,10 @@ async function init() {
   } finally {
     state.storageChecking = false;
     updateComposerState();
+    if (pendingLoadAfterStorage) {
+      pendingLoadAfterStorage = false;
+      if (state.webgpuOk) setTimeout(() => { void loadModel(); }, 0);
+    }
   }
   // Restore cached local model automatically on return, without another tap.
   if (state.modelCached && state.webgpuOk) void loadModel();
@@ -3360,6 +3434,22 @@ $("theme-toggle").addEventListener("click", () => {
 });
 $("load-model-btn").addEventListener("click", loadModel);
 $("load-model-btn-hero").addEventListener("click", loadModel);
+$("diagnostics-retry").addEventListener("click", async () => {
+  if (state.loading || state.busy) { toast("Finish the current task before running checks."); return; }
+  await probeWebGPU();
+  if (state.webgpuOk) toast("Graphics check passed.");
+});
+$("diagnostics-copy").addEventListener("click", async () => {
+  const report = JSON.stringify({ app: "Project Z", version: APP_VERSION, browser: navigator.userAgent, graphicsReady: state.webgpuOk, model: state.selectedModelId, loadedModel: state.loadedModelId, issues: diagnostics }, null, 2);
+  try { await writeClipboard(report); toast("Diagnostic report copied. You control where it is shared."); }
+  catch { toast("Could not copy report."); }
+});
+window.addEventListener("error", e => {
+  if (e.error) recordDiagnostic("App script", e.error);
+});
+window.addEventListener("unhandledrejection", e => {
+  recordDiagnostic("Background task", e.reason);
+});
 $("new-chat-btn").addEventListener("click", async () => {
   projectZ.stopVoice();
   focusComposerInput($("user-input"));
