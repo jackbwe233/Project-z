@@ -2587,6 +2587,11 @@ function updateWebSearchUI() {
   }
 }
 
+// Render only the latest messages on open. Very large chats used to create
+// hundreds of markdown nodes before an iPhone could show the conversation.
+const CHAT_RENDER_BATCH = 60;
+const chatRenderLimitBySession = new Map();
+
 function renderChat({ scrollForce = false, animateLast = false } = {}) {
   const session = activeSession();
   const container = $("chat-messages");
@@ -2604,6 +2609,32 @@ function renderChat({ scrollForce = false, animateLast = false } = {}) {
   const hasAgentMessages = session.messages.some(
     message => message.role === "tool" || message.tool_calls?.length,
   );
+  const limit = chatRenderLimitBySession.get(session.id) || CHAT_RENDER_BATCH;
+  const firstVisibleIndex = Math.max(0, session.messages.length - limit);
+
+  if (firstVisibleIndex > 0) {
+    const older = document.createElement("button");
+    older.type = "button";
+    older.className = "btn chat-load-older";
+    older.textContent = `Show ${Math.min(CHAT_RENDER_BATCH, firstVisibleIndex)} earlier messages · ${firstVisibleIndex} hidden`;
+    older.setAttribute("aria-label", `Show earlier messages in this conversation (${firstVisibleIndex} hidden)`);
+    older.addEventListener("click", () => {
+      const scroll = chatScrollEl();
+      const previousHeight = scroll.scrollHeight;
+      const previousTop = scroll.scrollTop;
+      chatRenderLimitBySession.set(
+        session.id,
+        Math.min(session.messages.length, limit + CHAT_RENDER_BATCH),
+      );
+      renderChat();
+      // Maintain the reading position when older messages are inserted above.
+      requestAnimationFrame(() => {
+        scroll.scrollTop = previousTop + Math.max(0, scroll.scrollHeight - previousHeight);
+      });
+    });
+    container.appendChild(older);
+  }
+
   const appendRendered = (node, messageIndex) => {
     if (!animateLast || messageIndex !== session.messages.length - 1) {
       node.classList.add("no-entry-animation");
@@ -2611,7 +2642,7 @@ function renderChat({ scrollForce = false, animateLast = false } = {}) {
     container.appendChild(node);
   };
 
-  for (let i = 0; i < session.messages.length; i++) {
+  for (let i = firstVisibleIndex; i < session.messages.length; i++) {
     const msg = session.messages[i];
     if (msg.role === "user") {
       appendRendered(buildUserMessage(msg, i), i);
@@ -2626,6 +2657,7 @@ function renderChat({ scrollForce = false, animateLast = false } = {}) {
   mountWebGpuBanner();
   scrollChatToBottom(scrollForce, wasPinned);
 }
+
 
 /* ── Streaming ── */
 
