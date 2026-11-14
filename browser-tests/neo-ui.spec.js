@@ -97,7 +97,7 @@ test('Orbital chat has themed surfaces and readable controls', async ({ page }) 
   expect(style.orbitalLoaded).toBe(true);
   expect(style.sideGradient).toContain('gradient');
   expect(style.composerBorderWidth).toBe('1px');
-  expect(style.composerBorderColor).toMatch(/rgba?\\(/);
+  expect(style.composerBorderColor).toContain('rgb');
   expect(style.composerBackground).not.toBe('rgba(0, 0, 0, 0)');
   expect(style.textColor).not.toBe('rgba(0, 0, 0, 0)');
 });
