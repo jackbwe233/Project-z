@@ -47,4 +47,6 @@ if (!(await stat(join(output, "index.html")).catch(() => null)) ||
     !(await stat(join(output, "app.js")).catch(() => null))) {
   throw new Error("Project Z's index.html or app.js is missing; aborting native preparation");
 }
+// Node CLI logging is intentional; this repository's browser lint config omits console.
+// eslint-disable-next-line no-undef
 console.log(`Prepared ${copied} static files for private iOS app at ${output}`);
