@@ -369,3 +369,34 @@ body { background:var(--bg); font-family:var(--sans); letter-spacing:-.009em; }
 @media(prefers-reduced-motion:reduce) {
   *, *::before, *::after { scroll-behavior:auto !important; animation-duration:.01ms !important; }
 }
+
+
+/* Metallic Z mark + intentionally spare navigation */
+#brand-icon, #empty-icon { position:relative; isolation:isolate; }
+#brand-icon .icon, #empty-icon .icon { display:none; }
+#brand-icon::after, #empty-icon::after {
+  content:"Z"; display:block; line-height:1; font-family:var(--sans);
+  font-weight:800; font-style:italic; letter-spacing:-.11em;
+  text-shadow:0 1px 0 rgba(255,255,255,.45);
+}
+#brand-icon::after { font-size:25px; padding-right:4px; }
+#empty-icon::after {
+  font-size:48px; padding-right:6px;
+  color:#dfedfb; text-shadow:0 2px 14px rgba(211,231,255,.38);
+}
+#stock-research-link {
+  margin-top:5px; border-radius:11px; border:1px solid transparent;
+  text-decoration:none; font-size:12px; font-weight:600;
+  color:var(--text-secondary) !important;
+}
+#stock-research-link:hover { background:var(--surface-2); }
+#diagnostics-status {
+  border:1px solid var(--border-soft); background:var(--surface-2);
+  padding:12px; border-radius:11px; overflow-wrap:anywhere; font-size:11px;
+}
+#diagnostics-block .storage-actions { gap:8px; }
+#diagnostics-block .storage-actions .btn { min-height:38px; }
+@media(max-width:768px) {
+  #empty-icon::after { font-size:40px; }
+  #brand-icon::after { font-size:22px; }
+}
