@@ -1218,6 +1218,65 @@
   </div>
 </dialog>
 
-<script type="module" src="./app.js?v=fast-chat-0.4.4"></script>
+<script>
+(() => {
+  const appModule = "./app.js?v=fast-chat-0.4.4";
+  const ua = navigator.userAgent || "";
+  const ios = /iPhone|iPad|iPod/i.test(ua)
+    || (/Macintosh/i.test(ua) && navigator.maxTouchPoints > 1);
+  const launchRequested = new URLSearchParams(location.search).has("z_start");
+  const loadApp = () => {
+    import(appModule).catch(() => {
+      const message = document.getElementById("z-launch-error");
+      if (message) message.hidden = false;
+      else location.href = "./recovery.html";
+    });
+  };
+  if (!ios || launchRequested) {
+    loadApp();
+    return;
+  }
+  // Avoid importing the full chat/model module graph while an iPhone opens the
+  // entry page. Never read, clear, or modify browser storage in this gate.
+  const app = document.getElementById("app");
+  if (app) app.style.display = "none";
+  const gate = document.createElement("main");
+  gate.id = "z-safe-start";
+  gate.setAttribute("aria-label", "Project Z safe start");
+  gate.innerHTML = `
+    <div class="z-safe-card">
+      <div class="z-safe-logo" aria-hidden="true">Z</div>
+      <h1>Project Z</h1>
+      <p>Safe start is on. Your saved chats stay on this device. Open Z when you're ready.</p>
+      <button id="z-launch-open" type="button">Open Project Z</button>
+      <a href="./recovery.html">Having trouble? Open recovery</a>
+      <p id="z-launch-error" hidden>The app couldn't start. Use recovery for a safer way in.</p>
+    </div>`;
+  const style = document.createElement("style");
+  style.textContent = `
+    #z-safe-start{min-height:100dvh;position:fixed;inset:0;z-index:99999;
+      display:grid;place-items:center;padding:20px;background:linear-gradient(150deg,#fff,#e9eef5);
+      color:#243249;font:16px/1.5 -apple-system,BlinkMacSystemFont,system-ui,sans-serif}
+    #z-safe-start .z-safe-card{width:min(100%,420px);padding:26px;border:1px solid #d6e0ed;
+      border-radius:22px;background:#fff;box-shadow:0 12px 40px #283c5215;text-align:center}
+    #z-safe-start .z-safe-logo{font-size:36px;font-weight:750;color:#63778e}
+    #z-safe-start h1{font-size:28px;margin:6px 0 12px}
+    #z-safe-start p{color:#526275;margin:12px 0 20px}
+    #z-safe-start button{background:#293b51;color:white;border:0;border-radius:12px;
+      min-height:52px;width:100%;font:600 16px system-ui;cursor:pointer}
+    #z-safe-start a{display:block;margin:18px 0 0;color:#283f5b}
+    #z-safe-start #z-launch-error{color:#aa3333}
+    #z-safe-start button:focus-visible,#z-safe-start a:focus-visible{outline:3px solid #6a98d3;outline-offset:3px}
+  `;
+  document.head.append(style);
+  document.body.append(gate);
+  gate.querySelector("#z-launch-open").addEventListener("click", () => {
+    gate.remove();
+    style.remove();
+    if (app) app.style.display = "";
+    loadApp();
+  }, { once: true });
+})();
+</script>
 </body>
 </html>
