@@ -34,6 +34,8 @@ Watchlists and reports save locally, with JSON export/validated restore. Importe
 
 `npm run lint` and `npm test` cover the voice state machine (including stop races), approval rules, backup validation, research cancellation/timeouts, and DOM workflows. Browser rendering, real speech recognition/playback and live model inference must also be checked on target devices before deploying. Live Exa availability is an external dependency, not guaranteed by mocked provider tests.
 
+Run `npx playwright install chromium` and `npm run test:browser` for desktop and 390px layout checks, research-to-chat handoff and Command Center workflows. GitHub CI includes these checks when repository workflows are enabled. These tests use mocked search results and do not simulate real microphone hardware.
+
 Deploy the repository root with GitHub Pages as before. Run `npm ci`, `npm run lint`, and `npm test` to validate.
 
 ---
@@ -42,7 +44,7 @@ Deploy the repository root with GitHub Pages as before. Run `npm ci`, `npm run l
 
 Private, on-device AI with an agent loop that runs in the browser.
 
-**[Try the live demo](https://jovanveljanoski.github.io/webllm/)**
+**[Open Project Z](https://jackbwe233.github.io/Project-z/)**
 
 ![WebLLM running locally in the browser — model load, chat, and web search](docs/webllm-x.gif)
 
@@ -75,7 +77,7 @@ and no build step.
 Use Chrome 113+, Edge 113+, or Safari 18+. Firefox is not supported by the current
 WebGPU runtimes.
 
-1. Open the [live demo](https://jovanveljanoski.github.io/webllm/).
+1. Open [Project Z](https://jackbwe233.github.io/Project-z/).
 2. Choose a model in the sidebar.
 3. Select **Load model**.
 4. Wait for the first download and warm-up, then send a message.
