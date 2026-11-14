@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { PERSONALITY, readMemory, writeMemory, withMemory, normalizeMemory, rememberFromMessage } from '../lib/project-z.js';
+import { PERSONALITY, readMemory, writeMemory, withMemory, normalizeMemory, rememberFromMessage, parseMemoryBackup } from '../lib/project-z.js';
 import { buildMessages, buildAgentMessages } from '../lib/messages.js';
 
 describe('Project Z memory', () => {
@@ -19,6 +19,18 @@ describe('Project Z memory', () => {
     expect(rememberFromMessage(notes, 'Remember that I like lacrosse')).toBe(notes);
     expect(rememberFromMessage(notes, 'My friend likes football')).toBe(notes);
     expect(normalizeMemory('a'.repeat(3000))).toHaveLength(2000);
+  });
+  it('restores exported memory without changing the contents', () => {
+    const notes = 'I like lacrosse\\nI prefer short answers';
+    const saved = new Map();
+    const storage = { setItem: (k, v) => saved.set(k, v), getItem: k => saved.get(k) };
+    expect(writeMemory(storage, parseMemoryBackup(notes))).toBe(true);
+    expect(readMemory(storage)).toBe(notes);
+  });
+  it('rejects invalid or oversized imports rather than silently truncating them', () => {
+    expect(() => parseMemoryBackup('a'.repeat(2001))).toThrow('2,000-character limit');
+    expect(() => parseMemoryBackup(null)).toThrow('text file');
+    expect(parseMemoryBackup('  note  ')).toBe('note');
   });
   it('supplies notes to both chat paths without modifying stored sessions', () => {
     const session = { systemPrompt: 'You are a helpful assistant.', messages: [] };
