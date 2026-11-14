@@ -897,7 +897,7 @@
     #toast-stack { left: 16px; right: 16px; bottom: 16px; align-items: center; }
   }
 </style>
-<link rel="stylesheet" href="./project-z.css?v=memory-0.2.0-20261114">
+<link rel="stylesheet" href="./project-z.css?v=memory-0.2.1-20261114">
 </head>
 <body>
 <div id="app">
@@ -1093,6 +1093,8 @@
   </div>
   <div class="z-learning-section">
     <h3>Saved memories</h3>
+    <input type="search" id="z-memory-filter" class="z-learning-filter" placeholder="Find an approved memory…" aria-label="Search saved memories">
+    <p id="z-memory-showing" class="z-learning-count"></p>
     <div id="z-learning-saved" class="z-learning-list"></div>
   </div>
   <p>To save a fact directly, say “Remember that …”. Z picks relevant memories for each conversation. Learned memories are limited, not guaranteed facts. Delete outdated information anytime.</p>
@@ -1197,6 +1199,6 @@
   </div>
 </dialog>
 
-<script type="module" src="./app.js?v=memory-0.2.0-20261114"></script>
+<script type="module" src="./app.js?v=memory-0.2.1-20261114"></script>
 </body>
 </html>
