@@ -1,3 +1,5 @@
+import { withMemory } from "./lib/project-z.js";
+import { initProjectZ } from "./lib/project-z-ui.js";
 import {
   PREFS_KEY,
   THEME_KEY,
@@ -179,7 +181,7 @@ function grammarConfig() {
 }
 
 function buildMessages(session) {
-  return buildMessagesForModel(session, grammarConfig());
+  return buildMessagesForModel(withMemory(session, projectZ.memory()), grammarConfig());
 }
 
 function cacheEnv() {
@@ -536,10 +538,9 @@ function applyTheme(theme) {
 function initTheme() {
   let saved = null;
   try { saved = localStorage.getItem(THEME_KEY); } catch { /* ignore */ }
-  const prefersDark = window.matchMedia?.("(prefers-color-scheme: dark)")?.matches;
   applyTheme(saved === "dark" || saved === "light"
     ? saved
-    : (prefersDark ? "dark" : "light"));
+    : "light");
 }
 
 /* ── Banner mounting (P0-4) ── */
@@ -2368,6 +2369,7 @@ function renderSessionList() {
 }
 
 function syncUIFromSession() {
+  projectZ.reply([...activeSession()?.messages || []].reverse().find(m => m.role === "assistant")?.content);
   const session = activeSession();
   if (!session) return;
   $("system-prompt").value = session.systemPrompt || DEFAULT_SYSTEM_PROMPT;
@@ -2957,6 +2959,7 @@ async function runAssistantGeneration(session) {
   state.busy = true;
   state.runtimeTracesBySession.delete(String(session.id));
   chatScrollEl().classList.add("streaming-scroll");
+  projectZ.busy(true);
   state.abort = new AbortController();
   updateComposerState();
   setModelStatus("busy", "Starting…");
@@ -2998,7 +3001,7 @@ async function runAssistantGeneration(session) {
         availability,
         searchProvider: defaultSearchProvider,
       });
-      const baseMessages = buildAgentMessages(session, [], {
+      const baseMessages = buildAgentMessages(withMemory(session, projectZ.memory()), [], {
         attachments: localReferencesEnabled() ? state.attachments : [],
         modelId: modelDef.id,
       });
@@ -3182,6 +3185,8 @@ async function runAssistantGeneration(session) {
       toast("The reply could not be persisted, but it remains visible in this chat.");
     } finally {
       state.busy = false;
+      projectZ.busy(false);
+      projectZ.reply(finalAssistantMessage?.content);
       state.abort = null;
       streamCtx.busy = false;
       streamCtx.streamPhase = "done";
@@ -3232,6 +3237,7 @@ async function sendMessage() {
       attachments: state.attachments,
     })
     : [];
+  projectZ.remember(text);
   const userMessage = { role: "user", content: text };
   if (fileRefs.length) userMessage.fileRefs = fileRefs;
   session.messages.push(userMessage);
@@ -3529,6 +3535,8 @@ $("user-input").addEventListener("keydown", e => {
 document.addEventListener("click", event => {
   if (!event.target.closest("#composer-wrap")) hideFileAutocomplete();
 });
+
+const projectZ = initProjectZ({ input: $("user-input"), notify: toast });
 
 init().catch(err => {
   console.error("WebLLM initialization failed.", err);

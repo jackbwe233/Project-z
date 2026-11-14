@@ -1,0 +1,27 @@
+:root { --bg:#f4f5f6; --surface-2:#eef0f2; --border:#d9dde2; --border-soft:#e9ebee; --accent:#505c6d; --accent-hover:#303a49; --accent-soft:rgba(80,92,109,.1); --accent-glow:rgba(80,92,109,.16); --user-bg:linear-gradient(135deg,#526071,#333e4d); --text-muted:#697380; }
+#app { height:100dvh; }
+.z-companion { display:flex; align-items:center; flex-wrap:wrap; gap:14px; padding:12px 24px; border-bottom:1px solid var(--border); background:var(--surface); }
+.z-controls strong { font-size:11px; letter-spacing:.18em; color:var(--text-secondary); }
+.z-buttons { display:flex; gap:6px; flex-wrap:wrap; }
+.z-buttons button { min-height:36px; padding:6px 10px; border:1px solid var(--border); border-radius:10px; background:var(--surface-2); color:var(--text); font:inherit; font-size:12px; cursor:pointer; }
+.z-buttons button:disabled { opacity:.55; cursor:default; }
+.z-memory-panel { margin-left:auto; font-size:13px; max-width:100%; }
+.z-memory-panel[open] { flex-basis:100%; max-height:35dvh; overflow:auto; }
+.z-memory-panel summary { cursor:pointer; padding:8px; }
+.z-memory-panel label { display:block; margin:8px 0; }
+.z-memory-panel textarea { width:100%; font:inherit; }
+.z-memory-panel p,.z-memory-panel small { color:var(--text-secondary); font-size:12px; }
+.z-avatar { width:52px; height:58px; position:relative; flex:none; overflow:hidden; }
+.z-head { position:absolute; left:12px; top:2px; width:29px; height:38px; border-radius:45% 45% 48% 48%; border:1px solid #9ca6b2; background:linear-gradient(110deg,#fff,#bbc3ce); z-index:1; animation:z-breathe 4s ease-in-out infinite; }
+.z-head i { position:absolute; top:15px; width:4px; height:4px; border-radius:50%; background:#485363; left:6px; animation:z-blink 5s infinite; }
+.z-head i+i { left:18px; }
+.z-head b { position:absolute; left:10px; top:26px; width:9px; height:3px; border-bottom:1px solid #485363; border-radius:50%; }
+.z-shoulders { position:absolute; bottom:-12px; left:1px; width:50px; height:31px; border-radius:50% 50% 0 0; background:linear-gradient(120deg,#e4e8ee,#8995a5); }
+[data-state="thinking"] .z-head { animation:z-breathe 1s infinite; }
+[data-state="listening"] .z-head { box-shadow:0 0 0 3px #c1d6cb; }
+[data-state="speaking"] .z-head b { animation:z-talk .3s infinite alternate; background:#596576; }
+@keyframes z-blink { 0%,44%,48%,100% { transform:scaleY(1); } 46% { transform:scaleY(.1); } }
+@keyframes z-breathe { 50% { transform:translateY(2px) rotate(2deg); } }
+@keyframes z-talk { to { height:6px; } }
+@media(max-width:600px) { .z-companion { padding:8px 12px; gap:8px; } .z-buttons button { min-height:40px; } #user-input { font-size:16px; } }
+@media(prefers-reduced-motion:reduce) { .z-avatar * { animation:none!important; } }

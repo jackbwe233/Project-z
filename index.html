@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WebLLM</title>
+<title>Project Z</title>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -890,6 +890,7 @@
     #toast-stack { left: 16px; right: 16px; bottom: 16px; align-items: center; }
   }
 </style>
+<link rel="stylesheet" href="./project-z.css">
 </head>
 <body>
 <div id="app">
@@ -897,7 +898,7 @@
     <div class="sidebar-brand">
       <div class="brand-icon" id="brand-icon"></div>
       <div class="brand-text">
-        <h1>WebLLM</h1>
+        <h1>Project Z</h1>
         <p class="brand-tagline">
           <strong>Private, on-device AI.</strong>
           Inference and chat history stay in your browser via WebGPU. Optional Web Search sends search queries to the third-party Exa MCP service.
@@ -1050,6 +1051,12 @@
       </div>
     </div>
 
+
+    <section class="z-companion" aria-label="Project Z companion">
+      <div id="z-avatar" class="z-avatar" data-state="idle" role="img" aria-label="Animated Z avatar"><div class="z-head"><i></i><i></i><b></b></div><div class="z-shoulders"></div></div>
+      <div class="z-controls"><strong>PROJECT Z</strong><div class="z-buttons"><button id="z-mic" type="button">Dictate</button><button id="z-speak" type="button">Read reply</button><button id="z-quiet" type="button">Stop voice</button></div></div>
+      <details class="z-memory-panel"><summary>Memory</summary><label for="z-memory">What Z should remember across chats</label><textarea id="z-memory" maxlength="2000" rows="5" placeholder="Preferences, goals, and things you want Z to know"></textarea><p>Say “Remember that …” to save a note automatically, or edit here. Chats and settings save on this device. Clearing website data removes them. Voice may use your browser’s speech service.</p><div class="z-buttons"><button id="z-backup" type="button">Export memory</button><button id="z-clear" type="button">Clear memory</button><button id="z-persist" type="button">Keep device storage</button></div><small id="z-status" role="status">Memory stays on this device. Paste a backup into this box to restore it.</small></details>
+    </section>
     <div id="banner-top-mount"></div>
     <div id="load-bar-wrap"><div id="load-bar"></div></div>
 
@@ -1057,8 +1064,8 @@
       <div id="chat-inner">
         <div class="empty-state" id="empty-state">
           <div class="empty-icon" id="empty-icon"></div>
-          <h2>Your private AI chat</h2>
-          <p>Load a model below to start — inference runs locally in your browser.</p>
+          <h2>Hey, I’m Z.</h2>
+          <p>Your space to think, learn, and figure things out. Load your model to start.</p>
           <p class="empty-cache-hint" id="empty-cache-hint"></p>
           <div class="empty-state-loader" id="empty-loader">
             <div id="empty-banner-mount"></div>
