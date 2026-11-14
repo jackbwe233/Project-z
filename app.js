@@ -181,7 +181,7 @@ function grammarConfig() {
 }
 
 function buildMessages(session) {
-  return buildMessagesForModel(withMemory(session, projectZ.memory()), grammarConfig());
+  return buildMessagesForModel(withMemory(session, projectZ.context(session)), grammarConfig());
 }
 
 function cacheEnv() {
@@ -3101,7 +3101,7 @@ async function runAssistantGeneration(session) {
         availability,
         searchProvider: defaultSearchProvider,
       });
-      const baseMessages = buildAgentMessages(withMemory(session, projectZ.memory()), [], {
+      const baseMessages = buildAgentMessages(withMemory(session, projectZ.context(session)), [], {
         attachments: localReferencesEnabled() ? state.attachments : [],
         modelId: modelDef.id,
       });
