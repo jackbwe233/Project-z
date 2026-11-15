@@ -1,6 +1,6 @@
 import { MUSIC_STORAGE_KEY, blankMusicProfile, normalizeMusicProfile, normalizeSong, recordMusicAction, removeLikedSong, musicTasteSummary } from "./lib/music-finder.js";
 import { connectSpotify, handleSpotifyCallback, spotifyIsConnected, disconnectSpotify, hasSpotifySetup, createSpotifyPlaylist, connectApple, appleIsConnected, hasAppleSetup, createApplePlaylist } from "./lib/music-providers.js";
-import { discoveryQueries, smartRankSongs, reasonForSong } from "./lib/music-intelligence.js";
+import { discoveryQueries, smartRankSongs, reasonForSong, genreFamily } from "./lib/music-intelligence.js";
 
 const $ = id => document.getElementById(id);
 const card = $("swipe-card");
@@ -68,9 +68,9 @@ function makeChoice(action) {
   const song = current;
   profile = recordMusicAction(profile, song, action);
   persist(); renderSaved(); renderTaste();
-  if (action === "similar") { queue = []; $("music-search").value = song.artist; }
+  if (action === "similar") { queue = []; $("music-search").value = ""; }
   const finish = () => {
-    if (action === "similar") loadSongs(song.artist);
+    if (action === "similar") loadSongs("", song);
     else nextSong();
   };
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) { finish(); return; }
@@ -80,8 +80,12 @@ function makeChoice(action) {
   card.style.opacity = "0";
   setTimeout(finish, 215);
 }
-function terms(query = "") {
-  return discoveryQueries(profile, { genre, vibe, exploration, cycle: loadCycle, query });
+function terms(query = "", seedSong = null) {
+  const targetGenre = seedSong ? genreFamily(seedSong.genre) : genre;
+  return discoveryQueries(profile, {
+    genre: targetGenre, vibe, exploration: seedSong ? "explore" : exploration,
+    cycle: loadCycle, query,
+  });
 }
 const catalogCache = new Map();
 const catalogCalls = [];
@@ -109,11 +113,11 @@ async function searchCatalog(term, signal) {
   catalogCache.set(key, { at: Date.now(), songs });
   return songs;
 }
-async function loadSongs(query = "") {
+async function loadSongs(query = "", seedSong = null) {
   if (controller) controller.abort();
   controller = new AbortController();
   const task = ++sequence;
-  const selected = terms(query);
+  const selected = terms(query, seedSong);
   loadCycle++;
   display(null);
   status("Finding tracks for your taste…");
@@ -123,7 +127,7 @@ async function loadSongs(query = "") {
     const found = outcomes.filter(x => x.status === "fulfilled").flatMap(x => x.value);
     if (!found.length && outcomes.every(x => x.status === "rejected"))
       throw new Error("Cannot reach the music catalog. Check your internet connection.");
-    queue = smartRankSongs(found, profile, { genre, vibe, exploration });
+    queue = smartRankSongs(found, profile, { genre: seedSong ? genreFamily(seedSong.genre) : genre, vibe, exploration: seedSong ? "explore" : exploration });
     if (queue.length) { display(queue.shift()); status(""); }
     else status("No new tracks found. Change the genre or vibe, or search an artist.");
   } catch (error) {
