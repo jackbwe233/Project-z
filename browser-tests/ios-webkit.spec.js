@@ -166,3 +166,30 @@ test('iPhone landscape: sidebar becomes a drawer, composer remains visible', asy
   await page.locator('#sidebar-close').click();
   await expect(page.locator('#sidebar')).not.toHaveClass(/open/);
 });
+
+
+test('iPhone 16/17: Work, Stocks, Personal and Account tabs avoid horizontal clipping and focus zoom', async ({ page }) => {
+  await page.setViewportSize({ width:402, height:874 });
+  for (const path of [
+    '/work.html', '/paper.html', '/personal.html', '/plugins.html',
+    '/notes.html', '/account.html', '/google.html', '/install.html'
+  ]) {
+    await page.goto(path);
+    const box = await page.evaluate(() => {
+      const main = document.querySelector('main');
+      const nav = document.querySelector('.z-shell');
+      const field = document.querySelector('input:not([type="hidden"]):not([type="checkbox"]),textarea,select');
+      return {
+        screen:innerWidth,
+        overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
+        mainRight:main?.getBoundingClientRect().right ?? 0,
+        navRight:nav?.getBoundingClientRect().right ?? 0,
+        font:field ? parseFloat(getComputedStyle(field).fontSize) : null
+      };
+    });
+    expect(box.overflow,path+' document width').toBeLessThanOrEqual(2);
+    expect(box.mainRight,path+' main content').toBeLessThanOrEqual(box.screen+1);
+    expect(box.navRight,path+' tab navigation').toBeLessThanOrEqual(box.screen+1);
+    if(box.font!=null)expect(box.font,path+' Safari form zoom threshold').toBeGreaterThanOrEqual(16);
+  }
+});
