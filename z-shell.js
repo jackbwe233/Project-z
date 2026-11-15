@@ -14,7 +14,8 @@
     ["focus.html","Focus"],
     ["plugins.html","Plugins"],
     ["code-lab.html","Builder"],
-    ["account.html","Account"]
+    ["account.html","Account"],
+    ["index.html#z-style-panel","Personalize"]
   ];
   function make(tag, className, text) {
     const e = document.createElement(tag);
