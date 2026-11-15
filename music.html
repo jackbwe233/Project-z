@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b111c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Z Music · Discover</title>
+<link rel="icon" href="./favicon.svg">
+<link rel="stylesheet" href="./z-shell.css?v=1">
+<link rel="stylesheet" href="./music.css?v=1">
+</head>
+<body class="z-workspace z-music-page">
+<main class="music-main">
+<header class="music-hero">
+ <p class="eyebrow">◉ Z / MUSIC DISCOVERY</p>
+ <h1>Find your next <em>favorite.</em></h1>
+ <p>Swipe, discover, and build the perfect playlist. Every like helps shape your sound.</p>
+</header>
+<div class="music-bar">
+  <div class="music-tabs" role="tablist" aria-label="Music sections">
+    <button type="button" id="tab-discover" role="tab" aria-selected="true" aria-controls="music-discover">Discover</button>
+    <button type="button" id="tab-saved" role="tab" aria-selected="false" aria-controls="music-saved">Playlist <span id="saved-count">0</span></button>
+    <button type="button" id="tab-taste" role="tab" aria-selected="false" aria-controls="music-taste">My taste</button>
+  </div>
+  <span class="privacy">◌ Your likes stay on this device</span>
+</div>
+<section id="music-discover" role="tabpanel" aria-labelledby="tab-discover">
+ <form id="music-search-form" class="music-search">
+  <label class="sr-only" for="music-search">Artist, song, or vibe</label>
+  <input type="search" id="music-search" maxlength="100" placeholder="Search an artist, song, or sound…" enterkeyhint="search">
+  <button type="submit">Find <span aria-hidden="true">↗</span></button>
+ </form>
+ <p class="filter-label">GENRE</p>
+ <div class="filter-row" id="genre-filters" role="group" aria-label="Music genre">
+  <button type="button" data-genre="All" aria-pressed="true">For you</button>
+  <button type="button" data-genre="Indie" aria-pressed="false">Indie</button>
+  <button type="button" data-genre="Hip-Hop" aria-pressed="false">Hip-hop</button>
+  <button type="button" data-genre="Rock" aria-pressed="false">Rock</button>
+  <button type="button" data-genre="R&B" aria-pressed="false">R&B</button>
+  <button type="button" data-genre="Pop" aria-pressed="false">Pop</button>
+  <button type="button" data-genre="Electronic" aria-pressed="false">Electronic</button>
+  <button type="button" data-genre="Country" aria-pressed="false">Country</button>
+  <button type="button" data-genre="Jazz" aria-pressed="false">Jazz</button>
+ </div>
+ <p class="filter-label">VIBE</p>
+ <div class="filter-row" id="vibe-filters" role="group" aria-label="Music vibe">
+  <button type="button" data-vibe="any" aria-pressed="true">Anything</button>
+  <button type="button" data-vibe="dreamy" aria-pressed="false">✧ Dreamy</button>
+  <button type="button" data-vibe="hype" aria-pressed="false">⚡ Hype</button>
+  <button type="button" data-vibe="chill" aria-pressed="false">☾ Chill</button>
+  <button type="button" data-vibe="sad" aria-pressed="false">☂ Melancholy</button>
+  <button type="button" data-vibe="nostalgic" aria-pressed="false">◷ Nostalgic</button>
+  <button type="button" data-vibe="underground" aria-pressed="false">◇ Underground</button>
+ </div>
+ <div class="discovery-caption"><span id="discovery-count">READY TO DISCOVER</span><button type="button" id="refresh-songs">↻ New songs</button></div>
+ <div class="swipe-stage">
+  <div id="swipe-card" class="swipe-card" aria-live="polite">
+   <div id="card-art" class="art-wrap"><span class="art-placeholder">Z</span></div>
+   <div class="card-details">
+    <span id="card-genre" class="track-genre">DISCOVER</span>
+    <h2 id="card-title">Find your sound</h2>
+    <p id="card-artist">Choose a genre, a vibe, or search an artist.</p>
+    <p id="card-album" class="card-album">Your next favorite is out there.</p>
+    <div class="preview-row"><button type="button" id="preview-button" disabled aria-label="Play song preview">▶ Preview</button><span id="preview-note">Audio previews where available</span></div>
+   </div>
+   <div class="swipe-stamp swipe-stamp-left">PASS</div><div class="swipe-stamp swipe-stamp-right">SAVED</div>
+  </div>
+ </div>
+ <div class="swipe-actions">
+  <button type="button" id="skip-song" class="swipe-round skip" aria-label="Skip song">✕</button>
+  <button type="button" id="similar-song" class="swipe-round similar" aria-label="Find more like this song">✦</button>
+  <button type="button" id="like-song" class="swipe-round like" aria-label="Save song to playlist">♥</button>
+ </div>
+ <p class="swipe-hint">← PASS &nbsp; · &nbsp; RIGHT TO SAVE → &nbsp; · &nbsp; ↑ MORE LIKE THIS</p>
+ <p id="discovery-status" class="status" role="status" aria-live="polite"></p>
+</section>
+<section id="music-saved" role="tabpanel" aria-labelledby="tab-saved" hidden>
+ <div class="section-intro"><h2>Your playlist</h2><p>Every song you swipe right on lives here. Export it or send it to a music service.</p></div>
+ <label class="field-label" for="playlist-name">PLAYLIST NAME</label>
+ <input id="playlist-name" maxlength="80" value="Discovered with Z" placeholder="Your playlist name">
+ <div class="playlist-actions">
+  <button type="button" id="spotify-export" class="brand-button">♫ Send to Spotify</button>
+  <button type="button" id="apple-export" class="brand-button">♪ Send to Apple Music</button>
+  <button type="button" id="csv-export" class="secondary-button">↓ Export song list</button>
+ </div>
+ <p id="playlist-status" class="status" role="status" aria-live="polite"></p>
+ <ul id="saved-tracks" class="saved-tracks"></ul>
+</section>
+<section id="music-taste" role="tabpanel" aria-labelledby="tab-taste" hidden>
+ <div class="section-intro"><h2>Your sound, decoded.</h2><p>These are the styles and artists shaping your recommendations.</p></div>
+ <div class="taste-cards"><div class="taste-box"><span>SONGS SAVED</span><strong id="taste-likes">0</strong></div><div class="taste-box"><span>SONGS SKIPPED</span><strong id="taste-skips">0</strong></div></div>
+ <h3>Favorite genres</h3><div id="taste-genres" class="taste-tags"></div>
+ <h3>Favorite artists</h3><div id="taste-artists" class="taste-tags"></div>
+ <div class="connections">
+  <h3>Music connections</h3>
+  <p>To connect, Z needs your permission. Only playlist creation is requested; Z does not need your password.</p>
+  <div class="connection-line"><strong>Spotify</strong><span id="spotify-state">Not connected</span><button type="button" id="spotify-connect">Connect</button></div>
+  <div class="connection-line"><strong>Apple Music</strong><span id="apple-state">Not connected</span><button type="button" id="apple-connect">Connect</button></div>
+  <p id="connection-help" class="status"></p>
+  <details class="setup-details"><summary>Developer connection setup</summary>
+    <p>The app owner must configure a Spotify client ID and an Apple Music developer token before account linking works for everyone. Spotify's callback URL must include this page's full address.</p>
+  </details>
+ </div>
+ <div class="privacy-controls"><button type="button" id="clear-music">Reset my music taste and saved songs</button></div>
+</section>
+<footer class="music-footer">Discovery powered by Apple's public music catalog. Previews may not be available for every track. Matching songs to connected services can be imperfect.</footer>
+</main>
+<audio id="music-audio" preload="none"></audio>
+<script src="./z-shell.js?v=1" defer></script>
+<script src="./music-config.js?v=1" defer></script>
+<script type="module" src="./music.js?v=1"></script>
+</body>
+</html>
