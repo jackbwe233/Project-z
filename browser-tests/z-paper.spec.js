@@ -120,5 +120,5 @@ test("Stocks menu links to detailed research without hiding the portfolio contro
   await expect(page.locator("#paper-cash")).toBeVisible();
   await page.locator(".z-shell-more-trigger").click();
   await page.getByRole("navigation",{name:"Z app navigation"}).getByRole("link",{name:"Detailed stock research"}).click();
-  await expect(page).toHaveURL(/\\/research\\.html$/);
+  await expect(page).toHaveURL(/research[.]html$/);
 });
