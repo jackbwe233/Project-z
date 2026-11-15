@@ -3,7 +3,7 @@
   'use strict';
   const allowed = new Set([
     'personal.html', 'plugins.html', 'quick.html', 'notes.html', 'focus.html',
-    'shortcut.html', 'research.html', 'command-center.html', 'code-lab.html', 'paper.html',
+    'shortcut.html', 'research.html', 'command-center.html', 'code-lab.html', 'paper.html', 'work.html',
   ]);
   let frame = null;
   let overlay = null;
