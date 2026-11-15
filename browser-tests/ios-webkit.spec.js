@@ -1,5 +1,13 @@
 import { test, expect } from '@playwright/test';
 
+test.beforeEach(async ({ page }, testInfo) => {
+  if (testInfo.title.includes('Home Screen guide')) return;
+  // Existing iPhone regression tests simulate someone who already dismissed onboarding.
+  await page.addInitScript(() => {
+    try { localStorage.setItem('project-z:install-guide-dismissed:v1', '1'); } catch { /* ignore */ }
+  });
+});
+
 test('iPhone WebKit: start Z without loading a model, then enter chat', async ({ page }) => {
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
@@ -56,4 +64,24 @@ test('iPhone WebKit: built-in tools stay in Z without a page restart', async ({ 
   await page.locator('#z-tools-back').click();
   await expect(page.locator('#z-tools-overlay')).toHaveCount(0);
   await expect(page.locator('#chat-scroll')).toBeVisible();
+});
+
+test('iPhone WebKit: first-visit Home Screen guide appears, closes, and can be reopened', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto('/');
+  const guide = page.locator('#z-install-guide');
+  await expect(guide).toBeVisible({ timeout: 10000 });
+  await expect(guide.getByRole('heading', { name: 'Add Z to your Home Screen' })).toBeVisible();
+  await expect(guide).toContainText('Add to Home Screen');
+  await page.getByRole('button', { name: 'Maybe later' }).click();
+  await expect(guide).toHaveCount(0);
+  await expect(page.locator('#z-safe-start')).toBeVisible();
+  await page.reload();
+  await expect(page.locator('#z-install-guide')).toHaveCount(0);
+  await page.locator('[data-z-install-guide]').click();
+  await expect(page.locator('#z-install-guide')).toBeVisible();
+  await page.getByRole('button', { name: 'Got it' }).click();
+  await expect(page.locator('#z-install-guide')).toHaveCount(0);
+  expect(errors).toEqual([]);
 });
