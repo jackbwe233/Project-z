@@ -17,4 +17,4 @@ $('share-text').addEventListener('click',async()=>{if(!val())return message('Add
 $('copy-text').addEventListener('click',async()=>{if(!val())return message('Add some text first.');try{await navigator.clipboard.writeText(val());message('Text copied.')}catch{message('Copy unavailable; select the text manually.')}});
 $('open-chat').addEventListener('click',()=>{if(!val())return message('Add some text first.');if(window.parent!==window){window.parent.postMessage({type:'z:insert-draft',text:val()},location.origin);return}try{sessionStorage.setItem('project-z:tool-draft:v1',val());location.href='./index.html?z_start=1'}catch{message('Could not transfer text. Use Copy text instead.')}});
 })();
-</script><script src="./z-shell.js?v=1" defer></script></body></html>
+</script><script src="./z-shell.js?v=ux-simple-20261115-1" defer></script></body></html>
