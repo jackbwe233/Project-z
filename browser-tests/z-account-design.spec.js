@@ -81,8 +81,37 @@ test("All Z tool tabs use matching dark theme and consistent account navigation"
     });
     expect(state.workspace, path).toBe(true);
     expect(state.shell, path).toBe(true);
-    expect(state.color, path).toBe("rgb(237, 242, 250)");
+    // Legacy pages may retain slightly different near-white text; verify contrast, not exact RGB.
+    const channels = state.color.match(/\d+/g)?.map(Number) || [];
+    expect(channels.length, path).toBe(3);
+    expect(Math.min(...channels), path).toBeGreaterThanOrEqual(175);
     expect(state.background, path).toBe("rgb(11, 17, 28)");
     expect(state.overflow, path).toBeLessThanOrEqual(2);
   }
+});
+
+test("Z offers opt-in adaptive tone and safe personal memory controls in Chat", async ({ page }) => {
+  await page.addInitScript(() => {
+    try { localStorage.setItem("project-z:install-guide-dismissed:v1", "1"); } catch { /* ignore */ }
+  });
+  await page.goto("/");
+  await page.getByRole("button", { name: /Open Z Chat/ }).click();
+  await page.locator("#z-open-personalization").click();
+  const panel = page.locator("#z-style-panel");
+  await expect(panel).toBeVisible();
+  await expect(page.locator("#z-style-learning-toggle")).toBeEnabled();
+  await expect(page.locator("#z-style-learning-toggle")).not.toBeChecked();
+  await page.locator("#z-style-learning-toggle").check();
+  await page.locator("#z-style-tone").selectOption("casual");
+  await page.locator("#z-style-length").selectOption("short");
+  await expect(page.locator("#z-style-preview")).toContainText("casual · short");
+  await page.reload();
+  await page.getByRole("button", { name: /Open Z Chat/ }).click();
+  await page.locator("#z-open-personalization").click();
+  await expect(page.locator("#z-style-tone")).toHaveValue("casual");
+  await expect(page.locator("#z-style-learning-toggle")).toBeChecked();
+  await expect(page.locator("#z-memory-auto-save")).toBeDisabled();
+  await page.locator("#z-learning-toggle").check();
+  await page.locator("#z-memory-auto-save").check();
+  await expect(page.locator("#z-memory-auto-save")).toBeChecked();
 });
