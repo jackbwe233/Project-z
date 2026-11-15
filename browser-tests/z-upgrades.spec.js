@@ -40,8 +40,8 @@ test("My Day generates a real task plan and exports calendar events",async({page
  await page.locator("#day-export-ics").click();
  await expect(page.locator("#day-plan-status")).toContainText("Calendar file exported");
 });
-test("Z billing never charges users when subscription service is not configured",async({page})=>{
- await page.goto("/billing.html");
- await expect(page.locator("#start-checkout")).toBeDisabled();
- await expect(page.locator("#billing-status")).toContainText("not live");
+test("Friends-only Z account does not offer payment checkout",async({page})=>{
+ await page.goto("/account.html");
+ await expect(page.getByRole("link",{name:/Z Pro plans/i})).toHaveCount(0);
+ await expect(page.locator("a[href=\"./billing.html\"]")).toHaveCount(0);
 });
