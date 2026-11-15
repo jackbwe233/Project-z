@@ -20,6 +20,34 @@ test('iPhone WebKit: start Z without loading a model, then enter chat', async ({
   expect(errors).toEqual([]);
 });
 
+test('iPhone WebKit: safe model survives old heavyweight preferences and settings changes', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('webllm:prefs', JSON.stringify({
+      selectedModelId: 'gemma4',
+      maxNewTokens: 4096,
+    }));
+  });
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto('/index.html?z_start=1');
+  await expect(page.locator('#chat-scroll')).toBeVisible();
+  await expect(page.locator('#model-picker input[value="lfm2"]')).toBeChecked();
+  await expect(page.locator('#model-picker input[value="gemma4"]')).toBeDisabled();
+  await expect(page.locator('#model-picker input[value="bonsai27b"]')).toBeDisabled();
+  await expect(page.locator('#max-tokens')).toHaveValue('256');
+
+  // Users cannot accidentally allocate a massive GPU cache by increasing replies.
+  await page.locator('#max-tokens').fill('4096');
+  await page.locator('#max-tokens').blur();
+  await expect(page.locator('#max-tokens')).toHaveValue('256');
+
+  await page.locator('#new-chat-btn').click();
+  await expect(page.locator('#model-picker input[value="lfm2"]')).toBeChecked();
+  await page.reload();
+  await expect(page.locator('#model-picker input[value="lfm2"]')).toBeChecked();
+  expect(errors).toEqual([]);
+});
+
 test('iPhone WebKit: import calendar and school deadlines without account sign-in', async ({ page }) => {
   await page.goto('/personal.html');
   const ics = [
