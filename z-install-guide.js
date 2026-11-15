@@ -69,27 +69,24 @@
       addStep(list, "2", "Tap the three-dot menu (⋮).");
       addStep(list, "3", "Select Install app or Add to Home screen, then confirm.");
       note.textContent = "Menu names vary across Android browsers.";
-      if (deferredInstall) {
-        ok.textContent = "Install Z";
-        ok.addEventListener("click", async () => {
-          const prompt = deferredInstall;
-          if (!prompt) return;
-          deferredInstall = null;
-          dismiss(false);
-          try {
-            await prompt.prompt();
-            const choice = await prompt.userChoice;
-            if (choice?.outcome === "accepted") dismiss(true);
-          } catch { /* Built-in instructions still work without a prompt. */ }
-        });
-      }
+      if (deferredInstall) ok.textContent = "Install Z";
     }
     sheet.append(head, intro, list, note, actions);
     overlay.append(backdrop, sheet);
     const hide = () => dismiss(true);
     close.addEventListener("click", hide);
     later.addEventListener("click", hide);
-    ok.addEventListener("click", hide);
+    ok.addEventListener("click", async () => {
+      const prompt = android && deferredInstall;
+      if (!prompt) { hide(); return; }
+      deferredInstall = null;
+      dismiss(false);
+      try {
+        await prompt.prompt();
+        const choice = await prompt.userChoice;
+        if (choice?.outcome === "accepted") dismiss(true);
+      } catch { /* The menu instructions remain available from Plugins. */ }
+    });
     backdrop.addEventListener("click", hide);
     overlay.addEventListener("keydown", event => {
       if (event.key === "Escape") { event.preventDefault(); hide(); }
