@@ -28,7 +28,10 @@ test('every tool page has a clear path back to chat and no JavaScript page error
 test('the simplified tool menu is searchable, keyboard accessible, and keeps active page visible', async ({ page }) => {
   await page.goto('/notes.html');
   const header = page.locator('.z-shell--simple');
-  await expect(header.getByRole('link', { name: 'Notes', exact: true })).toHaveAttribute('aria-current', 'page');
+  const activeNotesLink = (await page.viewportSize()).width <= 760
+    ? page.getByRole('navigation', { name: 'Quick navigation' }).getByRole('link', { name: 'Notes' })
+    : header.locator('.z-shell-links a[href="./notes.html"]');
+  await expect(activeNotesLink).toHaveAttribute('aria-current', 'page');
   await header.locator('.z-shell-more-trigger').click();
   await header.locator('.z-shell-search').fill('calendar');
   await expect(header.locator('.z-shell-more-menu a[href="./google.html"]')).toBeVisible();
