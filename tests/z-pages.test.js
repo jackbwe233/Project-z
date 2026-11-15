@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 const provider = vi.hoisted(() => ({ search: vi.fn() }));
 vi.mock('../lib/exa-search.js', () => ({ ExaMcpSearchProvider: class { search(...args) { return provider.search(...args); } } }));
 async function mount(file, module) {
-  document.body.innerHTML = readFileSync(new URL('../' + file, import.meta.url), 'utf8').match(/<body>([\s\S]*)<script/)[1];
+  document.body.innerHTML = readFileSync(new URL('../' + file, import.meta.url), 'utf8').match(/<body(?:\s[^>]*)?>([\s\S]*)<script/)[1];
   await import(module);
 }
 const $ = id => document.getElementById(id);
