@@ -986,6 +986,33 @@ html.z-boot-returning #z-cinematic-boot {
   #sidebar .z-primary-link{min-height:44px}
 }
 </style>
+<style>
+/* On phones, scroll the *whole* Z sidebar. The previous nested scroller had no
+   remaining height when the brand, shortcuts and conversations grew taller. */
+@media(max-width:768px){
+  #app{height:100dvh!important;min-height:0!important}
+  #app #sidebar{
+    top:0;bottom:0;height:100dvh!important;max-height:100dvh!important;
+    overflow-y:auto!important;overflow-x:hidden!important;
+    -webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;
+    padding-bottom:env(safe-area-inset-bottom);
+    scrollbar-width:thin;
+  }
+  #app #sidebar>.sidebar-brand,
+  #app #sidebar>.sidebar-actions,
+  #app #sidebar>#conversations-block,
+  #app #sidebar>.sidebar-footer{flex-shrink:0!important}
+  #app #sidebar>.sidebar-scroll{
+    flex:0 0 auto!important;
+    min-height:auto!important;
+    overflow:visible!important;
+  }
+  #app #sidebar>.sidebar-footer{margin-top:auto;background:#101c2e}
+  #app #sidebar>#conversations-block #session-list{
+    max-height:160px;overflow-y:auto;-webkit-overflow-scrolling:touch
+  }
+}
+</style>
 </head>
 <body>
 <div id="z-cinematic-boot" aria-hidden="true"><div class="z-boot-halo"></div><div class="z-boot-track"></div><span class="z-boot-glyph">Z</span><div class="z-boot-vignette"></div></div>
