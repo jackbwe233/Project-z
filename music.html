@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Z Music · Discover</title>
 <link rel="icon" href="./favicon.svg">
-<link rel="stylesheet" href="./music.css?v=1">
+<link rel="stylesheet" href="./music.css?v=3">
 </head>
 <body class="z-workspace z-music-page">
 <main class="music-main">
@@ -30,6 +30,10 @@
   <input type="search" id="music-search" maxlength="100" placeholder="Search an artist, song, or sound…" enterkeyhint="search">
   <button type="submit">Find <span aria-hidden="true">↗</span></button>
  </form>
+ <div class="music-start-bar">
+  <button type="button" id="start-discovery" class="music-start-button" aria-controls="swipe-card">▶ Start discovering</button>
+  <span id="start-hint">Tap Start to find music you can preview, save or skip.</span>
+ </div>
  <p class="filter-label">GENRE</p>
  <div class="filter-row" id="genre-filters" role="group" aria-label="Music genre">
   <button type="button" data-genre="All" aria-pressed="true">For you</button>
@@ -69,7 +73,11 @@
     <p id="card-album" class="card-album">Your next favorite is out there.</p>
     <p id="card-reason" class="music-reason">Explore music by genre and mood.</p>
     <div class="preview-row"><button type="button" id="preview-button" disabled aria-label="Play song preview">▶ Preview</button><span id="preview-note">Audio previews where available</span></div>
-    <p class="store-credit">Preview and cover art courtesy of iTunes. <a id="apple-store-link" href="https://music.apple.com/" target="_blank" rel="noopener noreferrer" hidden>View song on Apple Music ↗</a></p>
+    <p class="store-credit">Preview and cover art courtesy of iTunes. <a id="apple-store-link" href="https://music.apple.com/" target="_blank" rel="noopener noreferrer" hidden>Open in Apple Music ↗</a></p>
+    <div class="music-provider-links" aria-label="Other ways to listen">
+      <a id="spotify-song-link" target="_blank" rel="noopener noreferrer" hidden>Find on Spotify</a>
+      <a id="soundcloud-song-link" target="_blank" rel="noopener noreferrer" hidden>Find on SoundCloud</a>
+    </div>
    </div>
    <div class="swipe-stamp swipe-stamp-left">PASS</div><div class="swipe-stamp swipe-stamp-right">SAVED</div>
   </div>
@@ -79,7 +87,7 @@
   <button type="button" id="similar-song" class="swipe-round similar" aria-label="Find more like this song">✦</button>
   <button type="button" id="like-song" class="swipe-round like" aria-label="Save song to playlist">♥</button>
  </div>
- <p class="swipe-hint">← PASS &nbsp; · &nbsp; RIGHT TO SAVE → &nbsp; · &nbsp; ↑ MORE LIKE THIS</p>
+ <p class="swipe-hint">← PASS &nbsp; · &nbsp; RIGHT TO SAVE → &nbsp; · &nbsp; ↑ MORE LIKE THIS. PREVIEW AUDIO IS A SAMPLE, NOT A FULL SONG.</p>
  <p id="discovery-status" class="status" role="status" aria-live="polite"></p>
 </section>
 <section id="music-saved" role="tabpanel" aria-labelledby="tab-saved" hidden>
@@ -116,6 +124,6 @@
 <audio id="music-audio" preload="none"></audio>
 <script src="./z-shell.js?v=ux-simple-20261115-1" defer></script>
 <script src="./music-config.js?v=1" defer></script>
-<script type="module" src="./music.js?v=1"></script>
+<script type="module" src="./music.js?v=3"></script>
 </body>
 </html>

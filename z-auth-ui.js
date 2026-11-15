@@ -1,3 +1,4 @@
+import { getCloudBackup, uploadCloudBackup, applyCloudBackup } from "./lib/z-cloud-backup.js";
 import { Z_AUTH_CONFIG } from "./z-auth-config.js";
 
 /* Email magic-link authentication with Supabase.
@@ -30,6 +31,7 @@ $("mode-signup").addEventListener("click", () => setMode("signup"));
 $("mode-login").addEventListener("click", () => setMode("login"));
 function render(user) {
   $("signed-in").hidden = !user;
+  $("sync-panel").hidden = !user;
   $("email-panel").hidden = Boolean(user);
   $("user-email").textContent = user?.email || "Account";
   if (user) status("");
@@ -38,6 +40,8 @@ function setBusy(value) {
   busy = Boolean(value);
   $("send-link").disabled = busy;
   $("sign-out").disabled = busy;
+  $("sync-upload").disabled = busy;
+  $("sync-restore").disabled = busy;
   $("mode-signup").disabled = busy;
   $("mode-login").disabled = busy;
 }
@@ -76,6 +80,43 @@ $("sign-out").addEventListener("click", async () => {
     status("Signed out of Z on this device. Your locally saved work is unchanged.");
   } catch (error) {
     status("Sign-out failed: " + (error.message || "Please try again."));
+  } finally { setBusy(false); }
+});
+async function syncUser() {
+  if (!client) throw Error("Your account provider is not connected.");
+  const { data, error } = await client.auth.getUser();
+  if (error) throw error;
+  if (!data?.user) throw Error("Your session has expired. Please sign in again.");
+  return data.user;
+}
+function syncMessage(value) { $("sync-status").textContent = value; }
+$("sync-upload").addEventListener("click", async () => {
+  if (busy) return;
+  setBusy(true);
+  try {
+    const user = await syncUser();
+    syncMessage("Checking your existing cloud backup…");
+    const previous = await getCloudBackup(client, user);
+    if (!confirm(previous ? "Replace your cloud backup last saved " + new Date(previous.updatedAt).toLocaleString() + " with THIS DEVICE's My Day, music, and paper data?" : "Upload your My Day, music taste, and paper portfolio to your private account backup?")) { syncMessage("Upload canceled."); return; }
+    await uploadCloudBackup(client, user);
+    syncMessage("Cloud backup saved. On another signed-in device, open Account and tap Restore.");
+  } catch (error) {
+    syncMessage("Cloud upload failed: " + (error.message || "check your connection and setup."));
+  } finally { setBusy(false); }
+});
+$("sync-restore").addEventListener("click", async () => {
+  if (busy) return;
+  setBusy(true);
+  try {
+    const user = await syncUser();
+    syncMessage("Looking for your cloud backup…");
+    const saved = await getCloudBackup(client, user);
+    if (!saved) { syncMessage("No cloud backup exists yet. Upload from your original device first."); return; }
+    if (!confirm("Restore the cloud backup from " + new Date(saved.updatedAt).toLocaleString() + " onto this device? Matching local data will be replaced. A local rollback copy will be kept.")) { syncMessage("Restore canceled."); return; }
+    const count = applyCloudBackup(saved.backup);
+    syncMessage("Restored " + count + " data section(s). Reload My Day, Music, or Paper to see the changes.");
+  } catch (error) {
+    syncMessage("Restore failed: " + (error.message || "check your connection and setup."));
   } finally { setBusy(false); }
 });
 async function init() {
