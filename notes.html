@@ -30,4 +30,4 @@ $('download').addEventListener('click',()=>{const blob=new Blob([current()],{typ
 $('send-chat').addEventListener('click',()=>{const text=current().trim();if(!text||!$('body').value.trim()){notify('Write something first.');return}if(window.parent!==window){window.parent.postMessage({type:'z:insert-draft',text},location.origin);return}try{sessionStorage.setItem('project-z:tool-draft:v1',text);location.href='./index.html?z_start=1'}catch{notify('Could not transfer note. Use Share or Export instead.')}});
 $('share').addEventListener('click',async()=>{try{if(navigator.share){await navigator.share({title:$('title').value||'Z note',text:current()});notify('Share sheet opened.')}else{await navigator.clipboard.writeText(current());notify('Copied for sharing.')}}catch(e){if(e.name!=='AbortError')notify('Sharing unavailable.')}});render();
 })();
-</script><script src="./z-shell.js?v=1" defer></script></body></html>
+</script><script src="./z-shell.js?v=ux-simple-20261115-1" defer></script></body></html>
