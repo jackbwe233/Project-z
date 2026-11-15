@@ -1,0 +1,63 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b111c"><title>Z Work · Project Z</title>
+<style>
+:root{color-scheme:dark;background:#0b111c;color:#eaf2fe;font:15px/1.5 system-ui,-apple-system,sans-serif}
+*{box-sizing:border-box}body{margin:0}main{max-width:900px;margin:0 auto;padding:20px 15px 100px}
+h1{font-size:clamp(32px,6vw,44px);letter-spacing:-.055em;margin:5px 0 9px;line-height:1.12}
+h2{font-size:20px;margin:0 0 10px}.overline{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#aac9f4;font-weight:800}
+p{color:#afc1d9;line-height:1.55}.panel{background:#152237;border:1px solid #3d526f;border-radius:17px;padding:20px;margin:15px 0}
+.label{display:block;font-size:13px;font-weight:700;margin:12px 0 6px}
+textarea,select{width:100%;background:#0d192b;color:#f1f6ff;border:1px solid #567194;border-radius:11px;padding:13px;font:inherit;min-height:45px}
+textarea{min-height:130px;resize:vertical}.buttons{display:flex;flex-wrap:wrap;gap:9px;margin:12px 0}
+button{border:1px solid #58749a;background:#2a4260;color:#ecf5ff;border-radius:11px;padding:11px 16px;font:700 14px system-ui;cursor:pointer;min-height:44px}
+button.primary{background:#c4d8fa;color:#0c1a2e;border-color:#c4d8fa}button:disabled{opacity:.55;cursor:not-allowed}
+:is(button,a,textarea,select):focus-visible{outline:3px solid #cee2ff;outline-offset:3px}
+.step{display:flex;gap:12px;padding:12px 0;border-top:1px solid #374d69}.step:first-child{border:0}
+.bubble{width:29px;height:29px;flex:none;border-radius:50%;display:grid;place-items:center;background:#293f5d;border:1px solid #547297;color:#c8ddff;font-size:12px;font-weight:750}
+.step strong{font-size:14px}.step p{font-size:12px;margin:3px 0}.evidence{border-top:1px solid #374d69;padding:13px 0}
+.evidence a{color:#bed9ff;overflow-wrap:anywhere}.evidence small{display:block;color:#9db1cd;margin-top:4px;overflow-wrap:anywhere}
+.report{width:100%;min-height:230px;font:12px/1.65 ui-monospace,SFMono-Regular,monospace;color:#dceaff}
+.status{min-height:24px;color:#b9d7ff;font-size:13px}.hint{border-left:3px solid #91bdf0;background:#1c304a;padding:13px;border-radius:8px}
+.history-item{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid #39506c;padding:13px 0}
+.history-item strong{display:block;overflow-wrap:anywhere}.history-item small{font-size:12px;color:#9db2cf}
+#work-output[hidden],#research-results[hidden]{display:none}
+@media(max-width:600px){main{padding:12px 12px 96px}.panel{padding:15px}.buttons button{flex:1 1 130px}}
+</style>
+<link rel="stylesheet" href="./z-shell.css?v=2"><script src="./z-shell.js?v=2" defer></script></head>
+<body class="z-workspace"><main>
+<div class="overline">PROJECT Z / WORK</div>
+<h1>Give Z a job.</h1>
+<p>Fast start, visible steps, and approval before saving or sending anything.</p>
+<p class="hint"><strong>Current capabilities:</strong> Z Work makes an instant action plan, creates a coding request, or searches for public sources and prepares a draft. It cannot operate websites, log into other apps, or complete tasks like ChatGPT's cloud computer.</p>
+<section class="panel">
+<h2>Start Work</h2>
+<form id="work-form">
+<label class="label" for="work-task">What should Z work on?</label>
+<textarea id="work-task" maxlength="1200" required placeholder="Example: Research how to start a hockey apparel business, compare sources, and plan next steps."></textarea>
+<label class="label" for="work-mode">Type of task</label>
+<select id="work-mode"><option value="research">Research the web and gather sources</option><option value="plan">Create a step-by-step plan</option><option value="code">Prepare a Project Z coding request</option></select>
+<div class="buttons"><button id="work-run" class="primary" type="submit">Start Work</button><button id="work-stop" type="button" disabled>Stop</button></div>
+</form>
+<p id="work-status" class="status" role="status" aria-live="polite">Ready. Work opens without loading an AI model.</p>
+<div id="work-steps"></div>
+</section>
+<section id="work-output" class="panel" hidden>
+<h2>Work results</h2>
+<div id="research-results" hidden></div>
+<p class="hint">Review before using. Source snippets can be inaccurate or incomplete. Work never places trades, sends messages, or edits accounts.</p>
+<label class="label" for="work-brief">Reviewable brief or plan</label>
+<textarea class="report" id="work-brief" readonly></textarea>
+<div class="buttons">
+<button id="work-copy" type="button">Copy</button>
+<button id="work-save" type="button">Save to this device</button>
+<button id="work-chat" type="button" class="primary">Send to Z Chat</button>
+</div>
+<p id="work-action-status" class="status" role="status"></p>
+</section>
+<section class="panel">
+<h2>Saved jobs</h2>
+<p>Only on this phone or browser. Nothing runs in the background after you leave the page.</p>
+<div id="work-history"></div>
+</section>
+</main><script type="module" src="./z-work-ui.js"></script></body></html>
