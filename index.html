@@ -1521,14 +1521,14 @@ html.z-boot-returning #z-cinematic-boot {
       <div class="z-safe-logo" aria-hidden="true">Z</div>
       <h1>Project Z</h1>
       <p>Your saved chats stay on this device. You can type a question right away.</p>
-      <a href="./install.html" style="display:block;margin:12px 0 7px;padding:12px;border-radius:12px;border:1px solid #6686b0;background:#213951;color:#e4f0ff;font-weight:750;text-decoration:none">↗ Add Z to your Home Screen</a>
+      <a class="z-safe-install" href="./install.html">↗ Add Z to your Home Screen</a>
       <form id="z-launch-ask-form">
         <label for="z-launch-question">Ask Z anything</label>
         <textarea id="z-launch-question" rows="3" maxlength="5000" placeholder="What's on your mind?"></textarea>
         <button type="submit">Ask Z</button>
       </form>
       <p class="z-launch-hint">The first answer may still take time while your phone loads the local AI model.</p>
-      <button id="z-launch-open" type="button">Open saved chats</button><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:11px"><a style="display:block;padding:13px 5px;margin:0;border-radius:12px;border:1px solid #4b5e80" href="./personal.html">Personal</a><a style="display:block;padding:13px 5px;margin:0;border-radius:12px;border:1px solid #4b5e80" href="./quick.html">🎙 Talk</a><a style="display:block;padding:13px 5px;margin:0;border-radius:12px;border:1px solid #4b5e80" href="./plugins.html">Plugins</a><a style="display:block;padding:13px 5px;margin:0;border-radius:12px;border:1px solid #4b5e80" href="./notes.html">Notes</a><a style="display:block;padding:13px 5px;margin:0;border-radius:12px;border:1px solid #4b5e80;grid-column:1 / -1" href="./code-lab.html">⌘ Change Z</a><a style="display:block;padding:13px 5px;margin:0;border-radius:12px;border:1px solid #4b5e80;grid-column:1 / -1" href="./account.html">◯ Create account / Log in</a></div>
+      <button id="z-launch-open" type="button">◯ Open saved chats</button><nav class="z-safe-shortcuts" aria-label="Project Z shortcuts"><a href="./personal.html">♙ Personal</a><a href="./quick.html">♩ Talk</a><a href="./plugins.html">✧ Plugins</a><a href="./notes.html">▤ Notes</a><a class="z-safe-wide" href="./code-lab.html">⌘ Change Z</a><a class="z-safe-wide" href="./account.html">◯ Create account / Log in</a></nav>
       <a href="./recovery.html">Having trouble? Open recovery</a>
       <p id="z-launch-error" hidden>The app couldn't start. Use recovery for a safer way in.</p>
     </div>`;
@@ -1554,6 +1554,77 @@ html.z-boot-returning #z-cinematic-boot {
     #z-safe-start a{display:block;margin:18px 0 0;color:#c5d8f7}
     #z-safe-start #z-launch-error{color:#aa3333}
     #z-safe-start button:focus-visible,#z-safe-start a:focus-visible{outline:3px solid #6a98d3;outline-offset:3px}
+
+    /* Midnight-blue starfield: entirely CSS, safe for iPhone and offline use. */
+    #z-safe-start{
+      background:
+        radial-gradient(ellipse 85% 48% at 50% 6%,rgba(31,102,191,.30),transparent 75%),
+        radial-gradient(ellipse 72% 30% at 55% 100%,rgba(14,60,124,.30),transparent 80%),
+        linear-gradient(165deg,#071730 0%,#030b19 52%,#010308 100%);
+      isolation:isolate;
+      padding:max(16px,env(safe-area-inset-top)) 14px max(18px,env(safe-area-inset-bottom));
+    }
+    #z-safe-start::before,#z-safe-start::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;background-repeat:repeat}
+    #z-safe-start::before{
+      background-image:radial-gradient(1px 1px at 24px 42px,#fff 98%,transparent),radial-gradient(1.5px 1.5px at 143px 93px,#d9eaff 98%,transparent),radial-gradient(1px 1px at 279px 186px,#fff 98%,transparent),radial-gradient(1px 1px at 345px 44px,#b3d1ff 98%,transparent);
+      background-size:370px 250px;opacity:.72;
+    }
+    #z-safe-start::after{
+      background-image:radial-gradient(2px 2px at 77px 155px,#e8f4ff 98%,transparent),radial-gradient(1px 1px at 243px 27px,#fff 98%,transparent),radial-gradient(1px 1px at 321px 224px,#bedaff 98%,transparent);
+      background-size:420px 295px;opacity:.45;
+    }
+    #z-safe-start .z-safe-card{
+      background:linear-gradient(160deg,rgba(14,35,69,.91),rgba(7,20,42,.95) 62%,rgba(4,12,28,.95));
+      border:1px solid rgba(122,178,244,.46);
+      border-radius:28px;
+      box-shadow:0 20px 55px rgba(0,0,0,.5),0 0 30px rgba(60,133,226,.12),inset 0 1px 0 rgba(255,255,255,.07);
+      padding:26px 20px 24px;
+      scrollbar-width:thin;
+    }
+    #z-safe-start .z-safe-logo{
+      display:grid;place-items:center;margin:5px auto 8px;width:82px;height:82px;
+      border-radius:50%;font-size:56px;font-weight:850;line-height:1;letter-spacing:-.09em;
+      color:#eef7ff;text-shadow:0 0 14px #a9d6ff,0 0 35px rgba(67,160,255,.70);
+      background:radial-gradient(circle at 45% 27%,rgba(61,124,217,.48),rgba(10,31,68,.5) 65%,transparent);
+      border:1px solid rgba(139,203,255,.40);
+      box-shadow:0 0 0 7px rgba(102,174,255,.06),0 0 38px rgba(62,151,250,.23);
+    }
+    #z-safe-start h1{font-size:clamp(29px,7vw,35px);letter-spacing:-.045em;color:#f7fbff;margin:8px 0 9px}
+    #z-safe-start p{color:#b7cbe5;line-height:1.5;margin:8px 0 19px;font-size:14px}
+    #z-safe-start .z-safe-install{
+      display:block;margin:13px 0 19px;padding:13px 9px;border-radius:14px;
+      border:1px solid rgba(151,202,255,.7);color:#f4faff;background:linear-gradient(135deg,#244d7e,#172d4e);
+      text-decoration:none;font-weight:740;box-shadow:0 6px 19px rgba(8,49,105,.3);
+    }
+    #z-safe-start label{color:#e5f0ff;margin-bottom:8px;font-weight:720}
+    #z-safe-start textarea{
+      min-height:88px;background:rgba(1,8,20,.72);border:1px solid rgba(125,184,252,.70);
+      border-radius:15px;color:#f4f9ff;box-shadow:inset 0 1px 12px rgba(20,74,135,.16);
+    }
+    #z-safe-start textarea::placeholder{color:#9cb2cf}
+    #z-safe-start button[type="submit"]{
+      color:#07172a;font-weight:800;background:linear-gradient(125deg,#b9dcff,#76b7ff 65%,#a7cbff);
+      border:1px solid rgba(210,236,255,.7);box-shadow:0 6px 23px rgba(67,156,255,.25);
+    }
+    #z-safe-start #z-launch-open{
+      background:linear-gradient(135deg,rgba(41,78,124,.85),rgba(22,48,85,.90));
+      border:1px solid rgba(119,175,239,.57);color:#edf6ff;font-weight:700;
+    }
+    #z-safe-start .z-launch-hint{font-size:11px;margin:12px 0;color:#a8bedb}
+    #z-safe-start .z-safe-shortcuts{
+      display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:13px;
+    }
+    #z-safe-start .z-safe-shortcuts a{
+      min-height:51px;display:flex;align-items:center;justify-content:center;gap:6px;
+      margin:0;padding:10px 5px;border:1px solid rgba(104,151,210,.47);border-radius:13px;
+      background:linear-gradient(140deg,rgba(32,61,99,.56),rgba(11,29,57,.7));
+      color:#d9eaff;text-decoration:none;font-size:14px;font-weight:600;
+    }
+    #z-safe-start .z-safe-shortcuts a.z-safe-wide{grid-column:1/-1}
+    #z-safe-start .z-safe-shortcuts a:hover,#z-safe-start .z-safe-install:hover{border-color:#c0e4ff;filter:brightness(1.12)}
+    #z-safe-start .z-safe-card > a[href="./recovery.html"]{font-size:12px;margin-top:16px;color:#a9c7ee}
+    @media(max-width:390px){#z-safe-start .z-safe-card{padding:21px 15px}#z-safe-start .z-safe-shortcuts a{font-size:13px}}
+
   `;
   document.head.append(style);
   document.body.append(gate);
