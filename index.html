@@ -1382,6 +1382,172 @@ html.z-boot-returning #z-cinematic-boot {
   #app .chat-title-wrap{padding-right:85px!important;}
 }
 </style>
+<style id="z-reference-chat-v3">id="z-reference-chat-v3">
+/* Project Z: screenshot-matched silver/blue chat. CSS-only; preserve chat/model/memory logic. */
+@media(max-width:768px){
+  #app #main{
+    background:
+      radial-gradient(ellipse 80% 28% at 50% 0%,rgba(35,82,144,.16),transparent 78%),
+      linear-gradient(160deg,#030813 0%,#01050b 75%,#030a16 100%)!important;
+  }
+  #app #main .topbar{
+    background:linear-gradient(180deg,#030814 0%,#040a16 100%)!important;
+    border-bottom:1px solid rgba(126,175,221,.22)!important;
+    box-shadow:0 7px 28px rgba(21,79,151,.10)!important;
+    position:relative!important;
+  }
+  #app #main .topbar::after{
+    display:block!important;content:""!important;
+    position:absolute!important;left:18%!important;right:18%!important;bottom:0!important;
+    height:1px!important;background:linear-gradient(90deg,transparent,#9fcaff,transparent)!important;
+    box-shadow:0 0 12px 2px rgba(96,168,255,.28)!important;pointer-events:none!important;
+  }
+  #app .chat-title-wrap{
+    padding-right:90px!important;justify-content:center!important;
+  }
+  #app .z-chat-wordmark{
+    font-size:clamp(16px,4.4vw,20px)!important;letter-spacing:-.035em!important;
+    color:#dbeaff!important;text-shadow:0 0 15px rgba(117,181,253,.36)!important;
+  }
+  #app .z-chat-orbit{
+    font-size:26px!important;color:#9ccdfc!important;
+    text-shadow:0 0 12px rgba(119,190,255,.75)!important;
+  }
+  #app .chat-title:not(.chat-title-input){position:absolute!important;clip-path:inset(50%)!important;width:1px!important;height:1px!important;overflow:hidden!important;white-space:nowrap!important;}
+  #app #sidebar-toggle{
+    background:linear-gradient(145deg,#12253b,#060e1b)!important;
+    border:1px solid rgba(136,185,231,.48)!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.06)!important;
+  }
+  #app #z-work-top-link{
+    background:linear-gradient(135deg,#33557d,#1b3555)!important;
+    border-color:rgba(173,215,250,.80)!important;
+    box-shadow:inset 0 1px 0 #ffffff25,0 0 14px #6ab3ff25!important;
+    font-size:12px!important;
+  }
+  #app #model-status{
+    border:1px solid rgba(127,178,222,.40)!important;
+    background:linear-gradient(135deg,#0b192c,#06101f)!important;
+    border-radius:14px!important;min-width:0!important;
+    box-shadow:inset 0 1px 0 rgba(214,235,255,.035)!important;
+  }
+  #app #model-status-text{color:#b1c9e2!important;letter-spacing:0!important;}
+  #app #load-model-btn{
+    background:linear-gradient(130deg,#d2e5f2,#89aac8)!important;
+    border-color:#d0e9ff!important;border-radius:13px!important;
+    box-shadow:0 0 13px #70b9fc2a!important;font-weight:750!important;
+  }
+  #app #theme-toggle{
+    border-radius:13px!important;background:#091422!important;
+    border-color:rgba(145,187,231,.38)!important;
+  }
+  #z-tool-link{
+    background:linear-gradient(125deg,#b9d7fb,#8cb5e5)!important;
+    color:#0a1b30!important;border-color:#d5ebff!important;
+    box-shadow:0 0 18px #74b8ff40!important;border-radius:16px!important;
+  }
+  #app .z-voice-drawer > summary{
+    border:1px solid rgba(144,187,231,.43)!important;
+    background:linear-gradient(140deg,#15263c,#091424)!important;
+    color:#e3eeff!important;border-radius:14px!important;
+    box-shadow:inset 0 1px 0 rgba(237,247,255,.055),0 5px 18px rgba(0,0,0,.18)!important;
+    font-size:12px!important;
+  }
+  #app #chat-scroll{
+    background:
+      radial-gradient(ellipse 80% 12% at 50% 100%,rgba(19,65,131,.15),transparent 88%),
+      transparent!important;
+  }
+  #app #chat-messages{gap:13px!important;padding:17px 0 35px!important;}
+  #app #chat-messages .msg-inner{
+    position:relative!important;display:block!important;
+    padding:0 13px!important;
+    max-width:840px!important;margin:0 auto!important;
+  }
+  #app #chat-messages .msg-body{display:block!important;width:100%!important;}
+  #app #chat-messages .msg-inner > .avatar{
+    display:grid!important;position:absolute!important;z-index:2!important;
+    left:clamp(30px,7vw,40px)!important;top:16px!important;
+    width:35px!important;height:35px!important;border-radius:11px!important;
+    background:linear-gradient(145deg,#223d5e,#0e1c2e)!important;
+    border:1px solid rgba(137,184,228,.40)!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.06)!important;
+    color:#dcefff!important;pointer-events:none!important;
+  }
+  #app #chat-messages .msg-inner > .avatar.assistant{
+    background:linear-gradient(145deg,#29476c,#11233c)!important;
+    border-color:rgba(172,215,255,.7)!important;
+    box-shadow:0 0 12px rgba(95,168,249,.27),inset 0 1px 0 rgba(255,255,255,.12)!important;
+    color:#e5f5ff!important;
+  }
+  #app #chat-messages .msg-card{
+    position:relative!important;padding:17px 16px 17px 68px!important;
+    border-radius:20px!important;
+    border:1px solid rgba(137,179,226,.42)!important;
+    background:linear-gradient(140deg,rgba(20,37,58,.96),rgba(7,17,32,.96))!important;
+    box-shadow:inset 0 1px 0 rgba(215,234,255,.042),0 9px 22px #0005,0 0 14px #417dbb12!important;
+    color:#eef5ff!important;
+  }
+  #app #chat-messages .msg.user .msg-card{
+    background:linear-gradient(135deg,#17283b,#0e1a2b)!important;
+    border-color:rgba(122,168,210,.36)!important;
+  }
+  #app #chat-messages .msg-card-head{min-height:28px!important;margin-bottom:6px!important;align-items:flex-start!important;}
+  #app #chat-messages .msg-role{
+    color:#b7d0ed!important;letter-spacing:.025em!important;
+    font:650 12px/1.35 -apple-system,BlinkMacSystemFont,system-ui,sans-serif!important;
+    text-transform:none!important;
+  }
+  #app #chat-messages .msg-content,#app #chat-messages .response-content{
+    color:#f0f5fc!important;font:400 15px/1.56 -apple-system,BlinkMacSystemFont,system-ui,sans-serif!important;
+    letter-spacing:-.012em!important;
+  }
+  #app #chat-messages .msg-footer{
+    border-top:1px solid rgba(147,183,218,.26)!important;
+    margin-top:14px!important;padding-top:11px!important;
+    opacity:.8!important;gap:8px!important;
+  }
+  #app #chat-messages .msg-stats-inline{
+    margin-left:auto!important;
+    font-size:10px!important;color:#94acca!important;
+    text-align:right!important;
+  }
+  #app #chat-messages .msg-head-actions .footer-action{
+    border:1px solid rgba(133,181,227,.32)!important;
+    background:linear-gradient(140deg,#18304a,#0a192a)!important;
+    border-radius:10px!important;color:#c8e0f7!important;
+    box-shadow:inset 0 1px 0 rgba(230,247,255,.05)!important;
+  }
+  #app #composer-area{
+    background:linear-gradient(to top,#020710 63%,rgba(3,10,20,0))!important;
+    padding:11px 13px max(14px,env(safe-area-inset-bottom))!important;
+  }
+  #app #composer-shell{
+    border-radius:25px!important;
+    border:1px solid rgba(172,212,251,.68)!important;
+    background:linear-gradient(130deg,#1a2f47,#091728)!important;
+    box-shadow:inset 0 1px 0 rgba(224,244,255,.08),0 7px 25px #0008,0 0 21px #74baff20!important;
+    min-height:68px!important;
+  }
+  #app #user-input{font-size:16px!important;line-height:1.5!important;min-height:43px!important;}
+  #app #user-input::placeholder{color:#a9c3de!important;}
+  #app #send-btn{
+    border-radius:17px!important;width:46px!important;height:47px!important;flex-basis:46px!important;
+    background:linear-gradient(130deg,#c6e8ff,#80b2e6)!important;
+    box-shadow:0 0 15px #83c6ff30!important;border-color:#e3f7ff!important;
+  }
+  #app #empty-icon{width:86px!important;height:86px!important;border-radius:50%!important;}
+  #app #empty-icon::after{font-size:52px!important;}
+}
+@media(max-width:375px){
+  #app #chat-messages .msg-card{padding-left:59px!important;}
+  #app #chat-messages .msg-inner > .avatar{left:27px!important;width:31px!important;height:31px!important;}
+  #app .chat-title-wrap{padding-right:82px!important;}
+}
+@media(prefers-reduced-motion:reduce){
+  #app #chat-messages .msg-card{transition:none!important;}
+}
+</style>
 </head>
 <body>
 <div id="z-cinematic-boot" aria-hidden="true"><div class="z-boot-halo"></div><div class="z-boot-track"></div><span class="z-boot-glyph">Z</span><div class="z-boot-vignette"></div></div>
