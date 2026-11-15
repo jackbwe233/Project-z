@@ -955,6 +955,37 @@ html.z-boot-returning #z-cinematic-boot {
 .z-style-panel .z-learning-optin{margin:12px 0}
 @media(max-width:580px){.z-style-grid{grid-template-columns:1fr;gap:12px}}
 </style>
+<style>
+/* Z sidebar v2: everyday actions first, everything else in small groups. */
+#sidebar .sidebar-brand{padding:15px 14px 10px;align-items:center;gap:10px}
+#sidebar .sidebar-actions{padding:0 12px 10px}
+#sidebar #new-chat-btn{min-height:44px;margin:0 0 10px;border-radius:12px;font-size:14px;font-weight:750}
+#sidebar .z-primary-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+#sidebar .z-primary-link{display:flex;align-items:center;justify-content:flex-start;gap:8px;min-height:42px;min-width:0;
+  padding:9px 10px;border:1px solid #415771;border-radius:11px;background:#192a41;
+  color:#e5efff!important;text-decoration:none!important;font:650 12px/1.3 system-ui,-apple-system,sans-serif;
+  white-space:nowrap}
+#sidebar .z-primary-link span{font-size:16px;line-height:1;color:#b9d4ff}
+#sidebar .z-primary-link:hover{background:#273d58;border-color:#5b789c}
+#sidebar #conversations-block{margin:0 10px 6px;border-top:1px solid #33465f;padding-top:7px}
+#sidebar #session-list{max-height:176px}
+#sidebar .z-more-links{display:flex;flex-direction:column;gap:4px;padding-top:4px}
+#sidebar .z-more-links a,#sidebar .z-more-links button{display:flex!important;align-items:center!important;justify-content:flex-start!important;
+  width:100%!important;min-height:37px!important;margin:0!important;padding:9px 10px!important;text-align:left!important;
+  border:1px solid transparent!important;border-radius:9px!important;background:transparent!important;
+  box-shadow:none!important;color:#c6d7ed!important;text-decoration:none!important;
+  font:600 12px/1.35 system-ui,-apple-system,sans-serif!important;cursor:pointer}
+#sidebar .z-more-links a:hover,#sidebar .z-more-links button:hover{background:#263b56!important;border-color:#425a78!important}
+#sidebar #z-more-navigation{margin-bottom:8px}
+#sidebar .sidebar-scroll{padding-top:6px}
+#sidebar :is(.z-primary-link,.z-more-links a,.z-more-links button):focus-visible{outline:2px solid #bbd9ff;outline-offset:2px}
+@media(max-width:768px){
+  #sidebar .sidebar-brand{padding-top:10px;padding-bottom:6px}
+  #sidebar .brand-tagline{display:none!important}
+  #sidebar #session-list{max-height:150px}
+  #sidebar .z-primary-link{min-height:44px}
+}
+</style>
 </head>
 <body>
 <div id="z-cinematic-boot" aria-hidden="true"><div class="z-boot-halo"></div><div class="z-boot-track"></div><span class="z-boot-glyph">Z</span><div class="z-boot-vignette"></div></div>
@@ -968,11 +999,14 @@ html.z-boot-returning #z-cinematic-boot {
         <p class="brand-tagline"><strong>LOCAL INTELLIGENCE</strong> · Private chats on this device. Optional web searches use Exa.</p>
       </div>
     </div>
-    <div class="sidebar-actions"><div class="z-feature-links" style="display:flex;gap:6px;margin:8px 0;flex-wrap:wrap"><a href="./personal.html" style="flex:1 1 45%;padding:11px 8px;text-align:center;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);color:var(--text);font:600 12px system-ui;text-decoration:none">✦ Personal</a><a href="./plugins.html" style="flex:1 1 45%;padding:11px 8px;text-align:center;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);color:var(--text);font:600 12px system-ui;text-decoration:none">⚙ Apps & Plugins</a><a href="./quick.html" style="flex:1 1 45%;padding:11px 8px;text-align:center;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);color:var(--text);font:600 12px system-ui;text-decoration:none">🎙 Talk</a><a href="./notes.html" style="flex:1 1 45%;padding:11px 8px;text-align:center;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);color:var(--text);font:600 12px system-ui;text-decoration:none">▤ Notes</a></div>
-      <button type="button" id="z-open-personalization" style="width:100%;margin:5px 0 9px;padding:11px;border:1px solid #4c607b;border-radius:11px;background:#21334c;color:#e0ebfb;font:650 13px system-ui,-apple-system,sans-serif">✧ Personalize Z</button>
-      <a href="./account.html" id="z-account-link" target="_blank" rel="noopener noreferrer" style="display:flex;align-items:center;justify-content:center;gap:9px;margin:5px 0 10px;padding:11px 13px;text-decoration:none;border:1px solid #4c607b;border-radius:11px;background:#21334c;color:#e0ebfb;font:650 13px system-ui,-apple-system,sans-serif">◯ Account · Sign up / Log in</a>
+    <div class="sidebar-actions">
       <button type="button" class="btn-new" id="new-chat-btn"></button>
-      <a href="./code-lab.html" id="z-code-lab-link" style="display:block;margin-top:9px;padding:12px;border-radius:11px;border:1px solid #7296c1;color:#dbeaff;text-align:center;background:#1e3651;font-weight:700;text-decoration:none">⌘ Change Z</a><a href="./command-center.html" id="command-center-link" style="display:block;margin-top:10px;padding:10px 14px;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);color:var(--text);font-size:13px;font-weight:600;text-align:center;text-decoration:none" aria-label="Open Z Command Center">◈ Open Command Center</a><a id="stock-workbench-link" href="./paper.html" style="display:block;padding:12px;text-align:center;color:#bed7ff;font-weight:700;text-decoration:none">▣ Stock Workbench · Paper</a><a id="stock-research-link" href="./research.html" style="display:block;padding:12px;text-align:center;color:var(--text)">Stock research →</a>
+      <nav class="z-primary-nav" aria-label="Main Z tools">
+        <a href="./personal.html" class="z-primary-link"><span aria-hidden="true">✦</span> My Day</a>
+        <a id="stock-workbench-link" href="./paper.html" class="z-primary-link"><span aria-hidden="true">▣</span> Stocks</a>
+        <a href="./notes.html" class="z-primary-link"><span aria-hidden="true">▤</span> Notes</a>
+        <a href="./plugins.html" class="z-primary-link"><span aria-hidden="true">⚙</span> All Tools</a>
+      </nav>
     </div>
     <details class="side-block" id="conversations-block" open>
       <summary>Conversations <span class="conv-count" id="conv-count"></span></summary>
@@ -984,13 +1018,27 @@ html.z-boot-returning #z-cinematic-boot {
       </div>
     </details>
     <div class="sidebar-scroll">
+      <details class="side-block" id="z-more-navigation">
+        <summary>More tools & account</summary>
+        <div class="side-block-body z-more-links">
+          <a href="./quick.html">🎙 Voice & Talk</a>
+          <a id="stock-research-link" href="./research.html">⌕ Stock Research</a>
+          <a href="./focus.html">◷ Focus Mode</a>
+          <a href="./google.html">▦ Google Calendar</a>
+          <a href="./code-lab.html" id="z-code-lab-link">⌘ Change Z</a>
+          <a href="./command-center.html" id="command-center-link" aria-label="Open Z Command Center">◈ Command Center</a>
+          <button type="button" id="z-open-personalization">✧ Personalize Z</button>
+          <a href="./account.html" id="z-account-link">◯ Create account / Log in</a>
+          <a href="./install.html">↗ Add Z to Home Screen</a>
+        </div>
+      </details>
       <details class="side-block" id="model-block" open>
         <summary>Model</summary>
         <div class="side-block-body">
           <div class="model-picker" id="model-picker" role="radiogroup" aria-label="Select model"></div>
         </div>
       </details>
-      <details class="side-block" id="system-block" open>
+      <details class="side-block" id="system-block">
         <summary>System prompt</summary>
         <div class="side-block-body">
           <textarea id="system-prompt" placeholder="You are a helpful assistant."></textarea>
