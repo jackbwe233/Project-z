@@ -36,6 +36,9 @@ test('iPhone WebKit: safe model survives old heavyweight preferences and setting
   await expect(page.locator('#model-picker input[value="bonsai27b"]')).toBeDisabled();
   await expect(page.locator('#max-tokens')).toHaveValue('256');
 
+  // Advanced settings live inside the mobile sidebar drawer.
+  await page.locator('#sidebar-toggle').click();
+  await page.locator('#settings-block > summary').click();
   // Users cannot accidentally allocate a massive GPU cache by increasing replies.
   await page.locator('#max-tokens').fill('4096');
   await page.locator('#max-tokens').blur();
