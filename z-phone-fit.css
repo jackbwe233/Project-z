@@ -44,7 +44,7 @@
     min-width: 0;
     width: 100%;
     padding:
-      max(7px, env(safe-area-inset-top))
+      max(16px, env(safe-area-inset-top))
       max(11px, env(safe-area-inset-right))
       7px
       max(11px, env(safe-area-inset-left)) !important;
@@ -260,7 +260,7 @@
   #app #sidebar {
     width: min(90vw, 340px);
     max-width: calc(100vw - env(safe-area-inset-right));
-    padding-top: max(8px, env(safe-area-inset-top)) !important;
+    padding-top: max(16px, env(safe-area-inset-top)) !important;
     padding-bottom: max(12px, env(safe-area-inset-bottom)) !important;
   }
   #app #sidebar .sidebar-scroll {
@@ -334,5 +334,37 @@
     padding-bottom: max(8px, env(safe-area-inset-bottom)) !important;
     padding-left: max(12px, env(safe-area-inset-left)) !important;
     padding-right: max(12px, env(safe-area-inset-right)) !important;
+  }
+}
+
+
+/*
+ * Installed iPhone PWAs and native WKWebViews can draw content beneath
+ * the Dynamic Island/status bar, and some return a zero CSS safe-area inset.
+ * Reserve a touch-safe fallback only when Z is fullscreen/installed.
+ */
+@media (max-width: 768px) and (orientation: portrait) {
+  @media (display-mode: standalone) {
+    #app .topbar {
+      padding-top: max(60px, env(safe-area-inset-top)) !important;
+    }
+    #app #sidebar {
+      padding-top: max(60px, env(safe-area-inset-top)) !important;
+    }
+  }
+  html.z-ios-fullscreen #app .topbar {
+    padding-top: max(60px, env(safe-area-inset-top)) !important;
+  }
+  html.z-ios-fullscreen #app #sidebar {
+    padding-top: max(60px, env(safe-area-inset-top)) !important;
+  }
+}
+/* The menu/close targets remain 44px or more and don't get clipped by a cutout. */
+@media (max-width: 768px) {
+  #app #sidebar-toggle,
+  #app #sidebar-close {
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
   }
 }
