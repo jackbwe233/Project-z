@@ -1027,6 +1027,81 @@ html.z-boot-returning #z-cinematic-boot {
   #app .chat-title{max-width:100%;font-size:13px!important}
 }
 </style>
+
+<style>
+/* Project Z midnight welcome: visual-only. No chat/model behavior changes. */
+#chat-scroll .empty-state {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  color: #c8d8f2;
+  background:
+    radial-gradient(ellipse 72% 50% at 50% 31%, rgba(37, 76, 143, .47), transparent 80%),
+    linear-gradient(160deg, #081b38 0%, #040c1b 56%, #010307 100%);
+}
+#chat-scroll .empty-state::before,
+#chat-scroll .empty-state::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-repeat: repeat;
+}
+#chat-scroll .empty-state::before {
+  opacity: .85;
+  background-image:
+    radial-gradient(1.2px 1.2px at 19px 31px, #ffffff 98%, transparent),
+    radial-gradient(1px 1px at 97px 118px, #dbeafe 98%, transparent),
+    radial-gradient(1.5px 1.5px at 176px 67px, #ffffff 98%, transparent),
+    radial-gradient(1px 1px at 237px 196px, #c6dcff 98%, transparent),
+    radial-gradient(1px 1px at 310px 91px, #ffffff 98%, transparent);
+  background-size: 360px 255px;
+}
+#chat-scroll .empty-state::after {
+  opacity: .5;
+  background-image:
+    radial-gradient(2px 2px at 72px 169px, #eaf3ff 98%, transparent),
+    radial-gradient(1.5px 1.5px at 254px 39px, #ffffff 98%, transparent),
+    radial-gradient(1px 1px at 143px 224px, #aac9ff 98%, transparent);
+  background-size: 410px 300px;
+}
+#chat-scroll .empty-state > * { position: relative; z-index: 1; }
+#chat-scroll .empty-icon {
+  width: 90px;
+  height: 90px;
+  margin-bottom: 25px;
+  border: 1px solid rgba(203,225,255,.55);
+  background: radial-gradient(circle at 34% 24%, #274e8f, #0a1935 63%, #020814);
+  color: #f7fbff;
+  box-shadow: 0 0 0 9px rgba(118,167,242,.055), 0 0 48px rgba(80,148,255,.34), inset 0 1px 16px rgba(255,255,255,.10);
+}
+#chat-scroll .empty-icon .icon svg { width: 43px; height: 43px; }
+#chat-scroll .empty-state h2 {
+  color: #f9fbff;
+  font-size: clamp(26px, 5vw, 38px);
+  font-weight: 750;
+  letter-spacing: -.045em;
+  text-shadow: 0 2px 28px rgba(67,131,237,.28);
+}
+#chat-scroll .empty-state p:not(.empty-cache-hint) { color: #cad8ec; font-size: 15px; }
+#chat-scroll .empty-state .empty-cache-hint,
+#chat-scroll .empty-state .loader-status { color: #a8c0e3; }
+#chat-scroll .empty-state #load-model-btn-hero {
+  color: #fff;
+  background: linear-gradient(135deg, #315d9c, #18355d);
+  border: 1px solid rgba(190,217,255,.45);
+  box-shadow: 0 8px 28px rgba(7,25,59,.45);
+}
+#chat-scroll .empty-state #load-model-btn-hero:hover { background: linear-gradient(135deg, #3b6fb7, #234879); }
+@media (max-width: 768px) {
+  #chat-scroll .empty-state { padding: 38px 20px; }
+  #chat-scroll .empty-icon { width: 76px; height: 76px; margin-bottom: 20px; }
+  #chat-scroll .empty-icon .icon svg { width: 36px; height: 36px; }
+  #chat-scroll .empty-state h2 { font-size: 29px; }
+  #chat-scroll .empty-state p:not(.empty-cache-hint) { font-size: 14px; }
+}
+</style>
 <link rel="stylesheet" href="./z-phone-fit.css?v=iphone-16-17-1">
 </head>
 <body>
