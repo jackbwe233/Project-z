@@ -85,3 +85,16 @@ test('iPhone WebKit: first-visit Home Screen guide appears, closes, and can be r
   await expect(page.locator('#z-install-guide')).toHaveCount(0);
   expect(errors).toEqual([]);
 });
+
+test('iPhone WebKit: startup install link opens real instructions rather than doing nothing', async ({ page }) => {
+  await page.goto('/');
+  const action = page.locator('#z-safe-start a[href="./install.html"]');
+  await expect(action).toBeVisible();
+  await action.click();
+  await expect(page).toHaveURL(/\/install\.html$/);
+  await expect(page.getByRole('heading', { name: 'Put Z on your Home Screen.' })).toBeVisible();
+  await expect(page.locator('#iphone-instructions')).toContainText('Add to Home Screen');
+  await expect(page.getByRole('link', { name: 'Open Z to install' })).toBeVisible();
+  await page.getByRole('link', { name: 'Open Z to install' }).click();
+  await expect(page.locator('#z-safe-start')).toBeVisible();
+});
