@@ -927,6 +927,7 @@ html.z-boot-returning #z-cinematic-boot {
     const navigation = performance.getEntriesByType("navigation")[0];
     const internalReturn = document.referrer &&
       new URL(document.referrer).origin === location.origin &&
+      new URL(document.referrer).pathname !== location.pathname &&
       new URL(document.referrer).pathname.startsWith(
         location.pathname.slice(0, location.pathname.lastIndexOf("/") + 1)
       );
