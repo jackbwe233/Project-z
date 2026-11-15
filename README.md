@@ -10,6 +10,19 @@ Project Z adds a silver-and-white companion interface to the existing browser AI
 - **Dictate** uses browser speech recognition where supported and inserts text for review before sending. **Read reply** speaks the most recent reply on tap. **Stop voice** cancels speech and dictation. Speech recognition may use the browser provider’s online service; no paid API or key is added. iPhone Safari support and permission behavior require device testing.
 - A stylized human-like avatar blinks, breathes and changes during thinking, dictation and speech. Reduced-motion preferences disable animation. The avatar is stylized, not photorealistic.
 
+## Music Finder (swipe to discover)
+
+Open [**Z Music Finder**](https://jackbwe233.github.io/Project-z/music.html) from the main chat sidebar or the shared tool navigation.
+
+- Swipe **right** to save, **left** to skip, **up** to see more from a song's artist; the buttons also work without swipe gestures. Search by artist/song, or pick a genre and a vibe.
+- Song discovery uses Apple's public iTunes Search API. Short clips play when a preview URL is returned. Genre and vibe matches are approximate search terms, not a trained music recommendation model.
+- Likes, skips and inferred favorites stay in browser localStorage under `z-music-finder-v1`, not in a remote profile. Playlists can always be exported as CSV. Clearing website data removes local songs.
+- Playlist export to Spotify uses Authorization Code + PKCE, scopes `playlist-modify-private playlist-modify-public`, Spotify search to match songs, and the current `POST /me/playlists` and `POST /playlists/{id}/items` endpoints. Songs not matched are reported, and playlists are created only when the user taps **Send to Spotify**. Access tokens are kept in sessionStorage.
+- Apple Music uses MusicKit JS authorization and Apple Music catalog search and library playlist creation. Playlist export requires an eligible Apple Music account/subscription and user permission. Unmatched songs are reported.
+- To enable account connections for users, edit **`music-config.js`**: set `spotifyClientId` to your application's *public* Spotify client ID and register the exact deployed `https://.../music.html` redirect URL in the Spotify Developer Dashboard. For Apple Music, provide an HTTPS `appleDeveloperTokenEndpoint` that returns `{"developerToken":"<signed short-lived JWT>"}`. Sign it on a secure backend using your Apple MusicKit key; **never publish the Apple private key or Spotify client secret in this static app**.
+- Spotify and Apple account linking are **not preconfigured** in this repository. Until the app owner sets them up, discovery, local saved songs, and CSV downloads work, but connected-service buttons explain the missing setup.
+- Music discovery does not require loading the chat model. Spotify/Apple catalog data is used for matching selected tracks to playlists, not for training any AI model.
+
 ## Repeating replies
 
 All three runtimes stop generation when the output ends in twelve consecutive copies of a word or short phrase (or a long repeated character block). The repeating output is replaced with a recovery message, and a runtime cache reset is requested where supported. This also stops voice mode from reading a failed reply. Start a new conversation after a loop; switching models can help if it persists. This guard also limits intentionally repetitive output and is not a guarantee of answer quality.
