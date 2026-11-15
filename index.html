@@ -1586,7 +1586,7 @@ html.z-boot-returning #z-cinematic-boot {
 /* Installed iPhone: menu controls must clear the Dynamic Island even when
    older mobile header rules set shorthand padding later in the cascade. */
 @media (max-width:768px) and (orientation:portrait) {
-  html.z-ios-fullscreen #app .topbar {
+  html.z-ios-fullscreen #app #main .topbar {
     padding-top:max(60px,env(safe-area-inset-top))!important;
   }
   html.z-ios-fullscreen #app #sidebar {
