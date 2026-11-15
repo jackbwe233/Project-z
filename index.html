@@ -910,6 +910,37 @@
 <link rel="stylesheet" href="./monochrome.css?v=mono-0.3.0">
 <link rel="stylesheet" href="./future-motion.css?v=2080-2">
 <link rel="stylesheet" href="./z-orbital.css?v=cinematic-centered-2">
+<style>
+/* Returning from Z's tools should never replay the cinematic entrance. */
+html.z-boot-returning #z-cinematic-boot {
+  display: none !important;
+  visibility: hidden !important;
+  animation: none !important;
+}
+</style>
+<script>
+(() => {
+  // Once per tab/app session: show the Z cinematic opening only on the first entry.
+  const key = "project-z:boot-played:v1";
+  try {
+    const navigation = performance.getEntriesByType("navigation")[0];
+    if (sessionStorage.getItem(key) === "1" || navigation?.type === "back_forward") {
+      document.documentElement.classList.add("z-boot-returning");
+    }
+    sessionStorage.setItem(key, "1");
+  } catch {
+    // Browser privacy restrictions must not break Z Chat.
+  }
+  window.addEventListener("pagehide", () => {
+    // BFCache can restore the original document rather than load a new one.
+    // Hide the boot there as well so Safari Back returns directly to Z.
+    document.documentElement.classList.add("z-boot-returning");
+  });
+  window.addEventListener("pageshow", event => {
+    if (event.persisted) document.documentElement.classList.add("z-boot-returning");
+  });
+})();
+</script>
 </head>
 <body>
 <div id="z-cinematic-boot" aria-hidden="true"><div class="z-boot-halo"></div><div class="z-boot-track"></div><span class="z-boot-glyph">Z</span><div class="z-boot-vignette"></div></div>
