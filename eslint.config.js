@@ -4,7 +4,7 @@ import globals from "globals";
 export default [
   js.configs.recommended,
   {
-    files: ["app.js", "z-tools-panel.js", "z-day-badge.js", "z-code-lab.js", "z-paper-ui.js", "lib/**/*.js", "tests/**/*.js", "browser-tests/**/*.js", "playwright.config.js", "scripts/**/*.mjs", "vitest.config.js", "eslint.config.js"],
+    files: ["app.js", "z-tools-panel.js", "z-day-badge.js", "z-code-lab.js", "z-paper-ui.js", "z-install-guide.js", "lib/**/*.js", "tests/**/*.js", "browser-tests/**/*.js", "playwright.config.js", "scripts/**/*.mjs", "vitest.config.js", "eslint.config.js"],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: "module",
