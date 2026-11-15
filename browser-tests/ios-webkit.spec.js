@@ -172,7 +172,7 @@ test('iPhone 16/17: Work, Stocks, Personal and Account tabs avoid horizontal cli
   await page.setViewportSize({ width:402, height:874 });
   for (const path of [
     '/work.html', '/paper.html', '/personal.html', '/plugins.html',
-    '/notes.html', '/account.html', '/google.html', '/install.html'
+    '/notes.html', '/music.html', '/account.html', '/google.html', '/install.html'
   ]) {
     await page.goto(path);
     const box = await page.evaluate(() => {
@@ -234,4 +234,32 @@ test('iPhone Safari: Menu can be tapped and reaches sidebar on compact screens',
   await expect(page.locator('#sidebar')).toHaveClass(/open/);
   await page.locator('#sidebar-close').click();
   await expect(page.locator('#sidebar')).not.toHaveClass(/open/);
+});
+
+test('iPhone WebKit: music discovery card, swipe buttons and playlist are usable', async ({ page }) => {
+  const errors=[];
+  page.on('pageerror', e => errors.push(e.message));
+  const songs = Array.from({length:10},(_,i)=>({
+    kind:'song',trackId:6000+i,trackName:'Discovery '+i,artistName:'Artist '+i,
+    primaryGenreName:'Alternative',trackExplicitness:'notExplicit',
+    trackViewUrl:'https://music.apple.com/us/song/demo-'+i,
+  }));
+  await page.route('https://itunes.apple.com/search**', async route =>
+    route.fulfill({contentType:'application/json',body:JSON.stringify({results:songs})}));
+  await page.setViewportSize({width:402,height:874});
+  await page.goto('/music.html');
+  await expect(page.locator('#card-title')).toContainText('Discovery');
+  await expect(page.locator('#like-song')).toBeEnabled();
+  await page.locator('#like-song').click();
+  await page.locator('#tab-saved').click();
+  await expect(page.locator('#saved-tracks li')).toHaveCount(1);
+  const metrics = await page.evaluate(() => ({
+    overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
+    cardRight:document.querySelector('#swipe-card').getBoundingClientRect().right,
+    font:parseFloat(getComputedStyle(document.querySelector('#playlist-name')).fontSize),
+  }));
+  expect(metrics.overflow).toBeLessThanOrEqual(2);
+  expect(metrics.cardRight).toBeLessThanOrEqual(403);
+  expect(metrics.font).toBeGreaterThanOrEqual(16);
+  expect(errors).toEqual([]);
 });
