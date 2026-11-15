@@ -76,7 +76,12 @@ describe('Research page', () => {
 });
 describe('Chat voice controls', () => {
   async function mountVoice() {
-    document.body.innerHTML = '<textarea id="input"></textarea><textarea id="z-memory"></textarea><p id="z-status"></p><div id="z-avatar"></div><p id="z-voice-status"></p>' + '<input type="checkbox" id="z-learning-toggle"><div id="z-learning-saved"></div><div id="z-learning-suggestions"></div><p id="z-knowledge-count"></p><input id="z-memory-filter"><p id="z-memory-showing"></p><input type="file" id="z-memory-import-file">' + ['z-clear','z-backup','z-import','z-persist','z-mic','z-talk','z-speak','z-quiet'].map(id => `<button id="${id}"></button>`).join('');
+    document.body.innerHTML = '<textarea id="input"></textarea><textarea id="z-memory"></textarea><p id="z-status"></p><div id="z-avatar"></div><p id="z-voice-status"></p>' +
+      '<input type="checkbox" id="z-learning-toggle"><input type="checkbox" id="z-memory-auto-save"><input type="checkbox" id="z-style-learning-toggle">' +
+      '<div id="z-learning-saved"></div><div id="z-learning-suggestions"></div><p id="z-knowledge-count"></p><input id="z-memory-filter"><p id="z-memory-showing"></p><input type="file" id="z-memory-import-file">' +
+      '<p id="z-personalization-scope"></p><p id="z-style-preview"></p>' +
+      ['z-style-tone','z-style-length','z-style-explanation'].map(id => `<select id="${id}"><option value="auto">Auto</option></select>`).join('') +
+      ['z-style-reset','z-clear','z-backup','z-import','z-persist','z-mic','z-talk','z-speak','z-quiet'].map(id => `<button id="${id}"></button>`).join('');
     const recognizers = [], spoken = [];
     window.SpeechRecognition = class { constructor() { recognizers.push(this); } start() {} abort() {} };
     window.SpeechSynthesisUtterance = class { constructor(text) { this.text = text; } };
