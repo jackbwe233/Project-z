@@ -1,0 +1,120 @@
+name: Z hourly self-check and guarded repair
+
+on:
+  schedule:
+    - cron: "9 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: z-hourly-repair
+  cancel-in-progress: false
+
+jobs:
+  check:
+    name: Audit Z and repair known faults
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout live source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Find and immediately repair safe link/asset problems
+        run: node scripts/z-safe-repair.mjs
+      - name: Install browser test engines
+        run: npx playwright install --with-deps chromium webkit
+      - name: Run code, interaction, mobile and iPhone WebKit tests
+        id: local
+        continue-on-error: true
+        run: |
+          npm run lint
+          npm test
+          npm run test:browser
+      - name: Check that public live pages and scripts respond
+        id: live
+        continue-on-error: true
+        run: node scripts/z-live-probe.mjs
+      - name: Auto-publish ONLY known fixes when ALL tests pass
+        id: publish
+        if: steps.local.outcome == 'success' && steps.live.outcome == 'success'
+        continue-on-error: true
+        run: |
+          if git diff --quiet -- '*.html'; then
+            echo "No known HTML asset/link issues were found."
+            exit 0
+          fi
+          git config user.name "project-z-health-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- '*.html'
+          git diff --cached --quiet && exit 0
+          git commit -m "fix: auto-repair confirmed broken Z internal asset links"
+          git push origin HEAD:master
+          echo "Safely repaired and published known link errors."
+      - name: Summarize health
+        if: always()
+        env:
+          LOCAL: ${{ steps.local.outcome }}
+          LIVE: ${{ steps.live.outcome }}
+          PUBLISH: ${{ steps.publish.outcome }}
+        run: |
+          {
+            echo "## Project Z hourly health check"
+            echo ""
+            echo "- Code, UI, interaction and phone tests: ${LOCAL}"
+            echo "- Deployed website availability: ${LIVE}"
+            echo "- Automatic safe repairs: ${PUBLISH}"
+            echo "- Time: $(date -u +'%Y-%m-%d %H:%M UTC')"
+            echo ""
+            echo "Hourly checks test important buttons and workflows. They do not simulate real microphone access, provider login, or guarantee every feature is defect-free."
+            echo "Unsafe or unknown faults are reported rather than auto-modified."
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Report unrepairable faults as GitHub issues
+        if: steps.local.outcome != 'success' || steps.live.outcome != 'success' || steps.publish.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          LOCAL: ${{ steps.local.outcome }}
+          LIVE: ${{ steps.live.outcome }}
+          PUBLISH: ${{ steps.publish.outcome }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          title="Z hourly health check needs attention"
+          echo "Detected failure; attempting to report incident."
+          issues=$(gh issue list --state open --search "$title in:title" --json number,title --jq '.[] | select(.title == "Z hourly health check needs attention") | .number' 2>/dev/null || true)
+          body="Z's scheduled check found an issue and could not safely fix it automatically.
+
+          - Code and browser tests: ${LOCAL}
+          - Live website: ${LIVE}
+          - Guarded automatic repair: ${PUBLISH}
+          - Debug logs: ${RUN_URL}
+
+          Check the failure logs/artifacts. This bot never changes authentication, payments, secrets, or user data."
+          if [ -n "$issues" ]; then
+            number=$(echo "$issues" | head -n 1)
+            gh issue comment "$number" --body "$body" || true
+          else
+            gh issue create --title "$title" --body "$body" || true
+          fi
+      - name: Upload diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: z-hourly-health-report
+          path: |
+            health-reports/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Fail visibly if any problem is unresolved
+        if: steps.local.outcome != 'success' || steps.live.outcome != 'success' || steps.publish.outcome == 'failure'
+        run: exit 1
