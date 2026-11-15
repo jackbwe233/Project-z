@@ -17,6 +17,7 @@ test("Music Finder discovers songs without a model and builds a saved playlist",
   page.on("pageerror",e=>errors.push(e.message));
   await page.goto("/music.html");
   await expect(page.getByRole("heading",{name:/Find your next favorite/})).toBeVisible();
+  await page.locator("#start-discovery").click();
   await expect(page.locator("#card-title")).toHaveText(/Demo Song/);
   await expect(page.locator("#apple-store-link")).toBeVisible();
   await page.locator("#like-song").click();
@@ -37,6 +38,7 @@ test("Music Finder filters on genre, vibe and discovery style on small screens",
   const errors=[];
   page.on("pageerror",e=>errors.push(e.message));
   await page.goto("/music.html");
+  await page.locator("#start-discovery").click();
   await expect(page.locator("#card-title")).toHaveText(/Demo Song/);
   await page.locator('[data-genre="Indie"]').click();
   await expect(page.locator('[data-genre="Indie"]')).toHaveAttribute("aria-pressed","true");

@@ -29,8 +29,10 @@ function placeholder() {
 function display(song) {
   current = song || null;
   audio.pause();
-  audio.removeAttribute("src");
-  audio.load();
+  if (audio.getAttribute("src")) {
+    audio.removeAttribute("src");
+    audio.load(); // Only reset playback when a clip was actually loaded.
+  }
   $("preview-button").textContent = "▶ Preview";
   $("preview-button").disabled = !song?.preview;
   $("preview-note").textContent = song?.preview ? "Listen to a short preview" : "Preview unavailable";
@@ -76,7 +78,10 @@ function makeChoice(action) {
   if (!current || card.classList.contains("out")) return;
   const song = current;
   profile = recordMusicAction(profile, song, action);
-  persist(); renderSaved(); renderTaste();
+  persist();
+  // Rebuilding hundreds of hidden playlist cards on every swipe freezes iPhones.
+  if (!$("music-saved").hidden) renderSaved();
+  if (!$("music-taste").hidden) renderTaste();
   if (action === "similar") { queue = []; $("music-search").value = ""; }
   const finish = () => {
     if (action === "similar") loadSongs("", song);
@@ -112,9 +117,9 @@ async function searchCatalog(term, signal) {
   url.searchParams.set("media", "music");
   url.searchParams.set("entity", "song");
   url.searchParams.set("country", "US");
-  url.searchParams.set("limit", "80");
+  url.searchParams.set("limit", "35");
   url.searchParams.set("explicit", "No");
-  const response = await fetch(url, { signal });
+  const response = await fetch(url, { signal, cache: "default" });
   if (!response.ok) throw new Error("Music catalog error (" + response.status + ").");
   const data = await response.json();
   const songs = (data.results || []).map(normalizeSong).filter(Boolean).map(song => ({ ...song, sourceQuery: term }));
@@ -123,29 +128,63 @@ async function searchCatalog(term, signal) {
   return songs;
 }
 async function loadSongs(query = "", seedSong = null) {
-  if (controller) controller.abort();
+  // Only one short-running catalog request at a time: Safari may hang otherwise.
+  controller?.abort();
   controller = new AbortController();
+  const request = controller;
   const task = ++sequence;
   const selected = terms(query, seedSong);
   loadCycle++;
+  queue = [];
   display(null);
-  status("Finding tracks for your taste…");
-  $("start-discovery").disabled = true;
+  $("music-discover").setAttribute("aria-busy", "true");
+  $("start-discovery").disabled = false; // Retry must always work, even during a stalled request.
+  $("start-discovery").textContent = "↻ Retry discovery";
+  $("start-hint").textContent = "Searching now. Tap Retry if you want to restart.";
+  status("Searching for songs…");
+  const timeout = setTimeout(() => request.abort("timeout"), 7000);
   try {
-    const outcomes = await Promise.allSettled(selected.map(term => searchCatalog(term, controller.signal)));
-    if (sequence !== task) return;
-    const found = outcomes.filter(x => x.status === "fulfilled").flatMap(x => x.value);
-    if (!found.length && outcomes.every(x => x.status === "rejected"))
-      throw new Error("Cannot reach the music catalog. Check your internet connection.");
-    queue = smartRankSongs(found, profile, { genre: seedSong ? genreFamily(seedSong.genre) : genre, vibe, exploration: seedSong ? "explore" : exploration });
-    if (queue.length) { display(queue.shift()); status(""); $("start-discovery").textContent = "↻ Start fresh"; $("start-hint").textContent = "Preview, swipe, and save tracks to your playlist."; }
-    else status("No new tracks found. Tap Start again, change the genre or vibe, or search an artist.");
+    let found = [];
+    // First relevant query gives a usable card without waiting for 4 slow requests.
+    // Try a second query only when the first returned no usable tracks.
+    for (const term of selected.slice(0, 2)) {
+      if (task !== sequence || request.signal.aborted) return;
+      try {
+        found = await searchCatalog(term, request.signal);
+      } catch (error) {
+        if (request.signal.aborted) throw error;
+        // Another term may have catalog results if the first one fails.
+        continue;
+      }
+      if (found.length) break;
+    }
+    if (task !== sequence) return;
+    if (request.signal.aborted) throw new Error("Music search timed out. Tap Retry or try another genre.");
+    if (!found.length) throw new Error("No songs loaded. Check your connection or try a different genre.");
+    queue = smartRankSongs(found, profile, {
+      genre: seedSong ? genreFamily(seedSong.genre) : genre,
+      vibe, exploration: seedSong ? "explore" : exploration,
+    });
+    if (!queue.length) throw new Error("No new songs in this search. Tap Retry or change your genre.");
+    display(queue.shift());
+    status("");
+    $("start-discovery").textContent = "↻ New songs";
+    $("start-hint").textContent = "Listen to a preview, then swipe left to skip or right to save.";
   } catch (error) {
-    if (sequence === task && error.name !== "AbortError") status(error.message || "Music discovery failed.");
+    if (task !== sequence) return;
+    status(request.signal.aborted ? "Music search timed out or was canceled. Tap Retry." :
+      (error.message || "Music discovery is unavailable. Tap Retry."));
+    $("start-discovery").textContent = "▶ Try again";
+    $("start-hint").textContent = "Your app is still working — you can retry at any time.";
   } finally {
-    if (sequence === task) $("start-discovery").disabled = false;
+    clearTimeout(timeout);
+    if (task === sequence) {
+      controller = null;
+      $("music-discover").setAttribute("aria-busy", "false");
+    }
   }
 }
+
 function renderSaved() {
   const list = $("saved-tracks");
   list.replaceChildren();
@@ -221,9 +260,9 @@ $("like-song").addEventListener("click", () => makeChoice("like"));
 $("similar-song").addEventListener("click", () => makeChoice("similar"));
 $("refresh-songs").addEventListener("click", () => { queue = []; loadSongs(); });
 $("start-discovery")?.addEventListener("click", () => {
-  queue = [];
-  $("start-hint").textContent = "Tap Preview to hear a clip. Swipe right to save or left to skip.";
-  loadSongs($("music-search").value.trim());
+  $("start-hint").textContent = "Starting music discovery…";
+  status("Starting music discovery…");
+  void loadSongs($("music-search").value.trim());
 });
 $("music-search-form").addEventListener("submit", e => { e.preventDefault(); queue = []; loadSongs($("music-search").value.trim()); });
 $("preview-button").addEventListener("click", async () => {
@@ -347,6 +386,8 @@ async function init() {
   if (!hasSpotifySetup() && !hasAppleSetup()) connectionStatus("Music accounts require the app owner to configure developer access. Discovery and CSV playlists already work.");
   try { if (await handleSpotifyCallback()) { connectionStatus("Spotify connected. You can now export playlists."); showTab("taste"); } }
   catch (e) { connectionStatus(e.message); showTab("taste"); }
-  updateConnections(); loadSongs();
+  updateConnections();
+  display(null);
+  status("Ready. Tap Start discovering to find your first song.");
 }
 init();

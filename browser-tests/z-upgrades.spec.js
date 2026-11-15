@@ -9,6 +9,7 @@ test("Music Finder has Start, album art, previews, and streaming search links",a
  await page.route("https://example.com/art600x600bb.jpg",route=>route.fulfill({contentType:"image/svg+xml",body:'<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600"></svg>'}));
  await page.goto("/music.html");
  await expect(page.locator("#start-discovery")).toBeVisible();
+ await page.locator("#start-discovery").click();
  await expect(page.locator("#card-art img")).toBeVisible();
  await expect(page.locator("#preview-button")).toBeEnabled();
  await expect(page.locator("#spotify-song-link")).toHaveAttribute("href",/open.spotify.com\/search/);
