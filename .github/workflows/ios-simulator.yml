@@ -40,6 +40,9 @@ jobs:
           npx cap add ios
           npx cap sync ios
 
+      - name: Apply Z app icon and native permission strings
+        run: bash native-ios/scripts/prepare-ios-release.sh
+
       - name: Compile unsigned iOS Simulator app
         run: |
           xcodebuild \
