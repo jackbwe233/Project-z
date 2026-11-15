@@ -96,6 +96,7 @@ test("Z offers opt-in adaptive tone and safe personal memory controls in Chat", 
   });
   await page.goto("/index.html?z_start=1");
   await expect(page.locator("#z-style-learning-toggle")).toBeEnabled({ timeout: 20000 });
+  if (!await page.locator("#z-open-personalization").isVisible()) await page.locator("#sidebar-toggle").click();
   await page.locator("#z-open-personalization").click();
   const panel = page.locator("#z-style-panel");
   await expect(panel).toBeVisible();
@@ -107,6 +108,7 @@ test("Z offers opt-in adaptive tone and safe personal memory controls in Chat", 
   await expect(page.locator("#z-style-preview")).toContainText("casual · short");
   await page.reload();
   await expect(page.locator("#z-style-learning-toggle")).toBeEnabled({ timeout: 20000 });
+  if (!await page.locator("#z-open-personalization").isVisible()) await page.locator("#sidebar-toggle").click();
   await page.locator("#z-open-personalization").click();
   await expect(page.locator("#z-style-tone")).toHaveValue("casual");
   await expect(page.locator("#z-style-learning-toggle")).toBeChecked();
