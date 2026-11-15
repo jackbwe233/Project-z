@@ -201,3 +201,29 @@ test('Recovery page starts without the main app or touching stored chats', async
   expect(await page.evaluate(() => [...document.scripts].some(s => s.src.includes('/app.js')))).toBe(false);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
+
+test('Z sidebar prioritizes chat and essential tabs while collapsing less-used tools', async ({ page }) => {
+  await page.goto('/');
+  if ((await page.viewportSize()).width < 769) {
+    await expect(page.locator('#sidebar-toggle')).toHaveAttribute('aria-expanded', 'false');
+    await page.locator('#sidebar-toggle').click();
+  }
+  await expect(page.locator('#new-chat-btn')).toBeVisible();
+  const main = page.getByRole('navigation', { name: 'Main Z tools' });
+  await expect(main.getByRole('link', { name: 'My Day' })).toBeVisible();
+  await expect(main.getByRole('link', { name: 'Stocks' })).toBeVisible();
+  await expect(main.getByRole('link', { name: 'Notes' })).toBeVisible();
+  await expect(main.getByRole('link', { name: 'All Tools' })).toBeVisible();
+  await expect(page.locator('#conversations-block')).toHaveAttribute('open', '');
+  await expect(page.locator('#z-more-navigation')).not.toHaveAttribute('open', '');
+  await expect(page.locator('#system-block')).not.toHaveAttribute('open', '');
+  await page.locator('#z-more-navigation > summary').click();
+  await expect(page.locator('#z-open-personalization')).toBeVisible();
+  await expect(page.locator('#z-account-link')).toBeVisible();
+  await expect(page.locator('#z-code-lab-link')).toBeVisible();
+  const install = page.locator('#z-more-navigation a[href="./install.html"]');
+  await expect(install).toBeVisible();
+  await install.click();
+  await expect(page).toHaveURL(/\/install\.html$/);
+  await expect(page.getByRole('heading', { name: 'Put Z on your Home Screen.' })).toBeVisible();
+});
