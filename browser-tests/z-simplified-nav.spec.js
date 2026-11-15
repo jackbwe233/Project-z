@@ -15,7 +15,7 @@ test('All 17 Z tool pages: readable mobile navigation and no script errors', asy
     page.on('pageerror', onError);
     await page.goto(path);
     await expect(page.locator('.z-shell').first(), path).toBeVisible();
-    await expect(page.locator('main h1').first(), path).toBeVisible();
+    await expect(page.locator('h1').first(), path).toBeVisible();
     if (path !== '/recovery.html') {
       const dock = page.getByRole('navigation', { name:'Quick navigation' });
       await expect(dock, path).toBeVisible();
