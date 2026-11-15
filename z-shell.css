@@ -1,7 +1,7 @@
 /* Shared Project Z visual system — secondary pages only.
    Dark blue-gray, quiet surfaces, consistent spacing, minimal navigation.
    Keep form IDs and behavior unchanged so existing tools continue working. */
-html body.z-workspace {
+html body.z-workspace:not(:has(#app)) {
   color-scheme:dark!important;
   --z-bg:#0b111c;
   --z-surface:#151f30;
@@ -17,32 +17,32 @@ html body.z-workspace {
   letter-spacing:-.005em;
   overflow-x:hidden;
 }
-body.z-workspace * {box-sizing:border-box}
-body.z-workspace .z-particle-field {display:none!important}
-body.z-workspace > main,
-body.z-workspace > header,
-body.z-workspace > header > div {
+html body.z-workspace:not(:has(#app)) * {box-sizing:border-box}
+html body.z-workspace:not(:has(#app)) .z-particle-field {display:none!important}
+html body.z-workspace:not(:has(#app)) > main,
+html body.z-workspace:not(:has(#app)) > header,
+html body.z-workspace:not(:has(#app)) > header > div {
   max-width:940px!important;
   margin-left:auto!important;
   margin-right:auto!important;
 }
-body.z-workspace > main{
+html body.z-workspace:not(:has(#app)) > main{
   padding:22px clamp(14px,3.8vw,30px) 92px!important;
   position:relative;z-index:1;
 }
-body.z-workspace > header{
+html body.z-workspace:not(:has(#app)) > header{
   background:none!important;
   border:0!important;
   box-shadow:none!important;
   padding:20px clamp(14px,3.8vw,30px) 2px!important;
 }
-body.z-workspace > header > div{max-width:100%!important}
-body.z-workspace > header h1{margin:8px 0 4px!important}
-body.z-workspace > header p{margin:7px 0 10px!important}
-body.z-workspace > header a,
-body.z-workspace > header nav,
-body.z-workspace main > header {display:none!important}
-body.z-workspace .z-shell{
+html body.z-workspace:not(:has(#app)) > header > div{max-width:100%!important}
+html body.z-workspace:not(:has(#app)) > header h1{margin:8px 0 4px!important}
+html body.z-workspace:not(:has(#app)) > header p{margin:7px 0 10px!important}
+html body.z-workspace:not(:has(#app)) > header a,
+html body.z-workspace:not(:has(#app)) > header nav,
+html body.z-workspace:not(:has(#app)) main > header {display:none!important}
+html body.z-workspace:not(:has(#app)) .z-shell{
   position:sticky;top:0;z-index:250;
   display:flex;gap:16px;align-items:center;
   background:rgba(11,17,28,.94);backdrop-filter:blur(15px);
@@ -50,73 +50,73 @@ body.z-workspace .z-shell{
   padding:9px max(14px,calc((100vw - 940px)/2));
   min-height:64px;
 }
-body.z-workspace .z-shell-brand{
+html body.z-workspace:not(:has(#app)) .z-shell-brand{
   display:flex;align-items:center;gap:10px;
   flex:none;text-decoration:none!important;color:#edf3fe!important;
   font-weight:750;font-size:14px;letter-spacing:.025em;
 }
-body.z-workspace .z-shell-mark{
+html body.z-workspace:not(:has(#app)) .z-shell-mark{
   display:grid;place-items:center;width:35px;height:35px;border-radius:11px;
   background:linear-gradient(135deg,#334b6a,#1c3049);
   border:1px solid #6480a3;color:#e4efff;font-size:22px;
   font-weight:800;font-style:italic;
 }
-body.z-workspace .z-shell-links{
+html body.z-workspace:not(:has(#app)) .z-shell-links{
   display:flex;align-items:center;gap:5px;
   min-width:0;overflow-x:auto;overscroll-behavior-x:contain;
   scrollbar-width:none;padding:4px 0;
 }
-body.z-workspace .z-shell-links::-webkit-scrollbar{display:none}
-body.z-workspace .z-shell-links a{
+html body.z-workspace:not(:has(#app)) .z-shell-links::-webkit-scrollbar{display:none}
+html body.z-workspace:not(:has(#app)) .z-shell-links a{
   white-space:nowrap;flex:none;
   border:1px solid transparent;border-radius:10px;
   color:#abbdd5!important;background:transparent!important;
   padding:9px 11px;text-decoration:none!important;
   font-size:12px;font-weight:650;
 }
-body.z-workspace .z-shell-links a:hover{background:#1c2a3e!important;color:#f1f6ff!important}
-body.z-workspace .z-shell-links a[aria-current="page"]{
+html body.z-workspace:not(:has(#app)) .z-shell-links a:hover{background:#1c2a3e!important;color:#f1f6ff!important}
+html body.z-workspace:not(:has(#app)) .z-shell-links a[aria-current="page"]{
   background:#293b55!important;border-color:#516781!important;color:#eaf3ff!important;
 }
-body.z-workspace h1,body.z-workspace h2,body.z-workspace h3{
+html body.z-workspace:not(:has(#app)) h1,html body.z-workspace:not(:has(#app)) h2,html body.z-workspace:not(:has(#app)) h3{
   color:#f1f5fc!important;letter-spacing:-.03em;
 }
-body.z-workspace h1{font-size:clamp(29px,5vw,42px)!important;font-weight:750!important;line-height:1.15!important}
-body.z-workspace h2{font-size:20px!important;font-weight:720!important;line-height:1.3!important}
-body.z-workspace h3{font-size:16px!important;font-weight:700!important}
-body.z-workspace p,body.z-workspace li{line-height:1.58}
-body.z-workspace .muted,
-body.z-workspace .field-hint,
-body.z-workspace small{color:var(--z-muted)!important}
-body.z-workspace a{color:var(--z-accent)!important}
-body.z-workspace main > section,
-body.z-workspace main > .panel,
-body.z-workspace main > .box,
-body.z-workspace .panel,
-body.z-workspace .box,
-body.z-workspace section.panel{
+html body.z-workspace:not(:has(#app)) h1{font-size:clamp(29px,5vw,42px)!important;font-weight:750!important;line-height:1.15!important}
+html body.z-workspace:not(:has(#app)) h2{font-size:20px!important;font-weight:720!important;line-height:1.3!important}
+html body.z-workspace:not(:has(#app)) h3{font-size:16px!important;font-weight:700!important}
+html body.z-workspace:not(:has(#app)) p,html body.z-workspace:not(:has(#app)) li{line-height:1.58}
+html body.z-workspace:not(:has(#app)) .muted,
+html body.z-workspace:not(:has(#app)) .field-hint,
+html body.z-workspace:not(:has(#app)) small{color:var(--z-muted)!important}
+html body.z-workspace:not(:has(#app)) a{color:var(--z-accent)!important}
+html body.z-workspace:not(:has(#app)) main > section,
+html body.z-workspace:not(:has(#app)) main > .panel,
+html body.z-workspace:not(:has(#app)) main > .box,
+html body.z-workspace:not(:has(#app)) .panel,
+html body.z-workspace:not(:has(#app)) .box,
+html body.z-workspace:not(:has(#app)) section.panel{
   background:var(--z-surface)!important;
   border:1px solid var(--z-border)!important;
   border-radius:16px!important;
   box-shadow:none!important;
 }
-body.z-workspace main > section{margin:16px 0!important;padding:20px!important}
-body.z-workspace .card,
-body.z-workspace .stat,
-body.z-workspace .note,
-body.z-workspace .brief,
-body.z-workspace .item,
-body.z-workspace .notice{
+html body.z-workspace:not(:has(#app)) main > section{margin:16px 0!important;padding:20px!important}
+html body.z-workspace:not(:has(#app)) .card,
+html body.z-workspace:not(:has(#app)) .stat,
+html body.z-workspace:not(:has(#app)) .note,
+html body.z-workspace:not(:has(#app)) .brief,
+html body.z-workspace:not(:has(#app)) .item,
+html body.z-workspace:not(:has(#app)) .notice{
   background:var(--z-surface-2)!important;
   border-color:#40526c!important;
   box-shadow:none!important;
 }
-body.z-workspace .card,
-body.z-workspace .stat,
-body.z-workspace .brief,
-body.z-workspace .notice{border-radius:12px!important}
-body.z-workspace input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
-body.z-workspace textarea,body.z-workspace select{
+html body.z-workspace:not(:has(#app)) .card,
+html body.z-workspace:not(:has(#app)) .stat,
+html body.z-workspace:not(:has(#app)) .brief,
+html body.z-workspace:not(:has(#app)) .notice{border-radius:12px!important}
+html body.z-workspace:not(:has(#app)) input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+html body.z-workspace:not(:has(#app)) textarea,html body.z-workspace:not(:has(#app)) select{
   background:#101b2c!important;
   border:1px solid #495c77!important;
   color:#f0f4fc!important;
@@ -126,9 +126,9 @@ body.z-workspace textarea,body.z-workspace select{
   max-width:100%!important;
   font:inherit!important;
 }
-body.z-workspace input::placeholder,body.z-workspace textarea::placeholder{color:#879bb5!important}
-body.z-workspace button,
-body.z-workspace a.button-link{
+html body.z-workspace:not(:has(#app)) input::placeholder,html body.z-workspace:not(:has(#app)) textarea::placeholder{color:#879bb5!important}
+html body.z-workspace:not(:has(#app)) button,
+html body.z-workspace:not(:has(#app)) a.button-link{
   background:#283c58!important;
   border:1px solid #49617f!important;
   border-radius:11px!important;
@@ -138,40 +138,40 @@ body.z-workspace a.button-link{
   min-height:42px;
   transition:background .15s ease,border-color .15s ease;
 }
-body.z-workspace button:hover,
-body.z-workspace a.button-link:hover{background:#344a67!important;border-color:#647b9e!important}
-body.z-workspace button.primary,
-body.z-workspace .button-link.primary{
+html body.z-workspace:not(:has(#app)) button:hover,
+html body.z-workspace:not(:has(#app)) a.button-link:hover{background:#344a67!important;border-color:#647b9e!important}
+html body.z-workspace:not(:has(#app)) button.primary,
+html body.z-workspace:not(:has(#app)) .button-link.primary{
   background:var(--z-accent)!important;color:#0e1c2e!important;
   border-color:var(--z-accent)!important;
 }
-body.z-workspace button.primary:hover,
-body.z-workspace .button-link.primary:hover{background:#e0ebff!important}
-body.z-workspace button:disabled{opacity:.5!important;cursor:not-allowed}
-body.z-workspace :is(button,a,input,textarea,select):focus-visible{
+html body.z-workspace:not(:has(#app)) button.primary:hover,
+html body.z-workspace:not(:has(#app)) .button-link.primary:hover{background:#e0ebff!important}
+html body.z-workspace:not(:has(#app)) button:disabled{opacity:.5!important;cursor:not-allowed}
+html body.z-workspace:not(:has(#app)) :is(button,a,input,textarea,select):focus-visible{
   outline:3px solid #abcaff!important;outline-offset:2px!important;
 }
-body.z-workspace .tag,
-body.z-workspace .pill{background:#263951!important;border:1px solid #455c7a!important;color:#cbddf7!important}
-body.z-workspace .eyebrow{color:#a9c6f0!important}
-body.z-workspace .danger{color:#ffcdcd!important}
-body.z-workspace .readout,
-body.z-workspace .code{background:#0e1726!important;border-color:#3c506b!important;color:#d3e2f7!important}
-body.z-workspace .z-shell-install{
+html body.z-workspace:not(:has(#app)) .tag,
+html body.z-workspace:not(:has(#app)) .pill{background:#263951!important;border:1px solid #455c7a!important;color:#cbddf7!important}
+html body.z-workspace:not(:has(#app)) .eyebrow{color:#a9c6f0!important}
+html body.z-workspace:not(:has(#app)) .danger{color:#ffcdcd!important}
+html body.z-workspace:not(:has(#app)) .readout,
+html body.z-workspace:not(:has(#app)) .code{background:#0e1726!important;border-color:#3c506b!important;color:#d3e2f7!important}
+html body.z-workspace:not(:has(#app)) .z-shell-install{
   font-size:12px!important;white-space:nowrap;flex:none;
   padding:9px 11px;border:1px solid #49617f;border-radius:11px;
   background:#233854;color:#dceaff!important;text-decoration:none!important;
 }
 @media(max-width:650px){
-  body.z-workspace .z-shell{gap:8px;padding:8px 10px;min-height:57px}
-  body.z-workspace .z-shell-brand{gap:7px;font-size:0}
-  body.z-workspace .z-shell-mark{width:34px;height:34px}
-  body.z-workspace .z-shell-links a{padding:8px 9px;font-size:12px}
-  body.z-workspace .z-shell-install{display:none}
-  body.z-workspace > main{padding:16px 12px 90px!important}
-  body.z-workspace > header{padding:13px 12px 0!important}
-  body.z-workspace main > section{padding:15px!important}
+  html body.z-workspace:not(:has(#app)) .z-shell{gap:8px;padding:8px 10px;min-height:57px}
+  html body.z-workspace:not(:has(#app)) .z-shell-brand{gap:7px;font-size:0}
+  html body.z-workspace:not(:has(#app)) .z-shell-mark{width:34px;height:34px}
+  html body.z-workspace:not(:has(#app)) .z-shell-links a{padding:8px 9px;font-size:12px}
+  html body.z-workspace:not(:has(#app)) .z-shell-install{display:none}
+  html body.z-workspace:not(:has(#app)) > main{padding:16px 12px 90px!important}
+  html body.z-workspace:not(:has(#app)) > header{padding:13px 12px 0!important}
+  html body.z-workspace:not(:has(#app)) main > section{padding:15px!important}
 }
 @media(prefers-reduced-motion:reduce){
-  body.z-workspace button,body.z-workspace a{transition:none!important}
+  html body.z-workspace:not(:has(#app)) button,html body.z-workspace:not(:has(#app)) a{transition:none!important}
 }
