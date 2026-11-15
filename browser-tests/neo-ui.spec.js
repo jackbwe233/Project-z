@@ -24,6 +24,7 @@ test('Mobile navigation can close with X and outside tap', async ({ page }, test
   const sidebar = page.locator('#sidebar');
   const toggle = page.locator('#sidebar-toggle');
   await expect(toggle).toBeVisible();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
   await toggle.click();
   await expect(sidebar).toHaveClass(/open/);
   await expect(page.locator('#sidebar-close')).toBeVisible();
