@@ -2,11 +2,11 @@ name: Build Project Z for iOS Simulator
 
 on:
   workflow_dispatch:
-  push:
-    branches: [master]
-    paths:
-      - ".github/workflows/ios-simulator.yml"
-      - "native-ios/**"
+
+# macOS minutes can be billed; build only when the owner clicks Run workflow.
+concurrency:
+  group: project-z-native-simulator-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
