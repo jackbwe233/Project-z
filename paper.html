@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0a111d">
+<title>Z · Stock Workbench</title>
+<style>
+:root{color-scheme:dark;--bg:#0a111d;--panel:#132039;--line:#344a68;--text:#edf4ff;--muted:#a8b9d3;--accent:#bed4ff;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,sans-serif}
+*{box-sizing:border-box}body{margin:0}a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}main{max-width:920px;margin:auto;padding:22px 16px 100px}
+header,.between,.actions{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+header{margin-bottom:20px}nav{display:flex;flex-wrap:wrap;gap:12px}.eyebrow{text-transform:uppercase;letter-spacing:.15em;font-size:11px;font-weight:750;color:#9ebef2}
+h1{font-size:clamp(30px,6vw,43px);line-height:1.1;letter-spacing:-.055em;margin:9px 0 10px}h2{font-size:20px;margin:0 0 12px}h3{font-size:16px;margin:0 0 9px}p{line-height:1.55}
+.muted,small{color:var(--muted)}.panel{background:var(--panel);border:1px solid var(--line);border-radius:19px;padding:20px;margin:15px 0}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.stat{padding:13px;border:1px solid #3b5273;background:#1b2c46;border-radius:13px}
+.stat span{display:block;color:var(--muted);font-size:12px}.stat strong{font-size:clamp(16px,3vw,22px);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}label{display:block;font-weight:600;font-size:14px;margin:12px 0}
+input,textarea,select{display:block;width:100%;font:inherit;color:var(--text);background:#0b1628;border:1px solid #526886;border-radius:11px;padding:12px;margin:6px 0}
+textarea{min-height:125px;resize:vertical}button{font:650 14px system-ui;cursor:pointer;background:#28415f;color:#eaf3ff;border:1px solid #567399;border-radius:11px;padding:12px 14px;min-height:44px}
+button.primary{background:var(--accent);color:#081526;border-color:var(--accent)}button:disabled{opacity:.55;cursor:not-allowed}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid #c1dbff;outline-offset:2px}
+.actions{justify-content:flex-start}.actions>*{flex:0 1 auto}.notice{padding:12px 14px;border-left:3px solid #a0c7ff;border-radius:8px;background:#1b2e4c}
+.red{color:#ffbfbf}.tag{border:1px solid #4c6486;padding:5px 10px;border-radius:999px;font-size:12px;background:#253b55;color:#d8e9ff}
+.item{padding:14px 0;border-top:1px solid #334a69}.item:first-child{border:0}.item strong,.item p{overflow-wrap:anywhere}
+ol{padding-left:23px}li{margin:9px 0}.step{display:flex;gap:12px;align-items:start;padding:10px 0;border-bottom:1px solid #334a69}.step:last-child{border:0}
+.step-label{display:inline-grid;place-items:center;flex:none;border:1px solid #6080a6;width:27px;height:27px;border-radius:999px;font-size:12px}
+code{font:12px ui-monospace,monospace;background:#0b172a;padding:2px 5px;border-radius:6px}
+.readout{white-space:pre-wrap;overflow-wrap:anywhere;padding:14px;border-radius:12px;background:#0c172a;border:1px solid #304862;max-height:340px;overflow:auto}
+.table-scroller{max-width:100%;overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:520px;text-align:left}
+th,td{padding:10px 9px;border-bottom:1px solid #344865;font-variant-numeric:tabular-nums}th{font-size:12px;color:#bfd2ed}
+#order-preview[hidden],#agent-result[hidden]{display:none}
+@media(max-width:590px){main{padding:16px 12px 100px}.panel{padding:15px}.fields{grid-template-columns:1fr}.grid{gap:7px}.stat{padding:9px}.stat strong{font-size:15px}}
+</style>
+</head><body><main>
+<header><a href="./index.html">← Z Chat</a><nav><a href="./research.html">Research desk</a><a href="./plugins.html">Plugins</a><a href="./code-lab.html">Change Z</a></nav></header>
+<div class="eyebrow">Z / Financial Research Sandbox</div>
+<h1>Stock Workbench.</h1>
+<p class="muted">Research a company, review its sources, and practice portfolio decisions without real money.</p>
+<p class="notice"><strong>Paper simulation only.</strong> Z starts with fictional funds. Prices and fills in the simulator are values you enter—not verified market quotes. No brokerage is connected, and no real orders can be placed.</p>
+
+<section class="panel" id="agent-section">
+<div class="between"><h2>Z Research Agent</h2><span class="tag">On-demand · Reviewable actions</span></div>
+<p class="muted">Give Z a ticker and company. One click runs a bounded workflow: gather official company results, check recent coverage, look for risks, then prepare a source-linked draft. You can stop it at any point.</p>
+<form id="agent-form">
+<div class="fields">
+<label for="agent-symbol">Ticker<input id="agent-symbol" maxlength="12" required placeholder="AAPL" autocapitalize="characters" spellcheck="false"></label>
+<label for="agent-company">Company and exchange<input id="agent-company" maxlength="100" required placeholder="Apple Inc., NASDAQ"></label>
+</div>
+<div class="actions"><button id="agent-start" type="submit" class="primary">Run research workflow</button><button id="agent-stop" type="button" disabled>Stop</button><a href="./research.html">Open detailed research desk →</a></div>
+</form>
+<p id="agent-status" role="status" aria-live="polite" class="muted">Ready. Z won't run research until you ask.</p>
+<div id="agent-steps"></div>
+<div id="agent-result" hidden>
+<h3>Research results</h3><p class="muted">Search results are not verified analysis or live prices. Read the linked sources before making decisions.</p>
+<div id="agent-sources"></div>
+<label for="agent-draft">Reviewable draft for Z Chat</label>
+<textarea id="agent-draft" readonly rows="10"></textarea>
+<div class="actions"><button type="button" id="agent-copy">Copy research</button><button type="button" id="agent-save">Save to Z Notes</button><button type="button" id="agent-chat">Send to Z Chat</button></div>
+<p id="agent-draft-status" role="status" class="muted"></p>
+</div>
+</section>
+
+<section class="panel" id="paper-section">
+<div class="between"><h2>Z Paper Portfolio</h2><span class="tag">SIMULATED</span></div>
+<div class="grid">
+<div class="stat"><span>Simulated cash</span><strong id="paper-cash">$100,000.00</strong></div>
+<div class="stat"><span>Estimated paper equity</span><strong id="paper-equity">$100,000.00</strong></div>
+<div class="stat"><span>Paper P/L vs start</span><strong id="paper-pnl">$0.00</strong></div>
+</div>
+<p class="muted"><small>Starting virtual balance: $100,000. Equity uses your last manually entered reference prices and can be inaccurate. No real money or live market data.</small></p>
+<h3>Review a simulated order</h3>
+<form id="paper-form">
+<div class="fields">
+<label for="paper-symbol">Ticker<input id="paper-symbol" required maxlength="12" placeholder="AAPL" autocapitalize="characters" spellcheck="false"></label>
+<label for="paper-side">Action<select id="paper-side"><option value="buy">Buy (paper)</option><option value="sell">Sell (paper)</option></select></label>
+<label for="paper-shares">Whole shares<input id="paper-shares" type="number" min="1" max="10000" step="1" value="1" required></label>
+<label for="paper-price">Manually entered price ($)<input id="paper-price" required inputmode="decimal" placeholder="Example: 150.00" pattern="[0-9]+(\.[0-9]{1,2})?"></label>
+</div>
+<button class="primary" type="submit">Review paper order</button>
+</form>
+<div id="order-preview" class="notice" hidden>
+<p id="order-description"></p>
+<div class="actions"><button id="paper-approve" class="primary" type="button">Approve SIMULATED order</button><button id="paper-cancel" type="button">Cancel</button></div>
+</div>
+<p id="paper-status" role="status" aria-live="polite" class="muted">All simulated orders require your approval. No automated buying or selling.</p>
+</section>
+
+<section class="panel">
+<h2>Paper holdings</h2><div class="table-scroller"><table><thead><tr><th>Stock</th><th>Paper shares</th><th>Cost basis</th><th>Last reference</th><th>Unrealized P/L</th></tr></thead><tbody id="paper-positions"></tbody></table></div>
+<p class="muted"><small>These are educational book values, not real brokerage balances or performance.</small></p>
+<form id="mark-form"><div class="fields">
+<label for="mark-symbol">Update a holding's reference price<input id="mark-symbol" required maxlength="12" placeholder="Ticker" autocapitalize="characters" spellcheck="false"></label>
+<label for="mark-price">New reference price ($)<input id="mark-price" required inputmode="decimal" placeholder="Example: 155.00"></label>
+</div><button type="submit">Update simulated valuation</button></form>
+<p id="mark-status" role="status" class="muted"></p>
+</section>
+
+<section class="panel">
+<h2>Trade journal</h2><div id="paper-history"></div>
+<div class="actions"><button id="paper-export" type="button">Export simulation backup</button><button id="paper-reset" type="button">Reset paper account</button></div>
+<p class="muted"><small>Stored locally in this browser. Clearing website data can erase your paper portfolio, so export a backup if needed.</small></p>
+</section>
+
+<section class="panel"><h2>Brokerage connections</h2>
+<p><strong>Paper trading:</strong> You can use Z's built-in practice portfolio above right now, without depositing money.</p>
+<p><strong>Real-money trading:</strong> Not available in Z. This static website cannot safely store brokerage secrets, manage regulated account access, or execute authenticated real orders. Z won't place real trades on your behalf.</p>
+<p class="muted"><small>Future enhancements can include a secure, authorized read-only portfolio view and a review workflow, with any age and account-eligibility requirements handled by the provider.</small></p>
+</section>
+</main><script type="module" src="./z-paper-ui.js"></script></body></html>
