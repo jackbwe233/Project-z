@@ -156,3 +156,13 @@ html body.z-music-page {font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe U
 
 /* Prevent automatic keyboard-focus zoom on iPhone Safari. */
 .z-music-page .music-search input,.z-music-page #playlist-name{font-size:16px!important}
+
+/* Start / streaming links keep the discover action usable on iPhone. */
+.z-music-page .music-start-bar{display:flex;align-items:center;gap:13px;flex-wrap:wrap;margin:-5px 0 20px}
+.z-music-page .music-start-button{border:1px solid #d0e1ff!important;background:#bdd3fa!important;color:#0b1730!important;border-radius:13px!important;padding:13px 20px!important;font-weight:800!important;min-height:48px;cursor:pointer}
+.z-music-page .music-start-button:disabled{opacity:.65;cursor:wait}
+.z-music-page #start-hint{color:#9eb4ce;font-size:12px;flex:1;min-width:180px}
+.z-music-page .music-provider-links{display:flex;flex-wrap:wrap;gap:15px;margin-top:10px}
+.z-music-page .music-provider-links a{font-size:12px;color:#b6d8ff;text-decoration:underline;text-underline-offset:3px}
+.z-music-page .music-provider-links a[hidden]{display:none!important}
+@media(max-width:500px){.z-music-page .music-start-button{width:100%}.z-music-page .music-start-bar{gap:7px}}
