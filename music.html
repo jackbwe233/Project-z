@@ -52,6 +52,12 @@
   <button type="button" data-vibe="nostalgic" aria-pressed="false">◷ Nostalgic</button>
   <button type="button" data-vibe="underground" aria-pressed="false">◇ Underground</button>
  </div>
+ <p class="filter-label">DISCOVERY STYLE</p>
+ <div class="filter-row" id="discovery-modes" role="group" aria-label="Discovery style">
+  <button type="button" data-exploration="familiar" aria-pressed="false">More like my likes</button>
+  <button type="button" data-exploration="balanced" aria-pressed="true">Balanced</button>
+  <button type="button" data-exploration="explore" aria-pressed="false">New artists</button>
+ </div>
  <div class="discovery-caption"><span id="discovery-count">READY TO DISCOVER</span><button type="button" id="refresh-songs">↻ New songs</button></div>
  <div class="swipe-stage">
   <div id="swipe-card" class="swipe-card" aria-live="polite">
@@ -61,7 +67,9 @@
     <h2 id="card-title">Find your sound</h2>
     <p id="card-artist">Choose a genre, a vibe, or search an artist.</p>
     <p id="card-album" class="card-album">Your next favorite is out there.</p>
+    <p id="card-reason" class="music-reason">Explore music by genre and mood.</p>
     <div class="preview-row"><button type="button" id="preview-button" disabled aria-label="Play song preview">▶ Preview</button><span id="preview-note">Audio previews where available</span></div>
+    <p class="store-credit">Preview and cover art courtesy of iTunes. <a id="apple-store-link" href="https://music.apple.com/" target="_blank" rel="noopener noreferrer" hidden>View song on Apple Music ↗</a></p>
    </div>
    <div class="swipe-stamp swipe-stamp-left">PASS</div><div class="swipe-stamp swipe-stamp-right">SAVED</div>
   </div>
@@ -103,7 +111,7 @@
  </div>
  <div class="privacy-controls"><button type="button" id="clear-music">Reset my music taste and saved songs</button></div>
 </section>
-<footer class="music-footer">Discovery powered by Apple's public music catalog. Previews may not be available for every track. Matching songs to connected services can be imperfect.</footer>
+<footer class="music-footer">Discovery uses Apple’s public music catalog and approximate text/genre searches; mood is not verified audio analysis. Clips are for song discovery and direct listeners to the store. Matching songs across providers can be imperfect.</footer>
 </main>
 <audio id="music-audio" preload="none"></audio>
 <script src="./z-shell.js?v=1" defer></script>
