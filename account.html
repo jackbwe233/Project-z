@@ -23,7 +23,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #a9c8
 .setup{color:#acbdd5;font-size:14px}
 .setup ol{padding-left:23px}.setup li{margin:9px 0}
 code{font:12px ui-monospace,monospace;background:#0e1a2c;border-radius:5px;padding:3px 5px;overflow-wrap:anywhere}
-#signed-in[hidden],#email-panel[hidden],#setup-required[hidden]{display:none}
+#signed-in[hidden],#email-panel[hidden],#setup-required[hidden],#sync-panel[hidden]{display:none}
 @media(max-width:500px){main{padding:20px 12px 80px}.box{padding:17px}h1{font-size:33px}}
 </style>
 <link rel="stylesheet" href="./z-shell.css?v=1">
@@ -35,8 +35,15 @@ code{font:12px ui-monospace,monospace;background:#0e1a2c;border-radius:5px;paddi
 <section class="box" id="signed-in" hidden>
 <div class="actions" style="justify-content:space-between"><h2>Signed in</h2><span class="pill">Account connected</span></div>
 <p>You are logged in as <strong id="user-email"></strong>.</p>
-<p class="note"><strong>Important:</strong> Your existing Z chats, notes, reminders and paper portfolio are still saved on this device. Signing in does not upload or sync them to the cloud.</p>
+<p class="note"><strong>Important:</strong> Your existing Z chats, notes, reminders and paper portfolio are still saved on this device. They stay on this device until you explicitly choose to upload a secure backup.</p>
 <div class="actions"><a href="./index.html">Back to Z Chat</a><button id="sign-out" type="button">Sign out</button></div>
+</section>
+<section class="box" id="sync-panel" hidden>
+<h2>Secure cross-device backup</h2>
+<p class="muted">Your My Day tasks, saved music taste and paper portfolio can move between signed-in devices. Only you can access your cloud backup when Supabase security rules are configured. Chats are not included.</p>
+<p class="note"><strong>Manual sync for now.</strong> Choose Upload to replace the cloud copy with this device's information, or Restore to download the cloud copy. Nothing is silently overwritten.</p>
+<div class="actions"><button type="button" id="sync-upload" class="primary">Upload this device's data</button><button type="button" id="sync-restore">Restore cloud backup</button></div>
+<p id="sync-status" class="status" role="status" aria-live="polite">No data has been sent to the cloud.</p>
 </section>
 <section class="box" id="email-panel" hidden>
 <h2 id="form-heading">Create your account</h2>
@@ -66,7 +73,7 @@ code{font:12px ui-monospace,monospace;background:#0e1a2c;border-radius:5px;paddi
 <section class="box">
 <h2>What an account does</h2>
 <p>Create an email-based identity for Z and sign in or out securely. Your account password and email verification are handled by the authentication provider.</p>
-<p class="note"><strong>No cloud sync yet.</strong> Accounts do not currently synchronize conversations, notes, calendar information or portfolio data between devices. We won't silently upload them when you sign in.</p>
+<p class="note"><strong>Optional cloud backup.</strong> You can upload and restore My Day, music, and paper data manually after enabling secure database access. Conversations and notes are not automatically syna between devices. We won't silently upload them when you sign in.</p>
 <p class="muted">Z can be used without an account. Don't put passwords, banking information, or other sensitive details in your profile or chats.</p>
 <a href="./privacy.html">Read Z's privacy information</a>
 </section>
