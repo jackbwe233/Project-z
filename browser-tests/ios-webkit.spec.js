@@ -193,3 +193,45 @@ test('iPhone 16/17: Work, Stocks, Personal and Account tabs avoid horizontal cli
     if(box.font!=null)expect(box.font,path+' Safari form zoom threshold').toBeGreaterThanOrEqual(16);
   }
 });
+
+
+test('Installed iPhone Z: Menu and Close clear the Dynamic Island and remain reachable', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'standalone', { configurable: true, value: true });
+  });
+  for (const [width,height] of [[375,812],[393,852],[402,874],[440,956]]) {
+    await page.setViewportSize({ width, height });
+    await page.goto('/index.html?z_start=1');
+    await expect(page.locator('#chat-scroll')).toBeVisible();
+    await expect(page.locator('#app')).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.classList.contains('z-ios-fullscreen'))).toBe(true);
+    const menu = page.locator('#sidebar-toggle');
+    const menuBounds = await menu.boundingBox();
+    expect(menuBounds.y, width+'px Menu must clear top cutout').toBeGreaterThanOrEqual(58);
+    expect(menuBounds.height, width+'px Menu tap target').toBeGreaterThanOrEqual(44);
+    expect(menuBounds.y+menuBounds.height).toBeLessThan(height);
+    await menu.click();
+    await expect(page.locator('#sidebar')).toHaveClass(/open/);
+    const close = page.locator('#sidebar-close');
+    const closeBounds = await close.boundingBox();
+    expect(closeBounds.y, width+'px Close must clear top cutout').toBeGreaterThanOrEqual(58);
+    expect(closeBounds.height, width+'px Close tap target').toBeGreaterThanOrEqual(44);
+    await close.click();
+    await expect(page.locator('#sidebar')).not.toHaveClass(/open/);
+    const composerBounds = await page.locator('#composer-shell').boundingBox();
+    expect(composerBounds.y+composerBounds.height, width+'px composer').toBeLessThanOrEqual(height+2);
+  }
+});
+
+test('iPhone Safari: Menu can be tapped and reaches sidebar on compact screens', async ({ page }) => {
+  await page.setViewportSize({width:375,height:812});
+  await page.goto('/index.html?z_start=1');
+  const menu = page.locator('#sidebar-toggle');
+  await expect(menu).toBeVisible();
+  const rect=await menu.boundingBox();
+  expect(rect.y).toBeGreaterThanOrEqual(10);
+  await menu.click();
+  await expect(page.locator('#sidebar')).toHaveClass(/open/);
+  await page.locator('#sidebar-close').click();
+  await expect(page.locator('#sidebar')).not.toHaveClass(/open/);
+});
