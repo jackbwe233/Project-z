@@ -1,0 +1,78 @@
+name: Build Project Z for iOS Simulator
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+    paths:
+      - ".github/workflows/ios-simulator.yml"
+      - "native-ios/**"
+
+permissions:
+  contents: read
+
+jobs:
+  simulator:
+    name: Prepare and build Z native iOS
+    runs-on: macos-26
+    timeout-minutes: 35
+    steps:
+      - name: Checkout Project Z
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Show Xcode
+        run: xcodebuild -version
+
+      - name: Install Capacitor dependencies
+        run: npm install --prefix native-ios --no-audit --no-fund
+
+      - name: Bundle Z web assets
+        run: npm run prepare:web --prefix native-ios
+
+      - name: Generate iOS native project
+        working-directory: native-ios
+        run: |
+          npx cap add ios
+          npx cap sync ios
+
+      - name: Compile unsigned iOS Simulator app
+        run: |
+          xcodebuild \
+            -project native-ios/ios/App/App.xcodeproj \
+            -scheme App \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "$RUNNER_TEMP/ZDerivedData" \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Package simulator app and Xcode project
+        run: |
+          test -d "$RUNNER_TEMP/ZDerivedData/Build/Products/Debug-iphonesimulator/App.app"
+          ditto -c -k --sequesterRsrc --keepParent \
+            "$RUNNER_TEMP/ZDerivedData/Build/Products/Debug-iphonesimulator/App.app" \
+            "$RUNNER_TEMP/Z-iOS-Simulator.zip"
+          tar -czf "$RUNNER_TEMP/Z-iOS-Xcode-Project.tar.gz" \
+            -C native-ios ios
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: project-z-ios-simulator
+          path: |
+            ${{ runner.temp }}/Z-iOS-Simulator.zip
+            ${{ runner.temp }}/Z-iOS-Xcode-Project.tar.gz
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Build notice
+        run: |
+          echo 'The generated .app is for the iOS Simulator only.'
+          echo 'Installing on physical iPhone or TestFlight requires Apple signing.'
+          echo 'Do not upload Apple private keys, provisioning profiles or tokens to this public repository.'
