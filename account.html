@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b111c"><title>Z · Account</title>
+<style>
+:root{color-scheme:dark;font:15px/1.5 system-ui,-apple-system,sans-serif;background:#0b111c;color:#f0f4fb}
+*{box-sizing:border-box}body{margin:0}main{max-width:740px;margin:auto;padding:28px 16px 100px}
+a{color:#c5dafa}h1{font-size:40px;letter-spacing:-.055em;margin:6px 0}h2{font-size:20px;margin:0 0 14px}
+.muted{color:#9fb0c8}.eyebrow{color:#a6c8f1;letter-spacing:.14em;font-size:11px;font-weight:750;text-transform:uppercase}
+.box{background:#151f30;border:1px solid #34465e;border-radius:19px;padding:23px;margin:20px 0}
+label{display:block;font-weight:600;font-size:14px;margin:16px 0 8px}
+input{width:100%;min-height:48px;border-radius:11px;background:#101a29;color:#edf4ff;border:1px solid #4d617a;padding:13px;font:inherit}
+button{min-height:44px;background:#283c58;border:1px solid #49617f;color:#f0f4fb;border-radius:11px;padding:11px 15px;font:650 14px system-ui;cursor:pointer}
+button.primary{background:#c4d8fa;color:#102036;border-color:#c4d8fa}
+button:disabled{opacity:.5;cursor:not-allowed}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #a9c8ff;outline-offset:2px}
+.mode{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:18px 0 13px}
+.mode button[aria-pressed="true"]{background:#344d6d;border-color:#7795bf}
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.status{min-height:30px;color:#bed5f9;margin-top:14px;overflow-wrap:anywhere}
+.pill{font-size:12px;color:#d3e3fb;border-radius:999px;border:1px solid #4d6586;padding:7px 11px;background:#223550}
+.note{padding:14px;background:#1e2d43;border:1px solid #344d69;border-radius:12px}
+.setup{color:#acbdd5;font-size:14px}
+.setup ol{padding-left:23px}.setup li{margin:9px 0}
+code{font:12px ui-monospace,monospace;background:#0e1a2c;border-radius:5px;padding:3px 5px;overflow-wrap:anywhere}
+#signed-in[hidden],#email-panel[hidden],#setup-required[hidden]{display:none}
+@media(max-width:500px){main{padding:20px 12px 80px}.box{padding:17px}h1{font-size:33px}}
+</style>
+<link rel="stylesheet" href="./z-shell.css?v=1">
+<script src="./z-shell.js?v=1" defer></script>
+</head><body><main>
+<p class="eyebrow">Project Z / Your Account</p>
+<h1>Welcome to Z.</h1>
+<p class="muted">Create an account or sign in with a secure email link. No password to remember.</p>
+<section class="box" id="signed-in" hidden>
+<div class="actions" style="justify-content:space-between"><h2>Signed in</h2><span class="pill">Account connected</span></div>
+<p>You are logged in as <strong id="user-email"></strong>.</p>
+<p class="note"><strong>Important:</strong> Your existing Z chats, notes, reminders and paper portfolio are still saved on this device. Signing in does not upload or sync them to the cloud.</p>
+<div class="actions"><a href="./index.html">Back to Z Chat</a><button id="sign-out" type="button">Sign out</button></div>
+</section>
+<section class="box" id="email-panel" hidden>
+<h2 id="form-heading">Create your account</h2>
+<div class="mode" aria-label="Account action">
+<button id="mode-signup" type="button" aria-pressed="true">Create account</button>
+<button id="mode-login" type="button" aria-pressed="false">Log in</button>
+</div>
+<form id="auth-form">
+<label for="account-email">Your email address</label>
+<input id="account-email" type="email" name="email" maxlength="254" autocomplete="email" autocapitalize="off" spellcheck="false" required placeholder="you@example.com">
+<button class="primary" id="send-link" type="submit">Send account link</button>
+</form>
+<p class="muted">We'll email you a secure, one-time link. Open it on the phone or computer you want to sign in on. Don't share that link with anyone.</p>
+<p id="auth-status" class="status" role="status" aria-live="polite"></p>
+</section>
+<section class="box" id="setup-required" hidden>
+<h2>Account registration isn't available yet</h2>
+<p>Project Z's account screen has been built, but the app owner still needs to connect an authentication provider before anyone can create an account. Z will continue working in guest mode.</p>
+<div class="actions"><a href="./index.html">Continue without an account</a><a href="#account-setup">Owner setup instructions</a></div>
+</section>
+<section class="box">
+<h2>What an account does</h2>
+<p>Create an email-based identity for Z and sign in or out securely. Your account password and email verification are handled by the authentication provider.</p>
+<p class="note"><strong>No cloud sync yet.</strong> Accounts do not currently synchronize conversations, notes, calendar information or portfolio data between devices. We won't silently upload them when you sign in.</p>
+<p class="muted">Z can be used without an account. Don't put passwords, banking information, or other sensitive details in your profile or chats.</p>
+<a href="./privacy.html">Read Z's privacy information</a>
+</section>
+<section class="box setup" id="account-setup">
+<details>
+<summary><strong>For the Z owner: turn on account registration</strong></summary>
+<ol>
+<li>Create a project at <a href="https://supabase.com/dashboard" target="_blank" rel="noopener noreferrer">Supabase</a> and open your project's API settings.</li>
+<li>Copy the <strong>Project URL</strong> and the <strong>publishable key</strong> (or legacy anon key). These two values are designed to be public.</li>
+<li>In <a href="https://github.com/jackbwe233/Project-z/blob/master/z-auth-config.js" target="_blank" rel="noopener noreferrer">Z's z-auth-config.js</a>, set <code>url</code> and <code>publishableKey</code> to those values; commit the change.</li>
+<li>In Supabase → Authentication → URL Configuration, set the Site URL to <code>https://jackbwe233.github.io/Project-z/</code> and add <code>https://jackbwe233.github.io/Project-z/account.html</code> to allowed Redirect URLs.</li>
+<li>Enable Email authentication and keep email confirmation turned on. Configure an email sender before wider public use.</li>
+<li>Test sign-up, magic-link login, and sign-out yourself before inviting other people.</li>
+</ol>
+<p>Never put the Supabase <strong>service_role</strong> or secret API key in GitHub or your website. This static app does not have an authenticated backend for private database access.</p>
+<p>If you're launching Z for other people, publish appropriate terms and privacy details first. Email delivery, account security and user deletion requests are the app owner's responsibility.</p>
+</details>
+</section>
+</main>
+<script type="module" src="./z-auth-ui.js"></script>
+</body></html>
