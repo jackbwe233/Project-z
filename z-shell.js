@@ -197,7 +197,7 @@
         const links = make("div","z-page-jump-items");
         sections.forEach((section,index) => {
           const heading = section.querySelector("h2,h3");
-          const name = heading?.textContent?.trim().replace(/\\s+/g," ").slice(0,42);
+          const name = heading?.textContent?.trim().replace(/\s+/g," ").slice(0,42);
           if (!name) return;
           if (!section.id) section.id = "z-section-"+(index+1);
           const link = make("a","",name);
