@@ -66,7 +66,7 @@ test('iPhone WebKit: built-in tools stay in Z without a page restart', async ({ 
   await expect(page.locator('#chat-scroll')).toBeVisible();
 });
 
-test('iPhone WebKit: first-visit Home Screen guide appears, closes, and can be reopened', async ({ page }) => {
+test('iPhone WebKit: first-visit Home Screen guide appears, closes, and install help stays accessible', async ({ page }) => {
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.goto('/');
@@ -79,10 +79,10 @@ test('iPhone WebKit: first-visit Home Screen guide appears, closes, and can be r
   await expect(page.locator('#z-safe-start')).toBeVisible();
   await page.reload();
   await expect(page.locator('#z-install-guide')).toHaveCount(0);
-  await page.locator('[data-z-install-guide]').click();
-  await expect(page.locator('#z-install-guide')).toBeVisible();
-  await page.getByRole('button', { name: 'Got it' }).click();
-  await expect(page.locator('#z-install-guide')).toHaveCount(0);
+  await page.locator('#z-safe-start a[href="./install.html"]').click();
+  await expect(page).toHaveURL(/\/install\.html$/);
+  await expect(page.locator('#iphone-instructions')).toContainText('Add to Home Screen');
+  await expect(page.getByRole('link', { name: 'Open Z to install' })).toBeVisible();
   expect(errors).toEqual([]);
 });
 
