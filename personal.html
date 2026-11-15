@@ -45,4 +45,4 @@ $('export').addEventListener('click',()=>{const data={profile:$('profile').value
 $('notify').addEventListener('click',async()=>{if(!('Notification'in window)){$('notify').textContent='Notifications unsupported';return}if(!isSecureContext){$('notify').textContent='Requires HTTPS';return}const p=await Notification.requestPermission();$('notify').textContent=p==='granted'?'Notifications enabled':'Notifications '+p});
 const notified=new Set();function check(){if(!('Notification'in window)||Notification.permission!=='granted')return;const now=new Date();for(const t of tasks){if(t.done)continue;const d=days(t.date);if(d!==0)continue;const id=t.id+'-'+today();if(notified.has(id))continue;if(t.time){const [h,m]=t.time.split(':').map(Number);if(now.getHours()<h||(now.getHours()===h&&now.getMinutes()<m))continue}notified.add(id);new Notification('Z · Reminder',{body:t.title,tag:id})}}render();check();setInterval(()=>{render();check()},60000);
 })();
-</script><script src="./z-shell.js?v=1" defer></script></body></html>
+</script><script src="./z-shell.js?v=ux-simple-20261115-1" defer></script></body></html>

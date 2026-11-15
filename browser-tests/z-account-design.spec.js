@@ -66,12 +66,19 @@ test("All Z tool tabs use matching dark theme and consistent account navigation"
     "/code-lab.html","/command-center.html","/shortcut.html","/recovery.html"
   ]) {
     await page.goto(path);
-    const nav = page.getByRole("navigation", { name: "Z app navigation" });
-    await expect(nav).toBeVisible();
+    const shell = page.locator(".z-shell");
+    await expect(shell).toBeVisible();
+    // The simplified layout puts Account in the searchable More menu, with
+    // desktop links in the top bar and everyday phone links in the bottom dock.
     if (path === "/paper.html") {
-      await page.locator(".z-shell-more-trigger").click();
+      const nav = page.getByRole("navigation", { name: "Z app navigation" });
+      await expect(nav).toBeVisible();
+      await shell.locator(".z-shell-more-trigger").click();
+      await expect(nav.getByRole("link", { name: "Account" })).toBeVisible();
+    } else {
+      await shell.locator(".z-shell-more-trigger").click();
+      await expect(shell.locator('.z-shell-more-menu a[href="./account.html"]')).toBeVisible();
     }
-    await expect(nav.getByRole("link", { name:"Account" })).toBeVisible();
     const state = await page.evaluate(() => {
       const body = getComputedStyle(document.body);
       return {

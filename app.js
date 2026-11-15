@@ -543,12 +543,8 @@ function loadPrefs() {
       if (typeof p.sidebarOpen.settings === "boolean") $("settings-block").open = p.sidebarOpen.settings;
       if (typeof p.sidebarOpen.storage === "boolean") $("storage-block").open = p.sidebarOpen.storage;
     }
-    // One-time tidy-up: collapse visible chat history without deleting any saved
-    // messages. The user can reopen it and that choice persists normally.
-    if (localStorage.getItem("project-z:compact-history:v1") !== "1") {
-      $("conversations-block").open = false;
-      localStorage.setItem("project-z:compact-history:v1", "1");
-    }
+    // Start with past conversations visible for first-time users. A saved
+    // explicit open/closed preference above still takes precedence.
   } catch {
     // Private browsing and enterprise policies can deny localStorage reads.
   }

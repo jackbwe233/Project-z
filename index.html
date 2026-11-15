@@ -920,9 +920,8 @@ html.z-boot-returning #z-cinematic-boot {
 </style>
 <script>
 (() => {
-  // Replay the short cinematic intro on a fresh app launch, including iPhone
-  // home-screen launches. Do not replay it when navigating back from Z tools.
-  // Previous sessionStorage persistence skipped intros even after reopening.
+  // Keep the intro for the first opening of a tab, not every reload or
+  // return from another tool. Users can still turn it off in Change Z.
   try {
     const navigation = performance.getEntriesByType("navigation")[0];
     const internalReturn = document.referrer &&
@@ -931,8 +930,10 @@ html.z-boot-returning #z-cinematic-boot {
       new URL(document.referrer).pathname.startsWith(
         location.pathname.slice(0, location.pathname.lastIndexOf("/") + 1)
       );
+    const shownInThisTab = sessionStorage.getItem("project-z:boot-shown-tab:v1") === "1";
+    sessionStorage.setItem("project-z:boot-shown-tab:v1", "1");
     if (localStorage.getItem("project-z:boot-mode:v1") === "off" ||
-        navigation?.type === "back_forward" || internalReturn) {
+        shownInThisTab || navigation?.type === "back_forward" || internalReturn) {
       document.documentElement.classList.add("z-boot-returning");
     }
   } catch {
@@ -1548,6 +1549,51 @@ html.z-boot-returning #z-cinematic-boot {
   #app #chat-messages .msg-card{transition:none!important;}
 }
 </style>
+<style id="z-usability-sidebar-v3">
+/* Shared simple sidebar: fewer repeated destinations, readable thumb-sized controls. */
+#sidebar .z-primary-nav {grid-template-columns:repeat(2,minmax(0,1fr));gap:8px!important}
+#sidebar .z-primary-link {
+  min-height:48px!important;
+  padding:11px 10px!important;
+  font-size:13px!important;
+  font-weight:700!important;
+  white-space:normal!important;
+}
+#sidebar #z-work-link {
+  background:#273e5b!important;
+  border:1px solid #6884a8!important;
+  color:#f3f7ff!important;
+  min-height:48px!important;
+  font-size:14px!important;
+  box-shadow:none!important;
+}
+#sidebar .side-block > summary {
+  min-height:45px!important;
+  padding:11px 13px!important;
+  font-size:12px!important;
+  letter-spacing:.04em!important;
+}
+#sidebar .z-more-links a,#sidebar .z-more-links button {min-height:44px!important;font-size:13px!important}
+#sidebar .sidebar-scroll {min-width:0}
+#sidebar .sidebar-footer {padding-bottom:max(14px,env(safe-area-inset-bottom))!important}
+@media (max-width:768px) {
+  #app #sidebar {overscroll-behavior:contain!important;padding-bottom:calc(18px + env(safe-area-inset-bottom))!important}
+  #app #sidebar>.sidebar-scroll {overflow:visible!important;flex:0 0 auto!important}
+  #sidebar #session-list {max-height:min(32dvh,250px)!important;overflow-y:auto!important}
+}
+/* Solid background for readable chat composition on compact phones. */
+#app #composer-shell {background-color:#10213a!important;}
+/* Installed iPhone: menu controls must clear the Dynamic Island even when
+   older mobile header rules set shorthand padding later in the cascade. */
+@media (max-width:768px) and (orientation:portrait) {
+  html.z-ios-fullscreen #app #main .topbar {
+    padding-top:max(60px,env(safe-area-inset-top))!important;
+  }
+  html.z-ios-fullscreen #app #sidebar {
+    padding-top:max(60px,env(safe-area-inset-top))!important;
+  }
+}
+</style>
 </head>
 <body>
 <div id="z-cinematic-boot" aria-hidden="true"><div class="z-boot-halo"></div><div class="z-boot-track"></div><span class="z-boot-glyph">Z</span><div class="z-boot-vignette"></div></div>
@@ -1558,12 +1604,12 @@ html.z-boot-returning #z-cinematic-boot {
       <div class="brand-icon" id="brand-icon"></div>
       <div class="brand-text">
         <h1>Project Z</h1>
-        <p class="brand-tagline"><strong>LOCAL INTELLIGENCE</strong> · Private chats on this device. Optional web searches use Exa.</p>
+        <p class="brand-tagline">Chat, plan, and create in one place.</p>
       </div>
     </div>
     <div class="sidebar-actions">
       <button type="button" class="btn-new" id="new-chat-btn"></button>
-      <a href="./work.html" id="z-work-link" style="display:flex;align-items:center;justify-content:center;gap:8px;margin:0 0 10px;min-height:45px;border-radius:11px;border:1px solid #9eb9df;background:#2b4565;color:#ecf5ff;text-decoration:none;font:750 14px system-ui,-apple-system,sans-serif">✦ Z Work <span style="font-size:11px;color:#bed2ee">Fast start</span></a>
+      <a href="./work.html" id="z-work-link" style="display:flex;align-items:center;justify-content:center;gap:8px;margin:0 0 10px;min-height:45px;border-radius:11px;border:1px solid #9eb9df;background:#2b4565;color:#ecf5ff;text-decoration:none;font:750 14px system-ui,-apple-system,sans-serif">✦ Work</a>
       <nav class="z-primary-nav" aria-label="Main Z tools">
         <a href="./personal.html" class="z-primary-link"><span aria-hidden="true">✦</span> My Day</a>
         <a id="stock-workbench-link" href="./paper.html" class="z-primary-link"><span aria-hidden="true">▣</span> Stocks</a>
@@ -1572,7 +1618,7 @@ html.z-boot-returning #z-cinematic-boot {
         <a href="./plugins.html" class="z-primary-link"><span aria-hidden="true">⚙</span> All Tools</a>
       </nav>
     </div>
-    <details class="side-block" id="conversations-block">
+    <details class="side-block" id="conversations-block" open>
       <summary>Past chats (optional) <span class="conv-count" id="conv-count"></span></summary>
       <div class="side-block-body">
         <div id="session-search-wrap">
@@ -1588,7 +1634,6 @@ html.z-boot-returning #z-cinematic-boot {
           <a href="./quick.html">🎙 Voice & Talk</a>
           <a id="stock-research-link" href="./research.html">⌕ Stock Research</a>
           <a href="./focus.html">◷ Focus Mode</a>
-           <a href="./music.html">♫ Music Finder</a>
           <a href="./google.html">▦ Google Calendar</a>
           <a href="./code-lab.html" id="z-code-lab-link">⌘ Change Z</a>
           <a href="./command-center.html" id="command-center-link" aria-label="Open Z Command Center">◈ Command Center</a>
@@ -1597,7 +1642,7 @@ html.z-boot-returning #z-cinematic-boot {
           <a href="./install.html">↗ Add Z to Home Screen</a>
         </div>
       </details>
-      <details class="side-block" id="model-block" open>
+      <details class="side-block" id="model-block">
         <summary>Model</summary>
         <div class="side-block-body">
           <div class="model-picker" id="model-picker" role="radiogroup" aria-label="Select model"></div>
@@ -1609,7 +1654,7 @@ html.z-boot-returning #z-cinematic-boot {
           <textarea id="system-prompt" placeholder="You are a helpful assistant."></textarea>
         </div>
       </details>
-      <details class="side-block" id="files-block" open>
+      <details class="side-block" id="files-block">
         <summary>Files <span class="conv-count" id="files-count"></span></summary>
         <div class="side-block-body">
           <div class="files-toolbar">
