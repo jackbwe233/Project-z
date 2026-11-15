@@ -942,6 +942,19 @@ html.z-boot-returning #z-cinematic-boot {
   });
 })();
 </script>
+<style>
+.z-style-panel{margin:14px 0 18px;padding:15px;background:#111d2f;border:1px solid #405674;border-radius:15px}
+.z-style-panel h3{margin:0 0 7px;font-size:17px;letter-spacing:-.02em;color:#f1f5ff}
+.z-style-caption,.z-style-scope,.z-style-preview{font-size:12px;color:#b3c7e3;line-height:1.5}
+.z-style-scope{padding:7px 10px;border-radius:9px;background:#243952;border:1px solid #3b5371}
+.z-style-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:12px 0}
+.z-style-grid label{font-size:12px;font-weight:650;color:#d2e0f4;display:block;min-width:0}
+.z-style-grid select{display:block;width:100%;max-width:100%;min-width:0;margin-top:5px;padding:9px 5px;border:1px solid #4d6787;border-radius:9px;background:#16263b;color:#e9f2ff;font-size:12px}
+.z-style-panel button{border:1px solid #4d6787;border-radius:9px;background:#283d59;color:#e8f1ff;padding:9px 12px;font:650 12px system-ui;cursor:pointer}
+.z-style-panel button:disabled{opacity:.55}
+.z-style-panel .z-learning-optin{margin:12px 0}
+@media(max-width:580px){.z-style-grid{grid-template-columns:1fr;gap:12px}}
+</style>
 </head>
 <body>
 <div id="z-cinematic-boot" aria-hidden="true"><div class="z-boot-halo"></div><div class="z-boot-track"></div><span class="z-boot-glyph">Z</span><div class="z-boot-vignette"></div></div>
@@ -956,6 +969,7 @@ html.z-boot-returning #z-cinematic-boot {
       </div>
     </div>
     <div class="sidebar-actions"><div class="z-feature-links" style="display:flex;gap:6px;margin:8px 0;flex-wrap:wrap"><a href="./personal.html" style="flex:1 1 45%;padding:11px 8px;text-align:center;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);color:var(--text);font:600 12px system-ui;text-decoration:none">✦ Personal</a><a href="./plugins.html" style="flex:1 1 45%;padding:11px 8px;text-align:center;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);color:var(--text);font:600 12px system-ui;text-decoration:none">⚙ Apps & Plugins</a><a href="./quick.html" style="flex:1 1 45%;padding:11px 8px;text-align:center;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);color:var(--text);font:600 12px system-ui;text-decoration:none">🎙 Talk</a><a href="./notes.html" style="flex:1 1 45%;padding:11px 8px;text-align:center;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);color:var(--text);font:600 12px system-ui;text-decoration:none">▤ Notes</a></div>
+      <button type="button" id="z-open-personalization" style="width:100%;margin:5px 0 9px;padding:11px;border:1px solid #4c607b;border-radius:11px;background:#21334c;color:#e0ebfb;font:650 13px system-ui,-apple-system,sans-serif">✧ Personalize Z</button>
       <a href="./account.html" id="z-account-link" target="_blank" rel="noopener noreferrer" style="display:flex;align-items:center;justify-content:center;gap:9px;margin:5px 0 10px;padding:11px 13px;text-decoration:none;border:1px solid #4c607b;border-radius:11px;background:#21334c;color:#e0ebfb;font:650 13px system-ui,-apple-system,sans-serif">◯ Account · Sign up / Log in</a>
       <button type="button" class="btn-new" id="new-chat-btn"></button>
       <a href="./code-lab.html" id="z-code-lab-link" style="display:block;margin-top:9px;padding:12px;border-radius:11px;border:1px solid #7296c1;color:#dbeaff;text-align:center;background:#1e3651;font-weight:700;text-decoration:none">⌘ Change Z</a><a href="./command-center.html" id="command-center-link" style="display:block;margin-top:10px;padding:10px 14px;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);color:var(--text);font-size:13px;font-weight:600;text-align:center;text-decoration:none" aria-label="Open Z Command Center">◈ Open Command Center</a><a id="stock-workbench-link" href="./paper.html" style="display:block;padding:12px;text-align:center;color:#bed7ff;font-weight:700;text-decoration:none">▣ Stock Workbench · Paper</a><a id="stock-research-link" href="./research.html" style="display:block;padding:12px;text-align:center;color:var(--text)">Stock research →</a>
@@ -1119,12 +1133,49 @@ html.z-boot-returning #z-cinematic-boot {
 
 
     <details class="z-voice-drawer">
-      <summary>Voice &amp; memory</summary>
+      <summary>Voice, personality &amp; memory</summary>
     <section class="z-companion" aria-label="Project Z companion">
       <div id="z-avatar" class="z-avatar" data-state="idle" role="img" aria-label="Z voice status"><div class="z-head"><i></i><i></i><b></b></div><div class="z-shoulders"></div></div>
       <div class="z-controls"><strong>PROJECT Z</strong><div class="z-buttons"><button id="z-talk" type="button" aria-pressed="false">Talk to Z</button><button id="z-mic" type="button">Dictate</button><button id="z-speak" type="button">Read reply</button><button id="z-quiet" type="button">Stop voice</button></div></div>
       <p id="z-voice-status" role="status" aria-live="polite">Voice off</p><small>Talk to Z sends speech and reads replies. Dictate adds text without sending.</small><details class="z-memory-panel">
   <summary>My memory <span id="z-knowledge-count">0 saved</span></summary>
+  <div class="z-style-panel" id="z-style-panel">
+    <h3>Make Z sound like you</h3>
+    <p class="z-style-caption">Z can adapt its replies to your communication style. It learns writing patterns, not your identity or private traits.</p>
+    <p class="z-style-scope" id="z-personalization-scope" role="status">Loading personal profile…</p>
+    <label class="z-learning-optin" for="z-style-learning-toggle">
+      <input type="checkbox" id="z-style-learning-toggle" disabled>
+      <span><strong>Adapt to how I talk</strong><small>Off by default. Only counts broad writing-style patterns, never saves message text.</small></span>
+    </label>
+    <div class="z-style-grid">
+      <label for="z-style-tone">Tone
+        <select id="z-style-tone" disabled>
+          <option value="auto">Learn from me</option>
+          <option value="casual">Casual</option>
+          <option value="neutral">Friendly</option>
+          <option value="professional">Professional</option>
+        </select>
+      </label>
+      <label for="z-style-length">Answer length
+        <select id="z-style-length" disabled>
+          <option value="auto">Learn from me</option>
+          <option value="short">Short</option>
+          <option value="balanced">Balanced</option>
+          <option value="detailed">Detailed</option>
+        </select>
+      </label>
+      <label for="z-style-explanation">How to explain
+        <select id="z-style-explanation" disabled>
+          <option value="auto">Learn from me</option>
+          <option value="simple">Simple</option>
+          <option value="step-by-step">Step by step</option>
+          <option value="thorough">Thorough</option>
+        </select>
+      </label>
+    </div>
+    <p class="z-style-preview" id="z-style-preview" aria-live="polite">Choose your style or enable learning.</p>
+    <button id="z-style-reset" type="button" disabled>Reset communication style</button>
+  </div>
   <label for="z-memory">Notes for Z (saved as you type)</label>
   <textarea id="z-memory" maxlength="2000" rows="4" placeholder="Only add details you want Z to remember. Avoid passwords, addresses, and private information."></textarea>
   <p>These notes stay on this device. Never save passwords or private information.</p>
@@ -1134,6 +1185,10 @@ html.z-boot-returning #z-cinematic-boot {
       <strong>Suggest new memories</strong>
       <small>Off by default. You choose what Z saves.</small>
     </span>
+  </label>
+  <label class="z-learning-optin" for="z-memory-auto-save">
+    <input type="checkbox" id="z-memory-auto-save" disabled>
+    <span><strong>Automatically remember safe preferences</strong><small>Optional. Save clear interests, goals, and likes without review. You can edit or forget them below. Never save secrets.</small></span>
   </label>
   <div class="z-learning-section">
     <h3>Review suggestions</h3>
