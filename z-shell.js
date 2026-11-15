@@ -32,18 +32,62 @@
     logo.href = "./index.html"; logo.setAttribute("aria-label","Back to Z Chat");
     logo.append(make("span","z-shell-mark","Z"),make("span","","PROJECT Z"));
     shell.append(logo);
-    const nav = make("nav","z-shell-links");
-    nav.setAttribute("aria-label","Z app navigation");
-    pages.forEach(([href,label])=>{
-      const a = make("a","",label);
-      a.href = "./"+href;
-      if (page === href) a.setAttribute("aria-current","page");
-      nav.append(a);
-    });
-    shell.append(nav);
-    const help = make("a","z-shell-install","Install Z");
-    help.href = "./install.html";
-    shell.append(help);
+    if (page === "paper.html") {
+      // Stocks gets a quiet app header, not the crowded 12-tab navigation.
+      shell.classList.add("z-shell--stocks");
+      shell.append(make("span","z-shell-stock-title","Stocks"));
+      const nav = make("nav","z-shell-stock-actions");
+      nav.setAttribute("aria-label","Z app navigation");
+      const chat = make("a","z-shell-stock-chat","← Chat");
+      chat.href = "./index.html";
+      nav.append(chat);
+
+      const menu = make("details","z-shell-more");
+      const trigger = make("summary","z-shell-more-trigger","Menu");
+      trigger.setAttribute("aria-label","More Z apps and tools");
+      const items = make("div","z-shell-more-menu");
+      const links = [
+        ["research.html","Detailed stock research"],
+        ["work.html","Z Work"],
+        ["personal.html","My Day"],
+        ["notes.html","Notes"],
+        ["quick.html","Voice & Talk"],
+        ["focus.html","Focus"],
+        ["plugins.html","All tools"],
+        ["account.html","Account"],
+        ["install.html","Install Z"]
+      ];
+      for (const [href,label] of links) {
+        const a = make("a","",label);
+        a.href = "./"+href;
+        items.append(a);
+      }
+      menu.append(trigger,items);
+      nav.append(menu);
+      shell.append(nav);
+      document.addEventListener("pointerdown", event => {
+        if (menu.open && !menu.contains(event.target)) menu.open = false;
+      });
+      menu.addEventListener("keydown", event => {
+        if (event.key === "Escape") {
+          menu.open = false;
+          trigger.focus();
+        }
+      });
+    } else {
+      const nav = make("nav","z-shell-links");
+      nav.setAttribute("aria-label","Z app navigation");
+      pages.forEach(([href,label])=>{
+        const a = make("a","",label);
+        a.href = "./"+href;
+        if (page === href) a.setAttribute("aria-current","page");
+        nav.append(a);
+      });
+      shell.append(nav);
+      const help = make("a","z-shell-install","Install Z");
+      help.href = "./install.html";
+      shell.append(help);
+    }
     document.body.prepend(shell);
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded",init,{once:true});
