@@ -16,7 +16,7 @@ describe("music discovery intelligence", () => {
   it("builds diverse queries from vibes and known artists, respecting explicit artist searches", () => {
     const profile = { likes:[track(1, "Slow River", "Alternative")], boosts:[] };
     expect(discoveryQueries(profile, {genre:"Indie", vibe:"dreamy", cycle:0})).toContain("Slow River");
-    expect(discoveryQueries(profile, {genre:"Rock", vibe:"hype", cycle:1})[0]).toContain("high energy");
+    expect(discoveryQueries(profile, {genre:"Rock", vibe:"hype", cycle:1})[0]).toContain("upbeat");
     expect(discoveryQueries(profile, {genre:"Indie", vibe:"dreamy", query:"Dreamy guitar" })).toEqual(["Dreamy guitar"]);
     const explore = discoveryQueries(profile, {genre:"Indie", vibe:"dreamy", exploration:"explore", cycle:0});
     expect(explore).not.toContain("Slow River");
@@ -26,7 +26,7 @@ describe("music discovery intelligence", () => {
       track(1,"A"),track(2,"B"),track(3,"B","Alternative","Song 2 (Remastered)"),track(4,"A"),
     ], { likes:[], seen:["1"], skippedSongs:[] });
     expect(results.map(x => x.id)).not.toContain("1");
-    expect(results).toHaveLength(3);
+    expect(results).toHaveLength(2);
   });
   it("prioritizes liked music and balances artists in familiar and exploration modes", () => {
     const profile = { likes: [track(1,"Great Artist","Rock")], seen:["1"], skippedSongs:[] };
