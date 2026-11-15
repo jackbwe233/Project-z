@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   emptyLearningStore, normalizeLearningStore, learnFromUserMessage,
-  setLearningEnabled, approveLearning, forgetLearning, editLearning, selectRelevantMemories,
+  setLearningEnabled, setAutoSave, approveLearning, forgetLearning, editLearning, selectRelevantMemories,
   buildPersonalMemoryContext, exportLearningBundle, importLearningBundle,
   isSensitiveCandidate, readLearningStore, writeLearningStore,
   MAX_SAVED,
@@ -96,6 +96,36 @@ describe("Project Z learning vault", () => {
     expect(imported.manualNotes).toBe("Manual notes");
     expect(imported.learning).toEqual(normalizeLearningStore(vault));
     expect(imported.learning.learnEnabled).toBe(true);
+  });
+
+
+  it("can automatically remember safe interests only after a separate opt-in", () => {
+    const opted = setAutoSave(setLearningEnabled(emptyLearningStore(), true), true);
+    const saved = learnFromUserMessage(opted, "I play hockey every weekend.");
+    expect(saved.change).toBe("saved");
+    expect(saved.store.saved[0].text).toBe("I play hockey every weekend.");
+    expect(saved.store.pending).toHaveLength(0);
+    const blocked = learnFromUserMessage(opted, "I play hockey and my password is 123456.");
+    expect(blocked.change).toBe("none");
+    expect(blocked.store.saved).toHaveLength(0);
+    const off = setLearningEnabled(opted, false);
+    expect(off.autoSave).toBe(false);
+    expect(learnFromUserMessage(off, "I play guitar.").change).toBe("disabled");
+  });
+
+  it("learns preferences and hobbies in everyday language with approval", () => {
+    const opted = setLearningEnabled(emptyLearningStore(), true);
+    for (const message of ["I'm into jazz music.", "My favorite sport is soccer.", "I study Italian every day."]) {
+      expect(learnFromUserMessage(opted, message).change).toBe("suggested");
+    }
+  });
+
+  it("backs up communication style together with memories", () => {
+    const style = { learnEnabled:true, tone:"casual", length:"short", explanation:"simple" };
+    const bundle = exportLearningBundle("I enjoy coding.", emptyLearningStore(), style);
+    const restored = importLearningBundle(bundle);
+    expect(restored.communicationStyle.tone).toBe("casual");
+    expect(restored.communicationStyle.length).toBe("short");
   });
 
   it("rejects unrelated JSON as a memory backup", () => {
