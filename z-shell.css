@@ -307,6 +307,9 @@ html body.z-workspace:not(:has(#app)) .z-shell-more[open] .z-shell-more-trigger 
   border-color:#7c99c0;
   background:#304762;
 }
+html body.z-workspace:not(:has(#app)) .z-shell-more:not([open]) .z-shell-more-menu {
+  display:none;
+}
 html body.z-workspace:not(:has(#app)) .z-shell-more-menu {
   position:absolute;
   right:0;
