@@ -175,3 +175,59 @@ html body.z-workspace:not(:has(#app)) .z-shell-install{
 @media(prefers-reduced-motion:reduce){
   html body.z-workspace:not(:has(#app)) button,html body.z-workspace:not(:has(#app)) a{transition:none!important}
 }
+
+/* iPhone 16/17 and native WKWebView: safe-area and Safari form zoom fixes. */
+@media(max-width:650px){
+  html, html body.z-workspace:not(:has(#app)){
+    width:100%;
+    max-width:100vw;
+    min-width:0;
+    overflow-x:clip!important;
+  }
+  html body.z-workspace:not(:has(#app)) .z-shell{
+    box-sizing:border-box;
+    width:100%;
+    max-width:100vw;
+    min-width:0;
+    padding:
+      max(8px,env(safe-area-inset-top))
+      max(10px,env(safe-area-inset-right))
+      8px
+      max(10px,env(safe-area-inset-left))!important;
+  }
+  html body.z-workspace:not(:has(#app)) .z-shell-links{
+    min-width:0;
+    flex:1 1 auto;
+    max-width:100%;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+  html body.z-workspace:not(:has(#app)) > main{
+    box-sizing:border-box;
+    min-width:0;
+    width:100%!important;
+    max-width:100vw!important;
+    padding:
+      15px
+      max(12px,env(safe-area-inset-right))
+      max(90px,calc(env(safe-area-inset-bottom) + 70px))
+      max(12px,env(safe-area-inset-left))!important;
+  }
+  html body.z-workspace:not(:has(#app)) main > section,
+  html body.z-workspace:not(:has(#app)) main > .panel,
+  html body.z-workspace:not(:has(#app)) main > .box{
+    max-width:100%;
+    min-width:0;
+    overflow-wrap:anywhere;
+  }
+  html body.z-workspace:not(:has(#app)) :is(input:not([type="checkbox"]):not([type="radio"]),textarea,select){
+    font-size:16px!important;
+    min-width:0;
+    max-width:100%;
+  }
+  html body.z-workspace:not(:has(#app)) :is(.table-scroller,pre,.code,.readout){
+    max-width:100%;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+}
