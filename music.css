@@ -145,3 +145,11 @@ html body.z-music-page {font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe U
  .z-music-page .z-shell-install{display:none}
  .z-music-page .z-shell-links a{padding:8px 9px}
 }
+
+.z-music-page .music-reason{
+  display:inline-block;margin:11px 0 0;padding:6px 10px;border:1px solid #38577b;
+  border-radius:9px;color:#b6d1ec;background:#1e344d;font-size:11px;font-weight:650;
+}
+.z-music-page .store-credit{margin:11px 0 0;color:#819bb7;font-size:10px;line-height:1.6}
+.z-music-page .store-credit a{color:#c0d9f8;text-decoration:underline;text-underline-offset:2px}
+.z-music-page .store-credit a[hidden]{display:none}
