@@ -70,6 +70,7 @@ import {
   normalizeToolPreferences,
 } from "./lib/sessions.js";
 import { generationErrorFallback } from "./lib/generation.js";
+import { createGenerationWatchdog } from "./lib/generation-watchdog.js";
 import { detectBrowser, isIOSDevice, graphicsProbeAttempts, iosStabilityProfile } from "./lib/browser.js";
 import { computeLoadProgress } from "./lib/progress.js";
 import {
@@ -3186,6 +3187,8 @@ async function runAssistantGeneration(session) {
   let finalMetrics = null;
   let result = null;
   let generationError = null;
+  let generationStalled = false;
+  let generationWatchdog = null;
   let turnTools = [];
   const requestTrace = [];
   let executionModelId = session.modelId || null;
@@ -3293,10 +3296,23 @@ async function runAssistantGeneration(session) {
         enableThinking,
         signal: state.abort.signal,
       }));
+      // A stalled iPhone GPU stream can otherwise leave Z displaying "Starting" forever.
+      // Do not auto-retry: repeating a large GPU allocation can crash Safari.
+      if (iosStability) {
+        generationWatchdog = createGenerationWatchdog({
+          timeoutMs: 120_000,
+          onTimeout: () => {
+            generationStalled = true;
+            state.abort?.abort();
+          },
+        });
+      }
       for await (const chunk of stream) {
+        generationWatchdog?.activity();
         handleGenerationChunk(chunk, streamCtx);
         publishStreamContext(streamCtx);
       }
+      generationWatchdog?.stop();
       raw = streamCtx.raw;
       finalMetrics = streamCtx.tracker.snapshot();
       const split = splitRawThinking(raw);
@@ -3305,15 +3321,21 @@ async function runAssistantGeneration(session) {
     }
   } catch (err) {
     console.error(err);
-    generationError = err instanceof Error ? err.message : String(err);
+    generationError = generationStalled
+      ? "Reply stalled for two minutes on this device"
+      : err instanceof Error ? err.message : String(err);
     recordDiagnostic("Reply generation", generationError);
     const fallback = generationErrorFallback(err, { raw: streamCtx.raw || raw });
-    raw = fallback.raw;
-    if (fallback.toast) toast(fallback.toast);
+    raw = generationStalled && !streamCtx.raw && !raw
+      ? "_Z stopped an unresponsive reply to protect your phone. Try a shorter question or restart the model._"
+      : fallback.raw;
+    if (generationStalled) toast("Z stopped a stalled reply. Try again with a shorter question.");
+    else if (fallback.toast) toast(fallback.toast);
     const split = splitRawThinking(raw);
     thinking = split.thinking;
     output = split.output;
   } finally {
+    generationWatchdog?.stop();
     stopPhasePulse();
     finalMetrics = finalMetrics || streamCtx.tracker.snapshot();
     const meta = {
