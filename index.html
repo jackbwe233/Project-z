@@ -924,7 +924,8 @@ html.z-boot-returning #z-cinematic-boot {
   const key = "project-z:boot-played:v1";
   try {
     const navigation = performance.getEntriesByType("navigation")[0];
-    if (sessionStorage.getItem(key) === "1" || navigation?.type === "back_forward") {
+    if (localStorage.getItem("project-z:boot-mode:v1") === "off" ||
+        sessionStorage.getItem(key) === "1" || navigation?.type === "back_forward") {
       document.documentElement.classList.add("z-boot-returning");
     }
     sessionStorage.setItem(key, "1");
@@ -956,7 +957,7 @@ html.z-boot-returning #z-cinematic-boot {
     </div>
     <div class="sidebar-actions"><div class="z-feature-links" style="display:flex;gap:6px;margin:8px 0;flex-wrap:wrap"><a href="./personal.html" style="flex:1 1 45%;padding:11px 8px;text-align:center;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);color:var(--text);font:600 12px system-ui;text-decoration:none">✦ Personal</a><a href="./plugins.html" style="flex:1 1 45%;padding:11px 8px;text-align:center;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);color:var(--text);font:600 12px system-ui;text-decoration:none">⚙ Apps & Plugins</a><a href="./quick.html" style="flex:1 1 45%;padding:11px 8px;text-align:center;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);color:var(--text);font:600 12px system-ui;text-decoration:none">🎙 Talk</a><a href="./notes.html" style="flex:1 1 45%;padding:11px 8px;text-align:center;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);color:var(--text);font:600 12px system-ui;text-decoration:none">▤ Notes</a></div>
       <button type="button" class="btn-new" id="new-chat-btn"></button>
-      <a href="./command-center.html" id="command-center-link" style="display:block;margin-top:10px;padding:10px 14px;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);color:var(--text);font-size:13px;font-weight:600;text-align:center;text-decoration:none" aria-label="Open Z Command Center">◈ Open Command Center</a><a id="stock-research-link" href="./research.html" style="display:block;padding:12px;text-align:center;color:var(--text)">Stock research →</a>
+      <a href="./code-lab.html" id="z-code-lab-link" style="display:block;margin-top:9px;padding:12px;border-radius:11px;border:1px solid #7296c1;color:#dbeaff;text-align:center;background:#1e3651;font-weight:700;text-decoration:none">⌘ Change Z</a><a href="./command-center.html" id="command-center-link" style="display:block;margin-top:10px;padding:10px 14px;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);color:var(--text);font-size:13px;font-weight:600;text-align:center;text-decoration:none" aria-label="Open Z Command Center">◈ Open Command Center</a><a id="stock-research-link" href="./research.html" style="display:block;padding:12px;text-align:center;color:var(--text)">Stock research →</a>
     </div>
     <details class="side-block" id="conversations-block" open>
       <summary>Conversations <span class="conv-count" id="conv-count"></span></summary>
@@ -1286,7 +1287,7 @@ html.z-boot-returning #z-cinematic-boot {
         <button type="submit">Ask Z</button>
       </form>
       <p class="z-launch-hint">The first answer may still take time while your phone loads the local AI model.</p>
-      <button id="z-launch-open" type="button">Open saved chats</button><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:11px"><a style="display:block;padding:13px 5px;margin:0;border-radius:12px;border:1px solid #4b5e80" href="./personal.html">Personal</a><a style="display:block;padding:13px 5px;margin:0;border-radius:12px;border:1px solid #4b5e80" href="./quick.html">🎙 Talk</a><a style="display:block;padding:13px 5px;margin:0;border-radius:12px;border:1px solid #4b5e80" href="./plugins.html">Plugins</a><a style="display:block;padding:13px 5px;margin:0;border-radius:12px;border:1px solid #4b5e80" href="./notes.html">Notes</a></div>
+      <button id="z-launch-open" type="button">Open saved chats</button><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:11px"><a style="display:block;padding:13px 5px;margin:0;border-radius:12px;border:1px solid #4b5e80" href="./personal.html">Personal</a><a style="display:block;padding:13px 5px;margin:0;border-radius:12px;border:1px solid #4b5e80" href="./quick.html">🎙 Talk</a><a style="display:block;padding:13px 5px;margin:0;border-radius:12px;border:1px solid #4b5e80" href="./plugins.html">Plugins</a><a style="display:block;padding:13px 5px;margin:0;border-radius:12px;border:1px solid #4b5e80" href="./notes.html">Notes</a><a style="display:block;padding:13px 5px;margin:0;border-radius:12px;border:1px solid #4b5e80;grid-column:1 / -1" href="./code-lab.html">⌘ Change Z</a></div>
       <a href="./recovery.html">Having trouble? Open recovery</a>
       <p id="z-launch-error" hidden>The app couldn't start. Use recovery for a safer way in.</p>
     </div>`;
