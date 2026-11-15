@@ -279,6 +279,7 @@ test('iPhone WebKit: music discovery card, swipe buttons and playlist are usable
     route.fulfill({contentType:'application/json',body:JSON.stringify({results:songs})}));
   await page.setViewportSize({width:402,height:874});
   await page.goto('/music.html');
+  await page.locator('#start-discovery').click();
   await expect(page.locator('#card-title')).toContainText('Discovery');
   await expect(page.locator('#like-song')).toBeEnabled();
   await page.locator('#like-song').click();
