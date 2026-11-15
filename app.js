@@ -70,7 +70,7 @@ import {
   normalizeToolPreferences,
 } from "./lib/sessions.js";
 import { generationErrorFallback } from "./lib/generation.js";
-import { detectBrowser, isIOSDevice, graphicsProbeAttempts } from "./lib/browser.js";
+import { detectBrowser, isIOSDevice, graphicsProbeAttempts, iosStabilityProfile } from "./lib/browser.js";
 import { computeLoadProgress } from "./lib/progress.js";
 import {
   loadButtonLabel,
@@ -111,6 +111,24 @@ import {
 } from "./lib/cache.js";
 
 "use strict";
+
+// iOS WebKit may terminate the whole page, without throwing, when a local GPU
+// allocation is too large. Keep a lightweight, bounded profile on iPhone/iPad.
+const iosStability = iosStabilityProfile(navigator.userAgent, navigator.maxTouchPoints);
+function safeGenerationTokens(modelDef, requested = state.maxNewTokens) {
+  return Math.min(
+    effectiveMaxNewTokens(requested, modelDef),
+    iosStability?.maxNewTokens ?? Infinity,
+  );
+}
+function runtimeModelDef() {
+  const def = loadedModelDef();
+  if (!def || !iosStability) return def;
+  return {
+    ...def,
+    contextWindowTokens: Math.min(def.contextWindowTokens, iosStability.maxContextTokens),
+  };
+}
 
 import("https://esm.sh/marked@17")
   .then((m) => {
@@ -505,11 +523,10 @@ function loadPrefs() {
     if (p.activeSessionId) state.activeSessionId = p.activeSessionId;
     if (p.grammarMode) state.grammarMode = p.grammarMode;
     if (MODELS[p.selectedModelId]) state.selectedModelId = p.selectedModelId;
+    // A saved desktop preference must not trigger a multi-gigabyte iPhone GPU load.
+    if (iosStability) state.selectedModelId = iosStability.modelId;
     if (typeof p.maxNewTokens === "number") state.maxNewTokens = clampMaxNewTokens(p.maxNewTokens);
-    state.maxNewTokens = effectiveMaxNewTokens(
-      state.maxNewTokens,
-      activeModelDef(),
-    );
+    state.maxNewTokens = safeGenerationTokens(activeModelDef());
     if (p.grammarJsonSchema) $("grammar-json-schema").value = p.grammarJsonSchema;
     if (p.grammarEbnf) $("grammar-custom").value = p.grammarEbnf;
     if (p.sessionSearch) {
@@ -863,9 +880,10 @@ function renderModelPicker() {
   picker.innerHTML = Object.values(MODELS).map(def => {
     const active = def.id === state.selectedModelId;
     const loaded = state.loadedModelId === def.id && !!state.model;
+    const unsafeOnIOS = !!iosStability && def.id !== iosStability.modelId;
     return `
-      <label class="model-option${active ? " active" : ""}${busy ? " disabled" : ""}">
-        <input type="radio" name="model-id" value="${esc(def.id)}"${active ? " checked" : ""}${busy ? " disabled" : ""}>
+      <label class="model-option${active ? " active" : ""}${busy || unsafeOnIOS ? " disabled" : ""}"${unsafeOnIOS ? ' title="Desktop only: high-memory AI models can crash iPhone Safari"' : ""}>
+        <input type="radio" name="model-id" value="${esc(def.id)}"${active ? " checked" : ""}${busy || unsafeOnIOS ? " disabled" : ""}>
         <span class="model-option-name">${esc(def.name)}</span>
         <span class="model-option-meta">${esc(def.subtitle)}</span>
         ${loaded ? '<span class="model-option-badge">Loaded</span>' : ""}
@@ -875,6 +893,10 @@ function renderModelPicker() {
 
 async function applyModelSelection(modelId, { silent = false, persistToSession = true } = {}) {
   if (!MODELS[modelId]) modelId = DEFAULT_MODEL_ID;
+  if (iosStability && modelId !== iosStability.modelId) {
+    if (!silent) toast("Larger models are disabled on iPhone to help prevent crashes. Use desktop for those models.");
+    modelId = iosStability.modelId;
+  }
   const needsUnload = state.model && state.loadedModelId && state.loadedModelId !== modelId;
   if (modelId === state.selectedModelId && !needsUnload) {
     if (persistToSession) {
@@ -900,10 +922,7 @@ async function applyModelSelection(modelId, { silent = false, persistToSession =
   }
   state.selectedModelId = modelId;
   const modelDef = MODELS[modelId];
-  const cappedMaxNewTokens = effectiveMaxNewTokens(
-    state.maxNewTokens,
-    modelDef,
-  );
+  const cappedMaxNewTokens = safeGenerationTokens(modelDef);
   if (cappedMaxNewTokens !== state.maxNewTokens) {
     state.maxNewTokens = cappedMaxNewTokens;
     if ($("max-tokens")) $("max-tokens").value = cappedMaxNewTokens;
@@ -932,7 +951,8 @@ function syncModelFromSession(session = activeSession()) {
   // Do not change which model is being loaded if a user browses other chats
   // during a download/warmup. canSendToModel still guards mismatched sessions.
   if (state.loading) return;
-  state.selectedModelId = resolveModelIdForSession(session, state.selectedModelId);
+  state.selectedModelId = iosStability?.modelId
+    || resolveModelIdForSession(session, state.selectedModelId);
   renderModelPicker();
 }
 
@@ -1321,6 +1341,11 @@ function updateComposerState() {
 
 async function loadModel() {
   if (state.model || state.loading) return;
+  // Also enforce the safe selection when loading is triggered by a queued send.
+  if (iosStability && state.selectedModelId !== iosStability.modelId) {
+    state.selectedModelId = iosStability.modelId;
+    renderModelPicker();
+  }
   if (state.webgpuChecking) {
     pendingLoadAfterProbe = true;
     setModelStatus("loading", "Graphics check in progress…");
@@ -1355,6 +1380,10 @@ async function loadModel() {
       revision: def.revision,
     };
     if (state.fileOrigin) loadOpts.cache = false;
+    // LFM's runtime honors maxLength when allocating its GPU KV cache.
+    if (iosStability && def.runtime === "lfm2") {
+      loadOpts.maxLength = iosStability.maxContextTokens;
+    }
     if (def.cacheType === "gguf") {
       await repairPoisonedGgufCache(def, cacheEnv());
     }
@@ -1367,7 +1396,7 @@ async function loadModel() {
     setProgressImmediate(1, "Model ready");
     state.modelLoadSecs = ((performance.now() - started) / 1000).toFixed(1);
     state.loadedModelId = def.id;
-    const loadedMaxNewTokens = effectiveMaxNewTokens(state.maxNewTokens, def);
+    const loadedMaxNewTokens = safeGenerationTokens(def);
     if (loadedMaxNewTokens !== state.maxNewTokens) {
       state.maxNewTokens = loadedMaxNewTokens;
       if ($("max-tokens")) $("max-tokens").value = loadedMaxNewTokens;
@@ -1726,7 +1755,8 @@ function userMessageEl(messageIndex) {
 }
 
 function generationSendCheck(session) {
-  const expectedModelId = resolveModelIdForSession(session, state.selectedModelId);
+  const expectedModelId = iosStability?.modelId
+    || resolveModelIdForSession(session, state.selectedModelId);
   return {
     expectedModelId,
     ...canSendToModel({
@@ -3116,7 +3146,9 @@ async function switchSession(id) {
   renderPendingFileRefs();
   renderChat();
   focusComposerInput($("user-input"));
-  const modelId = resolveModelIdForSession(session, state.selectedModelId);
+  const modelId = iosStability?.modelId
+    || resolveModelIdForSession(session, state.selectedModelId);
+  // Do not rewrite old chats just to view them; update their model on next send.
   if (!session.modelId) await patchSessionFields(session, { modelId });
   // Loading can continue while a different saved chat is displayed. Never
   // interrupt it or switch model adapters mid-load.
@@ -3163,7 +3195,7 @@ async function runAssistantGeneration(session) {
   let executionModelId = session.modelId || null;
 
   try {
-    const modelDef = loadedModelDef();
+    const modelDef = runtimeModelDef();
     executionModelId = modelDef?.id || executionModelId;
     const runtime = getRuntimeAdapter(modelDef.runtime);
     if (useAgent) {
@@ -3187,7 +3219,7 @@ async function runAssistantGeneration(session) {
           applyAgentPolicy(messages, activeTools, {
             toolProtocol: runtime.toolProtocol,
           }),
-        maxNewTokens: effectiveMaxNewTokens(state.maxNewTokens, modelDef),
+        maxNewTokens: safeGenerationTokens(modelDef),
         contextWindowTokens: modelDef?.contextWindowTokens,
         signal: state.abort.signal,
         callIdPrefix: `${session.id || "session"}_${session.messages.length - 1}`,
@@ -3242,10 +3274,7 @@ async function runAssistantGeneration(session) {
     } else {
       const enableThinking = modelSupportsThinking();
       const runtimeMessages = buildMessages(session);
-      const boundedMaxNewTokens = effectiveMaxNewTokens(
-        state.maxNewTokens,
-        modelDef,
-      );
+      const boundedMaxNewTokens = safeGenerationTokens(modelDef);
       const fittedMessages = fitMessagesToContext(runtimeMessages, {
         contextWindowTokens: modelDef?.contextWindowTokens,
         maxNewTokens: boundedMaxNewTokens,
@@ -3399,7 +3428,8 @@ async function sendMessage() {
   }
   // A manually submitted draft takes precedence over any previously queued send.
   if (state.model && queuedFirstSendFor === session?.id) queuedFirstSendFor = null;
-  const expectedModelId = resolveModelIdForSession(session, state.selectedModelId);
+  const expectedModelId = iosStability?.modelId
+    || resolveModelIdForSession(session, state.selectedModelId);
   const sendCheck = canSendToModel({
     text,
     model: state.model,
@@ -3417,7 +3447,8 @@ async function sendMessage() {
   state.busy = true;
   updateComposerState();
   session.systemPrompt = $("system-prompt").value;
-  if (!session.modelId) session.modelId = state.selectedModelId;
+  if (iosStability) session.modelId = iosStability.modelId;
+  else if (!session.modelId) session.modelId = state.selectedModelId;
   const fileRefs = localReferencesEnabled()
     ? resolveDraftFileRefs({
       pendingRefs: state.pendingFileRefs,
@@ -3706,9 +3737,9 @@ for (const id of ["grammar-json-schema", "grammar-custom"]) {
 }
 
 $("max-tokens").addEventListener("change", () => {
-  state.maxNewTokens = effectiveMaxNewTokens(
-    clampMaxNewTokens($("max-tokens").value),
+  state.maxNewTokens = safeGenerationTokens(
     activeModelDef(),
+    clampMaxNewTokens($("max-tokens").value),
   );
   $("max-tokens").value = state.maxNewTokens;
   savePrefs();
