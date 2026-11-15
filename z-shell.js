@@ -7,6 +7,7 @@
   const pages = [
     ["index.html","Chat"],
     ["personal.html","My Day"],
+    ["work.html","Work"],
     ["notes.html","Notes"],
     ["quick.html","Talk"],
     ["paper.html","Stocks"],
