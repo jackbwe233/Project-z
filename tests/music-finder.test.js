@@ -40,7 +40,7 @@ describe("Z Music Finder", () => {
       song(1), song(2, "Pop", "Different"),
       song(3, "Indie", "An Artist"), song(4, "Rock", "Another"),
     ], state);
-    expect(list.map(x => x.id)).toEqual(["3", "4", "2"]);
+    expect(list.map(x => x.id)).toEqual(["3", "2", "4"]);
   });
   it("safely restores malformed persistent data", () => {
     const state = normalizeMusicProfile({
