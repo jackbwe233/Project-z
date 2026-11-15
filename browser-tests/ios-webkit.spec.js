@@ -98,3 +98,71 @@ test('iPhone WebKit: startup install link opens real instructions rather than do
   await page.getByRole('link', { name: 'Open Z to install' }).click();
   await expect(page.locator('#z-safe-start')).toBeVisible();
 });
+
+
+test('iPhone 16/17 family: chat header, input and messages fit common display widths', async ({ page }) => {
+  const sizes = [
+    [320, 700],   // narrow fallback
+    [375, 812],   // compact iPhone
+    [390, 844],   // standard iPhone
+    [393, 852],   // 16-class device
+    [402, 874],   // 16/17 Pro-class device
+    [430, 932],   // larger iPhone
+    [440, 956],   // Pro Max-class device
+  ];
+  const errors = [];
+  page.on('pageerror', err => errors.push(err.message));
+  for (const [width, height] of sizes) {
+    await page.setViewportSize({ width, height });
+    await page.goto('/index.html?z_start=1');
+    await expect(page.locator('#chat-scroll')).toBeVisible();
+    await expect(page.locator('#composer-shell')).toBeVisible();
+    const metrics = await page.evaluate(() => {
+      const rect = id => {
+        const el = document.getElementById(id);
+        if (!el || getComputedStyle(el).display === 'none') return null;
+        const b = el.getBoundingClientRect();
+        return { left:b.left, right:b.right, top:b.top, bottom:b.bottom,
+          width:b.width, height:b.height };
+      };
+      return {
+        viewport: { width: innerWidth, height: innerHeight },
+        overflow: document.documentElement.scrollWidth-document.documentElement.clientWidth,
+        app: rect('app'), header: document.querySelector('.topbar').getBoundingClientRect().toJSON(),
+        work: rect('z-work-top-link'), status: rect('model-status'),
+        load: rect('load-model-btn'), theme: rect('theme-toggle'),
+        composer: rect('composer-shell'), messageArea: rect('chat-scroll'),
+        inputFont: getComputedStyle(document.getElementById('user-input')).fontSize,
+      };
+    });
+    expect(metrics.overflow, width+'px horizontal overflow').toBeLessThanOrEqual(2);
+    expect(metrics.inputFont, width+'px input text size').toBe('16px');
+    expect(metrics.messageArea.height, width+'px chat height').toBeGreaterThan(110);
+    expect(metrics.composer.bottom, width+'px composer bottom').toBeLessThanOrEqual(height+2);
+    expect(metrics.header.bottom, width+'px header separation').toBeLessThan(metrics.messageArea.bottom);
+    for (const id of ['work','status','load','theme','composer']) {
+      const rect = metrics[id];
+      expect(rect, width+'px '+id+' visible').not.toBeNull();
+      expect(rect.left, width+'px '+id+' left').toBeGreaterThanOrEqual(-1);
+      expect(rect.right, width+'px '+id+' right').toBeLessThanOrEqual(width+1);
+    }
+  }
+  expect(errors).toEqual([]);
+});
+
+test('iPhone landscape: sidebar becomes a drawer, composer remains visible', async ({ page }) => {
+  await page.setViewportSize({ width:874, height:402 });
+  await page.goto('/index.html?z_start=1');
+  const menu = page.locator('#sidebar-toggle');
+  await expect(menu).toBeVisible();
+  const composer = page.locator('#composer-shell');
+  await expect(composer).toBeVisible();
+  const bounds = await composer.boundingBox();
+  expect(bounds.x).toBeGreaterThanOrEqual(0);
+  expect(bounds.x+bounds.width).toBeLessThanOrEqual(875);
+  expect(bounds.y+bounds.height).toBeLessThanOrEqual(404);
+  await menu.click();
+  await expect(page.locator('#sidebar')).toHaveClass(/open/);
+  await page.locator('#sidebar-close').click();
+  await expect(page.locator('#sidebar')).not.toHaveClass(/open/);
+});
