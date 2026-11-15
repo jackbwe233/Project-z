@@ -36,3 +36,22 @@ test('Side pages have restrained animated particles with original content intact
     await expect(page.locator('main section').first()).toBeVisible();
   }
 });
+
+test('Opening a Z tool and pressing Back does not replay the Z cinematic boot', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('#z-cinematic-boot')).toHaveCount(1);
+  await page.goto('/code-lab.html');
+  await page.goBack();
+  await expect(page.locator('#z-cinematic-boot')).toHaveCSS('display', 'none');
+  await expect(page.locator('#composer-shell')).toBeVisible();
+  await page.reload();
+  await expect(page.locator('#z-cinematic-boot')).toHaveCSS('display', 'none');
+});
+
+test('Change Z lets the user disable the intro completely on this device', async ({ page }) => {
+  await page.goto('/code-lab.html');
+  await page.locator('#no-intro').check();
+  await expect(page.locator('#animation-status')).toContainText('disabled');
+  await page.goto('/index.html');
+  await expect(page.locator('#z-cinematic-boot')).toHaveCSS('display', 'none');
+});
