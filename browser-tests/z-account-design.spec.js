@@ -68,6 +68,9 @@ test("All Z tool tabs use matching dark theme and consistent account navigation"
     await page.goto(path);
     const nav = page.getByRole("navigation", { name: "Z app navigation" });
     await expect(nav).toBeVisible();
+    if (path === "/paper.html") {
+      await page.locator(".z-shell-more-trigger").click();
+    }
     await expect(nav.getByRole("link", { name:"Account" })).toBeVisible();
     const state = await page.evaluate(() => {
       const body = getComputedStyle(document.body);
