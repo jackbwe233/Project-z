@@ -170,3 +170,5 @@ $("work-chat").addEventListener("click",()=>{
   }catch{action("Could not transfer to Z Chat. Use Copy instead.");}
 });
 renderHistory();
+$("work-run").disabled=false;
+status("Ready. Work opens without loading an AI model.");
