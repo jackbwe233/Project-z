@@ -343,15 +343,15 @@
  * the Dynamic Island/status bar, and some return a zero CSS safe-area inset.
  * Reserve a touch-safe fallback only when Z is fullscreen/installed.
  */
-@media (max-width: 768px) and (orientation: portrait) {
-  @media (display-mode: standalone) {
-    #app .topbar {
-      padding-top: max(60px, env(safe-area-inset-top)) !important;
-    }
-    #app #sidebar {
-      padding-top: max(60px, env(safe-area-inset-top)) !important;
-    }
+@media (max-width: 768px) and (orientation: portrait) and (display-mode: standalone) {
+  #app .topbar {
+    padding-top: max(60px, env(safe-area-inset-top)) !important;
   }
+  #app #sidebar {
+    padding-top: max(60px, env(safe-area-inset-top)) !important;
+  }
+}
+@media (max-width: 768px) and (orientation: portrait) {
   html.z-ios-fullscreen #app .topbar {
     padding-top: max(60px, env(safe-area-inset-top)) !important;
   }
