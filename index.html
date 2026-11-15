@@ -920,9 +920,8 @@ html.z-boot-returning #z-cinematic-boot {
 </style>
 <script>
 (() => {
-  // Replay the short cinematic intro on a fresh app launch, including iPhone
-  // home-screen launches. Do not replay it when navigating back from Z tools.
-  // Previous sessionStorage persistence skipped intros even after reopening.
+  // Keep the intro for the first opening of a tab, not every reload or
+  // return from another tool. Users can still turn it off in Change Z.
   try {
     const navigation = performance.getEntriesByType("navigation")[0];
     const internalReturn = document.referrer &&
@@ -931,8 +930,10 @@ html.z-boot-returning #z-cinematic-boot {
       new URL(document.referrer).pathname.startsWith(
         location.pathname.slice(0, location.pathname.lastIndexOf("/") + 1)
       );
+    const shownInThisTab = sessionStorage.getItem("project-z:boot-shown-tab:v1") === "1";
+    sessionStorage.setItem("project-z:boot-shown-tab:v1", "1");
     if (localStorage.getItem("project-z:boot-mode:v1") === "off" ||
-        navigation?.type === "back_forward" || internalReturn) {
+        shownInThisTab || navigation?.type === "back_forward" || internalReturn) {
       document.documentElement.classList.add("z-boot-returning");
     }
   } catch {
@@ -1580,6 +1581,18 @@ html.z-boot-returning #z-cinematic-boot {
   #app #sidebar>.sidebar-scroll {overflow:visible!important;flex:0 0 auto!important}
   #sidebar #session-list {max-height:min(32dvh,250px)!important;overflow-y:auto!important}
 }
+/* Solid background for readable chat composition on compact phones. */
+#app #composer-shell {background-color:#10213a!important;}
+/* Installed iPhone: menu controls must clear the Dynamic Island even when
+   older mobile header rules set shorthand padding later in the cascade. */
+@media (max-width:768px) and (orientation:portrait) {
+  html.z-ios-fullscreen #app .topbar {
+    padding-top:max(60px,env(safe-area-inset-top))!important;
+  }
+  html.z-ios-fullscreen #app #sidebar {
+    padding-top:max(60px,env(safe-area-inset-top))!important;
+  }
+}
 </style>
 </head>
 <body>
@@ -1605,7 +1618,7 @@ html.z-boot-returning #z-cinematic-boot {
         <a href="./plugins.html" class="z-primary-link"><span aria-hidden="true">⚙</span> All Tools</a>
       </nav>
     </div>
-    <details class="side-block" id="conversations-block">
+    <details class="side-block" id="conversations-block" open>
       <summary>Past chats (optional) <span class="conv-count" id="conv-count"></span></summary>
       <div class="side-block-body">
         <div id="session-search-wrap">
