@@ -32,7 +32,12 @@ for (const route of routes) {
       return {buttonCount:interactive.length,unnamed:unnamed.map(el=>el.id||el.outerHTML.slice(0,90)),
         duplicates,brokenAnchors,overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth};
     });
-    expect(report.buttonCount,route+" interactive controls").toBeGreaterThan(0);
+    if (route === "/account.html") {
+      // Guest mode intentionally has no enabled account buttons until Supabase is configured.
+      await expect(page.locator("#setup-required")).toBeVisible();
+    } else {
+      expect(report.buttonCount,route+" interactive controls").toBeGreaterThan(0);
+    }
     expect(report.duplicates,route+" duplicate IDs").toEqual([]);
     expect(failures,route+" JavaScript errors").toEqual([]);
     // Report less severe accessibility and anchors issues without confusing them with broken workflows.
