@@ -50,10 +50,10 @@ test('Personal tasks persist, can be completed and are used by voice briefings',
 
 test('Plugins hub enables and disables tools and rejects unsafe URLs', async ({ page }) => {
   await page.goto('/plugins.html');
-  await expect(page.locator('#count')).toHaveText('4 enabled');
+  await expect(page.locator('#count')).toHaveText('5 enabled');
   const focus = page.locator('#tool-list .card').filter({ hasText: 'Focus timer' });
   await focus.locator('input[type=checkbox]').uncheck();
-  await expect(page.locator('#count')).toHaveText('3 enabled');
+  await expect(page.locator('#count')).toHaveText('4 enabled');
   await page.locator('#custom-name').fill('Not safe');
   await page.locator('#custom-url').fill('javascript:alert(1)');
   await page.getByRole('button', { name: 'Add app shortcut' }).click();
@@ -62,7 +62,7 @@ test('Plugins hub enables and disables tools and rejects unsafe URLs', async ({ 
   await page.getByRole('button', { name: 'Add app shortcut' }).click();
   await expect(page.locator('#custom-list')).toContainText('Not safe');
   await page.reload();
-  await expect(page.locator('#count')).toHaveText('3 enabled');
+  await expect(page.locator('#count')).toHaveText('4 enabled');
   await expect(page.locator('#custom-list')).toContainText('Not safe');
   await page.locator('#custom-list').getByRole('button', { name: 'Remove' }).click();
   await expect(page.locator('#custom-list')).not.toContainText('Not safe');
