@@ -77,6 +77,16 @@ describe('Research page', () => {
 describe('Chat voice controls', () => {
   async function mountVoice() {
     document.body.innerHTML = '<textarea id="input"></textarea><textarea id="z-memory"></textarea><p id="z-status"></p><div id="z-avatar"></div><p id="z-voice-status"></p>' + '<input type="checkbox" id="z-learning-toggle"><div id="z-learning-saved"></div><div id="z-learning-suggestions"></div><p id="z-knowledge-count"></p><input id="z-memory-filter"><p id="z-memory-showing"></p><input type="file" id="z-memory-import-file">' + ['z-clear','z-backup','z-import','z-persist','z-mic','z-talk','z-speak','z-quiet'].map(id => `<button id="${id}"></button>`).join('');
+    // Keep this voice-only fixture aligned with the personalization controls initialized by Project Z.
+    document.body.insertAdjacentHTML('beforeend', [
+      '<input type="checkbox" id="z-memory-auto-save">',
+      '<input type="checkbox" id="z-style-learning-toggle">',
+      '<select id="z-style-tone"><option value="casual">casual</option></select>',
+      '<select id="z-style-length"><option value="balanced">balanced</option></select>',
+      '<select id="z-style-explanation"><option value="normal">normal</option></select>',
+      '<p id="z-style-preview"></p><p id="z-personalization-scope"></p>',
+      '<button id="z-style-reset"></button>',
+    ].join(''));
     const recognizers = [], spoken = [];
     window.SpeechRecognition = class { constructor() { recognizers.push(this); } start() {} abort() {} };
     window.SpeechSynthesisUtterance = class { constructor(text) { this.text = text; } };
