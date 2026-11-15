@@ -233,3 +233,136 @@ html body.z-workspace:not(:has(#app)) .z-shell-install{
     -webkit-overflow-scrolling:touch;
   }
 }
+
+
+/* Stock Workbench header: intentionally no strip of unrelated app tabs. */
+html body.z-workspace:not(:has(#app)) .z-shell--stocks {
+  justify-content:space-between;
+  column-gap:12px;
+  min-height:62px;
+  overflow:visible;
+}
+html body.z-workspace:not(:has(#app)) .z-shell--stocks .z-shell-brand {
+  flex:0 0 auto;
+  margin-right:0;
+}
+html body.z-workspace:not(:has(#app)) .z-shell-stock-title {
+  display:block;
+  flex:0 1 auto;
+  min-width:0;
+  color:#e9f2ff;
+  font:750 14px/1.2 -apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  letter-spacing:-.025em;
+  padding-left:13px;
+  border-left:1px solid #3b506e;
+}
+html body.z-workspace:not(:has(#app)) .z-shell-stock-actions {
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:8px;
+  flex:1 1 auto;
+  min-width:0;
+  overflow:visible;
+}
+html body.z-workspace:not(:has(#app)) .z-shell-stock-chat,
+html body.z-workspace:not(:has(#app)) .z-shell-more-trigger {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 auto;
+  min-height:42px;
+  padding:9px 13px;
+  border:1px solid #405675;
+  border-radius:11px;
+  background:#1b2a40;
+  color:#dce9fb!important;
+  text-decoration:none!important;
+  font:650 13px/1.3 -apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  white-space:nowrap;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+html body.z-workspace:not(:has(#app)) .z-shell-stock-chat:hover,
+html body.z-workspace:not(:has(#app)) .z-shell-more-trigger:hover {
+  background:#273b56;
+  border-color:#607b9d;
+}
+html body.z-workspace:not(:has(#app)) .z-shell-more {
+  flex:0 0 auto;
+  position:relative;
+}
+html body.z-workspace:not(:has(#app)) .z-shell-more-trigger {
+  list-style:none;
+  gap:6px;
+}
+html body.z-workspace:not(:has(#app)) .z-shell-more-trigger::-webkit-details-marker {display:none}
+html body.z-workspace:not(:has(#app)) .z-shell-more-trigger::after {
+  content:"⌄";
+  font-size:15px;
+  line-height:1;
+  color:#aec7ea;
+}
+html body.z-workspace:not(:has(#app)) .z-shell-more[open] .z-shell-more-trigger {
+  border-color:#7c99c0;
+  background:#304762;
+}
+html body.z-workspace:not(:has(#app)) .z-shell-more-menu {
+  position:absolute;
+  right:0;
+  top:calc(100% + 9px);
+  z-index:400;
+  display:grid;
+  gap:3px;
+  width:min(270px,calc(100vw - 24px));
+  max-height:min(68dvh,480px);
+  padding:7px;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  border:1px solid #465e7c;
+  border-radius:14px;
+  background:#142237;
+  box-shadow:0 20px 50px #000b;
+}
+html body.z-workspace:not(:has(#app)) .z-shell-more-menu a {
+  display:block;
+  padding:11px 12px;
+  border-radius:9px;
+  font:600 13px/1.3 -apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  color:#d5e4f9!important;
+  text-decoration:none!important;
+}
+html body.z-workspace:not(:has(#app)) .z-shell-more-menu a:hover,
+html body.z-workspace:not(:has(#app)) .z-shell-more-menu a:focus-visible {
+  background:#293e5c;
+}
+@media(max-width:650px){
+  html body.z-workspace:not(:has(#app)) .z-shell--stocks{
+    padding-top:max(10px,env(safe-area-inset-top))!important;
+    gap:9px;
+  }
+  html body.z-workspace:not(:has(#app)) .z-shell--stocks .z-shell-stock-title{
+    font-size:13px;
+    padding-left:10px;
+  }
+  html body.z-workspace:not(:has(#app)) .z-shell-stock-chat,
+  html body.z-workspace:not(:has(#app)) .z-shell-more-trigger{
+    min-height:44px;
+    padding:9px 11px;
+    font-size:12px;
+  }
+  html body.z-workspace:not(:has(#app)) .z-shell-more-menu{
+    max-height:min(70dvh,500px);
+  }
+}
+@media(max-width:360px) {
+  html body.z-workspace:not(:has(#app)) .z-shell--stocks .z-shell-stock-title {
+    font-size:12px;
+    padding-left:7px;
+  }
+  html body.z-workspace:not(:has(#app)) .z-shell-stock-actions{gap:5px}
+  html body.z-workspace:not(:has(#app)) .z-shell-stock-chat,
+  html body.z-workspace:not(:has(#app)) .z-shell-more-trigger {
+    padding:8px;
+  }
+}
