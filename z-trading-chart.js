@@ -1,3 +1,4 @@
+/* global document */
 /* Charts are external, informational widgets. They never create or price Z paper orders. */
 const el = id => document.getElementById(id);
 const host = el("z-chart-frame");
