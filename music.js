@@ -1,5 +1,6 @@
-import { MUSIC_STORAGE_KEY, blankMusicProfile, normalizeMusicProfile, normalizeSong, recordMusicAction, removeLikedSong, rankMusicResults, musicTasteSummary, musicSearchTerms } from "./lib/music-finder.js";
+import { MUSIC_STORAGE_KEY, blankMusicProfile, normalizeMusicProfile, normalizeSong, recordMusicAction, removeLikedSong, musicTasteSummary } from "./lib/music-finder.js";
 import { connectSpotify, handleSpotifyCallback, spotifyIsConnected, disconnectSpotify, hasSpotifySetup, createSpotifyPlaylist, connectApple, appleIsConnected, hasAppleSetup, createApplePlaylist } from "./lib/music-providers.js";
+import { discoveryQueries, smartRankSongs, reasonForSong } from "./lib/music-intelligence.js";
 
 const $ = id => document.getElementById(id);
 const card = $("swipe-card");
@@ -7,22 +8,9 @@ const audio = $("music-audio");
 let profile;
 try { profile = normalizeMusicProfile(JSON.parse(localStorage.getItem(MUSIC_STORAGE_KEY) || "null")); }
 catch { profile = blankMusicProfile(); }
-let genre = profile.genre || "All", vibe = "any", queue = [], current = null, loadCycle = 0, sequence = 0, exporting = false, gesture = null;
+let genre = profile.genre || "All", vibe = "any", exploration = "balanced", queue = [], current = null, loadCycle = 0, sequence = 0, exporting = false, gesture = null;
 let controller = null;
 const actions = [$("skip-song"), $("like-song"), $("similar-song")];
-const genres = {
-  All:["indie pop","alternative","hip hop"], Indie:["indie rock","bedroom pop","indie pop"],
-  "Hip-Hop":["hip hop","rap","alternative hip hop"], Rock:["alternative rock","rock","indie rock"],
-  "R&B":["r&b","soul","neo soul"], Pop:["pop","indie pop","synth pop"],
-  Electronic:["electronic","house","downtempo"], Country:["country","americana","alternative country"],
-  Jazz:["jazz","jazz fusion","smooth jazz"],
-};
-const vibes = {
-  any:[], dreamy:["dream pop","shoegaze","ethereal indie"], hype:["energetic hip hop","dance","high energy"],
-  chill:["chill indie","lofi","acoustic chill"], sad:["melancholic indie","sad alternative","slow songs"],
-  nostalgic:["nostalgic","classic alternative","indie folk"],
-  underground:["underground indie","alternative experimental","independent hip hop"],
-};
 function status(s) { $("discovery-status").textContent = s; }
 function playlistStatus(s) { $("playlist-status").textContent = s; }
 function connectionStatus(s) { $("connection-help").textContent = s; }
@@ -60,6 +48,10 @@ function display(song) {
   $("card-title").textContent = song?.title || "Find your sound";
   $("card-artist").textContent = song?.artist || "Pick a genre, vibe, or search an artist.";
   $("card-album").textContent = song?.album || "Your next favorite is out there.";
+  $("card-reason").textContent = song ? reasonForSong(song, profile, { genre, exploration }) : "Explore music by genre and mood.";
+  const storeLink = $("apple-store-link");
+  storeLink.hidden = !song?.appleUrl;
+  if (song?.appleUrl) storeLink.href = song.appleUrl; else storeLink.removeAttribute("href");
   actions.forEach(button => { button.disabled = !song; });
   $("discovery-count").textContent = song ? (queue.length + 1) + " SONGS TO EXPLORE" : "DISCOVER";
   card.classList.remove("out", "dragging");
@@ -89,18 +81,7 @@ function makeChoice(action) {
   setTimeout(finish, 215);
 }
 function terms(query = "") {
-  if (query) return [query];
-  const g = genres[genre] || genres.All;
-  const v = vibes[vibe] || [];
-  const t = musicSearchTerms(profile, genre);
-  const options = [];
-  if (v.length && genre !== "All") options.push(v[loadCycle % v.length] + " " + g[loadCycle % g.length]);
-  if (v.length) options.push(v[(loadCycle + 1) % v.length]);
-  options.push(g[loadCycle % g.length]);
-  if (profile.likes.length) options.push(t[loadCycle % t.length]);
-  options.push(g[(loadCycle + 1) % g.length]);
-  if (!profile.likes.length && genre === "All" && vibe === "any") options.push(t[loadCycle % t.length]);
-  return [...new Set(options)].slice(0, 4);
+  return discoveryQueries(profile, { genre, vibe, exploration, cycle: loadCycle, query });
 }
 async function searchCatalog(term, signal) {
   const url = new URL("https://itunes.apple.com/search");
@@ -112,7 +93,7 @@ async function searchCatalog(term, signal) {
   const response = await fetch(url, { signal });
   if (!response.ok) throw new Error("Music catalog error (" + response.status + ").");
   const data = await response.json();
-  return (data.results || []).map(normalizeSong).filter(Boolean);
+  return (data.results || []).map(normalizeSong).filter(Boolean).map(song => ({ ...song, sourceQuery: term }));
 }
 async function loadSongs(query = "") {
   if (controller) controller.abort();
@@ -128,7 +109,7 @@ async function loadSongs(query = "") {
     const found = outcomes.filter(x => x.status === "fulfilled").flatMap(x => x.value);
     if (!found.length && outcomes.every(x => x.status === "rejected"))
       throw new Error("Cannot reach the music catalog. Check your internet connection.");
-    queue = rankMusicResults(found, profile, { genre });
+    queue = smartRankSongs(found, profile, { genre, vibe, exploration });
     if (queue.length) { display(queue.shift()); status(""); }
     else status("No new tracks found. Change the genre or vibe, or search an artist.");
   } catch (error) {
@@ -231,6 +212,11 @@ for (const button of document.querySelectorAll("[data-vibe]")) button.addEventLi
   $("music-search").value = ""; queue = []; loadSongs();
 });
 document.querySelectorAll("[data-genre]").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.genre === genre)));
+for (const button of document.querySelectorAll("[data-exploration]")) button.addEventListener("click", () => {
+  exploration = button.dataset.exploration;
+  document.querySelectorAll("[data-exploration]").forEach(x => x.setAttribute("aria-pressed", String(x === button)));
+  queue = []; loadSongs();
+});
 
 card.addEventListener("pointerdown", e => {
   if (!current || e.target.closest("button") || card.classList.contains("out")) return;
