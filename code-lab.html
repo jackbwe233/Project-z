@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0a111d"><title>Z · Change Z</title>
+<style>
+:root{color-scheme:dark;font:15px/1.5 system-ui,-apple-system,sans-serif;background:#0a111d;color:#edf5ff;--line:#354a65;--panel:#152239;--muted:#a7b9d1;--light:#c5dafa}
+*{box-sizing:border-box}body{margin:0}main{max-width:900px;margin:0 auto;padding:22px 16px 100px}a{color:var(--light);text-decoration:none}a:hover{text-decoration:underline}
+header,.between,.buttons{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}header{margin-bottom:24px}
+h1{font-size:clamp(29px,6vw,42px);letter-spacing:-.055em;margin:8px 0 7px}h2{font-size:19px;margin:0 0 12px}h3{font-size:16px;margin:0 0 8px}
+p{line-height:1.55}.muted,small{color:var(--muted)}.eyebrow{letter-spacing:.18em;text-transform:uppercase;font-size:11px;font-weight:750;color:#8eb5ee}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:20px;margin:15px 0}
+label{display:block;font-weight:600;font-size:14px;margin:12px 0 5px}
+textarea,input,select{display:block;width:100%;margin:6px 0 14px;padding:13px;border-radius:12px;background:#0c1627;border:1px solid #526781;color:#f3f7ff;font:inherit}
+textarea{min-height:145px;resize:vertical}button,.button-link{display:inline-block;background:#2a405f;color:#edf4ff;font:650 14px system-ui;border:1px solid #4e6688;border-radius:12px;padding:12px 16px;text-decoration:none;cursor:pointer;text-align:center}
+button.primary,.button-link.primary{background:#bed5ff;color:#0b1728;border-color:#bed5ff}button:disabled{opacity:.55;cursor:not-allowed}
+button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #bad5ff;outline-offset:2px}
+.buttons{justify-content:flex-start}.buttons button,.buttons a{flex:0 1 auto}
+.note{background:#1c2d47;border-left:3px solid #aacbfa;border-radius:8px;padding:12px 14px}
+.code{font:12px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere;max-height:340px;overflow:auto;padding:14px;border:1px solid #354c6d;border-radius:13px;background:#0b1423;color:#cfdfef}
+.tile{padding:15px;border-top:1px solid #354a65}.tile:first-child{border:0}
+.switch{display:flex;align-items:center;gap:10px}.switch input{width:20px;height:20px;margin:0}
+#status,#source-status,#animation-status{min-height:22px;overflow-wrap:anywhere}
+#source-preview[hidden]{display:none}
+@media(max-width:500px){main{padding:14px 12px 90px}.box{padding:15px}header{margin:0 0 18px}.buttons button,.buttons a{flex:1 1 140px}}
+</style>
+</head><body><main>
+<header><a href="./index.html">← Z Chat</a><nav><a href="./plugins.html">Apps & Plugins</a> · <a href="./command-center.html">Command Center</a></nav></header>
+<div class="eyebrow">Project Z / Builder</div>
+<h1>Change Z.</h1><p class="muted">Describe an update in your own words. Z can inspect its public source code and prepare a request for a connected coding agent to implement.</p>
+<p class="note"><strong>How changes go live:</strong> This page can view code and save requests. It cannot independently edit GitHub or deploy new code. Copy a request into <a href="https://chatgpt.com" target="_blank" rel="noopener noreferrer">ChatGPT with your GitHub connection</a> so a coding agent can propose changes for your approval. Never paste GitHub access tokens into Z.</p>
+<section class="box">
+<h2>1 · Tell Z what to change</h2>
+<form id="change-form">
+<label for="change-text">What do you want Z to do differently?</label>
+<textarea id="change-text" required maxlength="4000" placeholder="Example: Make the Z animation play only on the first opening, not every time I press Back."></textarea>
+<label for="change-area">Area of the app</label>
+<select id="change-area"><option value="chat">Chat & model</option><option value="design">Design & animation</option><option value="plugins">Plugins & connections</option><option value="voice">Voice</option><option value="personal">Personal & reminders</option><option value="research">Stock research</option><option value="other">Other</option></select>
+<label for="change-risk">How big is the change?</label>
+<select id="change-risk"><option value="small">Small, easy-to-reverse improvement</option><option value="major">Major feature or redesign</option><option value="sensitive">Sensitive: permissions, security, finances, or personal data</option></select>
+<div class="buttons"><button type="submit" class="primary">Prepare change request</button><button type="button" id="save-request">Save request</button></div>
+</form>
+<p id="status" role="status" class="muted">Nothing has been submitted to GitHub.</p>
+<label for="request-preview">Prepared request</label>
+<textarea id="request-preview" rows="12" readonly placeholder="Your request appears here."></textarea>
+<div class="buttons">
+<button id="copy-request" type="button">Copy for ChatGPT</button>
+<button id="send-z" type="button">Send to Z Chat</button>
+<a class="button-link" href="https://github.com/jackbwe233/Project-z" target="_blank" rel="noopener noreferrer">Open code on GitHub ↗</a>
+</div>
+<p class="muted"><small>Sending to Z Chat puts this request into the chat box for review. It does not give the local AI permission to make GitHub commits.</small></p>
+</section>
+<section class="box"><h2>2 · View Z's source code</h2>
+<p class="muted">View files directly from Z's public GitHub repository. Access is read-only and no GitHub login is needed.</p>
+<label for="source-file">Pick a file</label>
+<select id="source-file">
+<option value="index.html">Chat screen · index.html</option>
+<option value="app.js">Chat logic · app.js</option>
+<option value="z-orbital.css">Animation and colors · z-orbital.css</option>
+<option value="plugins.html">Plugins · plugins.html</option>
+<option value="personal.html">Personal mode · personal.html</option>
+<option value="lib/z-voice.js">Voice · lib/z-voice.js</option>
+<option value="lib/z-research-ui.js">Stock research · lib/z-research-ui.js</option>
+<option value="z-tools-panel.js">Embedded tools · z-tools-panel.js</option>
+</select>
+<div class="buttons"><button type="button" id="view-source">Read GitHub source</button><a href="https://github.com/jackbwe233/Project-z/tree/master" target="_blank" rel="noopener noreferrer">Browse all code ↗</a></div>
+<p id="source-status" role="status" class="muted">Choose a file to inspect. Only the first 16,000 characters are previewed to keep iPhone responsive.</p>
+<pre id="source-preview" class="code" hidden aria-label="Source code preview"></pre>
+</section>
+<section class="box"><h2>3 · Choose Z's startup animation</h2>
+<label class="switch"><input id="no-intro" type="checkbox"> Skip the big Z startup animation entirely</label>
+<p class="muted">By default, the animation runs once when you first open Z, not on every Back press. This switch turns it off even on the first opening on this device.</p>
+<p id="animation-status" class="muted" role="status"></p>
+</section>
+<section class="box"><div class="between"><h2>Saved requests</h2><span class="muted">Only on this device</span></div><div id="saved-requests"></div></section>
+</main><script src="./z-code-lab.js" defer></script></body></html>
