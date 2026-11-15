@@ -2,6 +2,16 @@ import { describe, it, expect } from 'vitest';
 import { PERSONALITY, readMemory, writeMemory, withMemory, normalizeMemory, rememberFromMessage } from '../lib/project-z.js';
 import { buildMessages, buildAgentMessages } from '../lib/messages.js';
 
+describe('Project Z answer quality instructions', () => {
+  it('prioritizes answering and following context without inventing facts', () => {
+    expect(PERSONALITY).toContain("actual question first");
+    expect(PERSONALITY).toContain("follow-up questions");
+    expect(PERSONALITY).toContain("instead of guessing");
+    expect(PERSONALITY).toContain("Never invent facts");
+    expect(PERSONALITY).toContain("manageable steps");
+  });
+});
+
 describe('Project Z memory', () => {
   it('restores memory after a new storage reader is created', () => {
     const data = new Map();
