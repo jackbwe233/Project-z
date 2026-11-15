@@ -1149,8 +1149,8 @@ html.z-boot-returning #z-cinematic-boot {
         <a href="./plugins.html" class="z-primary-link"><span aria-hidden="true">⚙</span> All Tools</a>
       </nav>
     </div>
-    <details class="side-block" id="conversations-block" open>
-      <summary>Conversations <span class="conv-count" id="conv-count"></span></summary>
+    <details class="side-block" id="conversations-block">
+      <summary>Past chats (optional) <span class="conv-count" id="conv-count"></span></summary>
       <div class="side-block-body">
         <div id="session-search-wrap">
           <input type="search" id="session-search" placeholder="Search conversations…" aria-label="Search conversations">
@@ -1328,7 +1328,7 @@ html.z-boot-returning #z-cinematic-boot {
       <div id="z-avatar" class="z-avatar" data-state="idle" role="img" aria-label="Z voice status"><div class="z-head"><i></i><i></i><b></b></div><div class="z-shoulders"></div></div>
       <div class="z-controls"><strong>PROJECT Z</strong><div class="z-buttons"><button id="z-talk" type="button" aria-pressed="false">Talk to Z</button><button id="z-mic" type="button">Dictate</button><button id="z-speak" type="button">Read reply</button><button id="z-quiet" type="button">Stop voice</button></div></div>
       <p id="z-voice-status" role="status" aria-live="polite">Voice off</p><small>Talk to Z sends speech and reads replies. Dictate adds text without sending.</small><details class="z-memory-panel">
-  <summary>My memory <span id="z-knowledge-count">0 saved</span></summary>
+  <summary>Z’s memory &amp; learning <span id="z-knowledge-count">0 saved</span></summary>
   <div class="z-style-panel" id="z-style-panel">
     <h3>Make Z sound like you</h3>
     <p class="z-style-caption">Z can adapt its replies to your communication style. It learns writing patterns, not your identity or private traits.</p>
@@ -1373,7 +1373,7 @@ html.z-boot-returning #z-cinematic-boot {
     <input type="checkbox" id="z-learning-toggle">
     <span>
       <strong>Suggest new memories</strong>
-      <small>Off by default. You choose what Z saves.</small>
+      <small>Help Z learn from your chats without showing a transcript. You approve suggested memories unless you opt into automatic safe saving.</small>
     </span>
   </label>
   <label class="z-learning-optin" for="z-memory-auto-save">
@@ -1385,7 +1385,7 @@ html.z-boot-returning #z-cinematic-boot {
     <div id="z-learning-suggestions" class="z-learning-list"></div>
   </div>
   <div class="z-learning-section">
-    <h3>What Z remembers</h3>
+    <h3>What Z remembers (not full transcripts)</h3>
     <input type="search" id="z-memory-filter" class="z-learning-filter" placeholder="Find an approved memory…" aria-label="Search saved memories">
     <p id="z-memory-showing" class="z-learning-count"></p>
     <div id="z-learning-saved" class="z-learning-list"></div>
