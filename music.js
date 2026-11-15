@@ -52,6 +52,15 @@ function display(song) {
   const storeLink = $("apple-store-link");
   storeLink.hidden = !song?.appleUrl;
   if (song?.appleUrl) storeLink.href = song.appleUrl; else storeLink.removeAttribute("href");
+  for (const [id, url] of [
+    ["spotify-song-link", song ? "https://open.spotify.com/search/" + encodeURIComponent(song.title + " " + song.artist) : ""],
+    ["soundcloud-song-link", song ? "https://soundcloud.com/search?q=" + encodeURIComponent(song.title + " " + song.artist) : ""],
+  ]) {
+    const link = $(id);
+    if (!link) continue;
+    link.hidden = !song;
+    if (song) link.href = url; else link.removeAttribute("href");
+  }
   actions.forEach(button => { button.disabled = !song; });
   $("discovery-count").textContent = song ? (queue.length + 1) + " SONGS TO EXPLORE" : "DISCOVER";
   card.classList.remove("out", "dragging");
@@ -121,6 +130,7 @@ async function loadSongs(query = "", seedSong = null) {
   loadCycle++;
   display(null);
   status("Finding tracks for your taste…");
+  $("start-discovery").disabled = true;
   try {
     const outcomes = await Promise.allSettled(selected.map(term => searchCatalog(term, controller.signal)));
     if (sequence !== task) return;
@@ -128,10 +138,12 @@ async function loadSongs(query = "", seedSong = null) {
     if (!found.length && outcomes.every(x => x.status === "rejected"))
       throw new Error("Cannot reach the music catalog. Check your internet connection.");
     queue = smartRankSongs(found, profile, { genre: seedSong ? genreFamily(seedSong.genre) : genre, vibe, exploration: seedSong ? "explore" : exploration });
-    if (queue.length) { display(queue.shift()); status(""); }
-    else status("No new tracks found. Change the genre or vibe, or search an artist.");
+    if (queue.length) { display(queue.shift()); status(""); $("start-discovery").textContent = "↻ Start fresh"; $("start-hint").textContent = "Preview, swipe, and save tracks to your playlist."; }
+    else status("No new tracks found. Tap Start again, change the genre or vibe, or search an artist.");
   } catch (error) {
     if (sequence === task && error.name !== "AbortError") status(error.message || "Music discovery failed.");
+  } finally {
+    if (sequence === task) $("start-discovery").disabled = false;
   }
 }
 function renderSaved() {
@@ -208,6 +220,11 @@ $("skip-song").addEventListener("click", () => makeChoice("skip"));
 $("like-song").addEventListener("click", () => makeChoice("like"));
 $("similar-song").addEventListener("click", () => makeChoice("similar"));
 $("refresh-songs").addEventListener("click", () => { queue = []; loadSongs(); });
+$("start-discovery")?.addEventListener("click", () => {
+  queue = [];
+  $("start-hint").textContent = "Tap Preview to hear a clip. Swipe right to save or left to skip.";
+  loadSongs($("music-search").value.trim());
+});
 $("music-search-form").addEventListener("submit", e => { e.preventDefault(); queue = []; loadSongs($("music-search").value.trim()); });
 $("preview-button").addEventListener("click", async () => {
   if (!current?.preview) return;
