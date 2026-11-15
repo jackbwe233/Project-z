@@ -2610,9 +2610,10 @@ function updateWebSearchUI() {
   }
 }
 
-// Render only the latest messages on open. Very large chats used to create
-// hundreds of markdown nodes before an iPhone could show the conversation.
-const CHAT_RENDER_BATCH = 60;
+// Keep the chat uncluttered: show only the latest few messages by default.
+// The complete conversation stays in storage and in the model's context;
+// this limit controls only what is drawn on screen. Older messages are optional.
+const CHAT_RENDER_BATCH = 6;
 const chatRenderLimitBySession = new Map();
 
 function renderChat({ scrollForce = false, animateLast = false } = {}) {
@@ -2639,7 +2640,7 @@ function renderChat({ scrollForce = false, animateLast = false } = {}) {
     const older = document.createElement("button");
     older.type = "button";
     older.className = "btn chat-load-older";
-    older.textContent = `Show ${Math.min(CHAT_RENDER_BATCH, firstVisibleIndex)} earlier messages · ${firstVisibleIndex} hidden`;
+    older.textContent = `View earlier messages (${firstVisibleIndex} hidden)`;
     older.setAttribute("aria-label", `Show earlier messages in this conversation (${firstVisibleIndex} hidden)`);
     older.addEventListener("click", () => {
       const scroll = chatScrollEl();
