@@ -41,7 +41,7 @@
     });
     shell.append(nav);
     const help = make("a","z-shell-install","Install Z");
-    help.href = "./shortcut.html";
+    help.href = "./install.html";
     shell.append(help);
     document.body.prepend(shell);
   }
