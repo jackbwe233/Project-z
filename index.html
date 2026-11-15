@@ -1282,6 +1282,7 @@ html.z-boot-returning #z-cinematic-boot {
       <div class="z-safe-logo" aria-hidden="true">Z</div>
       <h1>Project Z</h1>
       <p>Your saved chats stay on this device. You can type a question right away.</p>
+      <a href="#" data-z-install-guide style="margin:14px 0 4px;color:#c3d9ff;font-weight:650">↗ Add Z to your Home Screen</a>
       <form id="z-launch-ask-form">
         <label for="z-launch-question">Ask Z anything</label>
         <textarea id="z-launch-question" rows="3" maxlength="5000" placeholder="What's on your mind?"></textarea>
@@ -1289,16 +1290,15 @@ html.z-boot-returning #z-cinematic-boot {
       </form>
       <p class="z-launch-hint">The first answer may still take time while your phone loads the local AI model.</p>
       <button id="z-launch-open" type="button">Open saved chats</button><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:11px"><a style="display:block;padding:13px 5px;margin:0;border-radius:12px;border:1px solid #4b5e80" href="./personal.html">Personal</a><a style="display:block;padding:13px 5px;margin:0;border-radius:12px;border:1px solid #4b5e80" href="./quick.html">🎙 Talk</a><a style="display:block;padding:13px 5px;margin:0;border-radius:12px;border:1px solid #4b5e80" href="./plugins.html">Plugins</a><a style="display:block;padding:13px 5px;margin:0;border-radius:12px;border:1px solid #4b5e80" href="./notes.html">Notes</a><a style="display:block;padding:13px 5px;margin:0;border-radius:12px;border:1px solid #4b5e80;grid-column:1 / -1" href="./code-lab.html">⌘ Change Z</a><a style="display:block;padding:13px 5px;margin:0;border-radius:12px;border:1px solid #4b5e80;grid-column:1 / -1" href="./account.html">◯ Create account / Log in</a></div>
-      <a href="#" data-z-install-guide style="margin:14px 0 4px;color:#c3d9ff;font-weight:650">↗ Add Z to your Home Screen</a>
       <a href="./recovery.html">Having trouble? Open recovery</a>
       <p id="z-launch-error" hidden>The app couldn't start. Use recovery for a safer way in.</p>
     </div>`;
   const style = document.createElement("style");
   style.textContent = `
     #z-safe-start{min-height:100dvh;position:fixed;inset:0;z-index:99999;
-      display:grid;place-items:center;padding:20px;background:linear-gradient(150deg,#0a111d,#192a43);
+      display:grid;place-items:center;padding:12px;overflow-y:auto;background:linear-gradient(150deg,#0a111d,#192a43);
       color:#edf4ff;font:16px/1.5 -apple-system,BlinkMacSystemFont,system-ui,sans-serif}
-    #z-safe-start .z-safe-card{width:min(100%,420px);padding:26px;border:1px solid #3c5271;
+    #z-safe-start .z-safe-card{width:min(100%,420px);max-height:calc(100dvh - 24px);overflow-y:auto;overscroll-behavior:contain;padding:22px;border:1px solid #3c5271;
       border-radius:22px;background:#172338;box-shadow:0 12px 40px #283c5215;text-align:center}
     #z-safe-start .z-safe-logo{font-size:36px;font-weight:750;color:#bed4f8}
     #z-safe-start h1{font-size:28px;margin:6px 0 12px}
