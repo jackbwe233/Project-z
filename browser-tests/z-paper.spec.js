@@ -80,3 +80,45 @@ test("Stock Workbench opens from Z Plugins without restarting the current chat",
   await expect(page.locator("#z-tools-overlay")).toHaveCount(0);
   await expect(page.locator("#chat-scroll")).toBeVisible();
 });
+
+
+test("Stocks header is minimal, keeps other tools behind Menu, and fits iPhone widths", async ({ page }) => {
+  for (const width of [320, 375, 402, 440]) {
+    await page.setViewportSize({width,height:850});
+    await page.goto("/paper.html");
+    const shell=page.locator(".z-shell--stocks");
+    await expect(shell).toBeVisible();
+    await expect(shell.locator(".z-shell-stock-title")).toHaveText("Stocks");
+    await expect(shell.getByRole("link", {name:"Back to Z Chat"})).toBeVisible();
+    await expect(shell.locator(".z-shell-links")).toHaveCount(0);
+    await expect(page.locator("main > header")).toHaveCount(0);
+    await expect(shell.locator(".z-shell-more-menu")).toBeHidden();
+
+    const positions = await page.evaluate(()=>{
+      const el=document.querySelector(".z-shell--stocks");
+      const box=el.getBoundingClientRect();
+      const actions=[...el.querySelectorAll(".z-shell-stock-actions > a,.z-shell-more-trigger")];
+      return {docOverflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
+        shellRight:box.right,actionRight:Math.max(...actions.map(x=>x.getBoundingClientRect().right))};
+    });
+    expect(positions.docOverflow,width+"px overflow").toBeLessThanOrEqual(2);
+    expect(positions.shellRight,width+"px shell right").toBeLessThanOrEqual(width+1);
+    expect(positions.actionRight,width+"px menu right").toBeLessThanOrEqual(width+1);
+
+    await shell.locator(".z-shell-more-trigger").click();
+    const nav=page.getByRole("navigation",{name:"Z app navigation"});
+    await expect(nav.getByRole("link",{name:"Detailed stock research"})).toBeVisible();
+    await expect(nav.getByRole("link",{name:"Account"})).toBeVisible();
+    await expect(nav.getByRole("link",{name:"All tools"})).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(shell.locator(".z-shell-more-menu")).toBeHidden();
+  }
+});
+
+test("Stocks menu links to detailed research without hiding the portfolio controls", async ({page})=>{
+  await page.goto("/paper.html");
+  await expect(page.locator("#paper-cash")).toBeVisible();
+  await page.locator(".z-shell-more-trigger").click();
+  await page.getByRole("navigation",{name:"Z app navigation"}).getByRole("link",{name:"Detailed stock research"}).click();
+  await expect(page).toHaveURL(/\\/research\\.html$/);
+});
