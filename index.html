@@ -909,7 +909,7 @@
 <link rel="stylesheet" href="./project-z.css?v=memory-0.2.1-20261114">
 <link rel="stylesheet" href="./monochrome.css?v=mono-0.3.0">
 <link rel="stylesheet" href="./future-motion.css?v=2080-2">
-<link rel="stylesheet" href="./z-orbital.css?v=cinematic-centered-2">
+<link rel="stylesheet" href="./z-orbital.css?v=cosmic-startup-20261114-3">
 <style>
 /* Returning from Z's tools should never replay the cinematic entrance. */
 html.z-boot-returning #z-cinematic-boot {
@@ -920,15 +920,20 @@ html.z-boot-returning #z-cinematic-boot {
 </style>
 <script>
 (() => {
-  // Once per tab/app session: show the Z cinematic opening only on the first entry.
-  const key = "project-z:boot-played:v1";
+  // Replay the short cinematic intro on a fresh app launch, including iPhone
+  // home-screen launches. Do not replay it when navigating back from Z tools.
+  // Previous sessionStorage persistence skipped intros even after reopening.
   try {
     const navigation = performance.getEntriesByType("navigation")[0];
+    const internalReturn = document.referrer &&
+      new URL(document.referrer).origin === location.origin &&
+      new URL(document.referrer).pathname.startsWith(
+        location.pathname.slice(0, location.pathname.lastIndexOf("/") + 1)
+      );
     if (localStorage.getItem("project-z:boot-mode:v1") === "off" ||
-        sessionStorage.getItem(key) === "1" || navigation?.type === "back_forward") {
+        navigation?.type === "back_forward" || internalReturn) {
       document.documentElement.classList.add("z-boot-returning");
     }
-    sessionStorage.setItem(key, "1");
   } catch {
     // Browser privacy restrictions must not break Z Chat.
   }
