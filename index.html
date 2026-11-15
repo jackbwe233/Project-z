@@ -1287,6 +1287,101 @@ html.z-boot-returning #z-cinematic-boot {
 }
 
 </style>
+
+<style id="z-premium-chat-v2">
+/* Project Z premium chat v2 — visual only, original controls stay wired. */
+@media (max-width: 768px) {
+  #app #main {
+    background:radial-gradient(ellipse 100% 25% at 50% 1%,rgba(35,91,160,.16),transparent 78%),#030812!important;
+  }
+  #app .topbar {
+    grid-template-rows:44px 40px!important;
+    row-gap:9px!important;
+    padding:max(11px,env(safe-area-inset-top)) 13px 12px!important;
+    background:linear-gradient(#050c19,#040a14)!important;
+  }
+  #app .chat-title-wrap {
+    display:flex!important;align-items:center!important;justify-content:center!important;
+    gap:5px!important;padding-right:90px!important;min-width:0!important;
+  }
+  #app .chat-title-wrap::before{display:none!important;}
+  #app .z-chat-wordmark {
+    display:inline-flex;align-items:center;gap:7px;
+    flex:0 0 auto;color:#d5eaff;font:700 17px/1.2 -apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+    letter-spacing:-.045em;text-shadow:0 0 14px rgba(115,174,255,.22);
+  }
+  #app .z-chat-orbit {font-size:23px;color:#a4d5ff;text-shadow:0 0 13px rgba(104,179,255,.65);}
+  #app .chat-title {
+    font-size:10px!important;max-width:22vw!important;color:#91abc6!important;
+    font-weight:500!important;letter-spacing:0!important;
+    overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+  }
+  #app .chat-title::before{content:"· ";color:#536e92;}
+  #app .topbar-actions{gap:6px!important;}
+  #app #z-work-top-link{border-radius:13px!important;}
+  #app #model-status{background:#081422!important;min-width:0!important;}
+  #app #model-status-text{max-width:100%!important;font-size:10px!important;}
+  #app .z-voice-drawer:not([open]) {
+    margin:8px 12px 4px!important;
+    background:transparent!important;
+    box-shadow:none!important;
+  }
+  #app .z-voice-drawer > summary {
+    border-radius:14px!important;
+    box-shadow:0 2px 12px rgba(0,0,0,.17)!important;
+  }
+  #app #chat-messages {gap:12px!important;padding:16px 0 24px!important;}
+  #app #chat-messages .msg-inner{max-width:780px!important;margin:auto!important;}
+  #app #chat-messages .msg-card {
+    border-radius:19px!important;
+    padding:16px!important;
+    background:linear-gradient(145deg,#101e30 0%,#07111f 100%)!important;
+    border:1px solid rgba(122,167,214,.38)!important;
+    box-shadow:inset 0 1px 0 rgba(220,235,255,.035),0 7px 22px rgba(0,0,0,.15)!important;
+  }
+  #app #chat-messages .msg.user .msg-card {
+    background:linear-gradient(145deg,#17283b,#0b1929)!important;
+    border-color:rgba(115,158,201,.36)!important;
+  }
+  #app #chat-messages .msg-role {color:#b1ccec!important;letter-spacing:.025em!important;}
+  #app #chat-messages .msg-content,
+  #app #chat-messages .response-content {
+    color:#f0f5fc!important;font:400 15px/1.56 -apple-system,BlinkMacSystemFont,system-ui,sans-serif!important;
+    letter-spacing:-.012em!important;
+  }
+  #app #chat-messages .msg-footer{font-size:10px!important;opacity:.68!important;}
+  #app #chat-messages .msg-footer:hover{opacity:1!important;}
+  #app #composer-area{background:linear-gradient(0deg,#020710 68%,transparent)!important;}
+  #app #composer-shell {
+    background:linear-gradient(115deg,#152a42,#071626)!important;
+    border:1px solid rgba(158,200,241,.6)!important;
+    border-radius:21px!important;min-height:63px!important;
+    box-shadow:0 0 19px rgba(64,137,226,.13),0 9px 24px #0006!important;
+  }
+  #app #user-input{min-height:42px!important;line-height:1.45!important;}
+  #app #user-input::placeholder{color:#aec4dc!important;}
+  #app #send-btn{border-radius:14px!important;}
+  /* The icon's generated SVG may not render on iPhone; show a reliable
+     silver-blue wordmark without altering JS or the button's behavior. */
+  #app #empty-icon {
+    position:relative!important;
+    background:radial-gradient(circle at 38% 29%,#244d83 0%,#0d2545 52%,#030d1c 100%)!important;
+    border:1px solid rgba(177,217,255,.58)!important;
+    box-shadow:0 0 0 8px rgba(94,164,255,.055),0 0 46px rgba(73,160,255,.4)!important;
+  }
+  #app #empty-icon > *{opacity:0!important;}
+  #app #empty-icon::after {
+    content:"Z";position:absolute;inset:0;display:grid;place-items:center;
+    color:#ebf7ff;font:900 48px/1 -apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+    letter-spacing:-.08em;text-shadow:0 0 16px #c4e6ff,0 0 25px #428de3;
+  }
+}
+@media(max-width:360px){
+  #app .z-chat-wordmark{font-size:14px;}
+  #app .chat-title{max-width:18vw!important;}
+  #app .chat-title-wrap{padding-right:85px!important;}
+}
+</style>
 </head>
 <body>
 <div id="z-cinematic-boot" aria-hidden="true"><div class="z-boot-halo"></div><div class="z-boot-track"></div><span class="z-boot-glyph">Z</span><div class="z-boot-vignette"></div></div>
@@ -1465,6 +1560,7 @@ html.z-boot-returning #z-cinematic-boot {
     <div class="topbar">
       <button type="button" class="menu-btn" id="sidebar-toggle" aria-label="Menu"></button>
       <div class="chat-title-wrap">
+        <span class="z-chat-wordmark" aria-hidden="true"><span class="z-chat-orbit">✧</span> Project Z</span>
         <h2 class="chat-title" id="chat-title">New chat</h2>
         <button type="button" class="chat-title-edit" id="chat-title-edit" aria-label="Rename conversation" title="Rename"></button>
       </div>
