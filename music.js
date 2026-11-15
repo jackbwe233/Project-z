@@ -83,17 +83,31 @@ function makeChoice(action) {
 function terms(query = "") {
   return discoveryQueries(profile, { genre, vibe, exploration, cycle: loadCycle, query });
 }
+const catalogCache = new Map();
+const catalogCalls = [];
 async function searchCatalog(term, signal) {
+  const key = term.toLowerCase();
+  const cached = catalogCache.get(key);
+  if (cached && Date.now() - cached.at < 12 * 60 * 1000) return cached.songs;
+  // Apple's iTunes search service is limited to approximately 20 calls/minute.
+  const now = Date.now();
+  while (catalogCalls.length && now - catalogCalls[0] > 60000) catalogCalls.shift();
+  if (catalogCalls.length >= 16) throw new Error("Song search limit reached. Try again shortly.");
+  catalogCalls.push(now);
   const url = new URL("https://itunes.apple.com/search");
   url.searchParams.set("term", term);
+  url.searchParams.set("media", "music");
   url.searchParams.set("entity", "song");
   url.searchParams.set("country", "US");
-  url.searchParams.set("limit", "50");
+  url.searchParams.set("limit", "80");
   url.searchParams.set("explicit", "No");
   const response = await fetch(url, { signal });
   if (!response.ok) throw new Error("Music catalog error (" + response.status + ").");
   const data = await response.json();
-  return (data.results || []).map(normalizeSong).filter(Boolean).map(song => ({ ...song, sourceQuery: term }));
+  const songs = (data.results || []).map(normalizeSong).filter(Boolean).map(song => ({ ...song, sourceQuery: term }));
+  if (catalogCache.size >= 40) catalogCache.delete(catalogCache.keys().next().value);
+  catalogCache.set(key, { at: Date.now(), songs });
+  return songs;
 }
 async function loadSongs(query = "") {
   if (controller) controller.abort();
