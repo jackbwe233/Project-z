@@ -72,5 +72,8 @@ test("Phone sidebar scrolls down to account, model storage and diagnostics",asyn
   });
   expect(state.content).toBeGreaterThan(state.visible);
   expect(state.atBottom).toBe(true);
+  await page.locator("#diagnostics-block > summary").click();
   await expect(page.locator("#diagnostics-copy")).toBeVisible();
+  await page.locator("#diagnostics-copy").scrollIntoViewIfNeeded();
+  await expect(page.locator("#diagnostics-copy")).toBeInViewport();
 });
