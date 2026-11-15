@@ -1,0 +1,60 @@
+# Project Z iPhone/TestFlight release pipeline.
+# Manual only: nothing is signed, billed, uploaded, or published until
+# an authorized Apple Developer team connects and starts this workflow.
+# Configure Codemagic Team integrations > Developer Portal with the key name
+# "z_app_store"; keep all .p8 signing keys outside this public repository.
+workflows:
+  project-z-testflight:
+    name: Project Z iPhone beta (signed IPA)
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    triggering:
+      events: []
+    integrations:
+      app_store_connect: z_app_store
+    environment:
+      xcode: latest
+      node: 22
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.projectz.privateassistant
+      vars:
+        XCODE_WORKSPACE: native-ios/ios/App/App.xcworkspace
+        XCODE_SCHEME: App
+    scripts:
+      - name: Install Capacitor
+        script: |
+          npm install --prefix native-ios --no-audit --no-fund
+      - name: Bundle Project Z for offline app shell
+        script: |
+          npm run prepare:web --prefix native-ios
+      - name: Generate the iPhone native project
+        script: |
+          cd native-ios
+          npx cap add ios
+          npx cap sync ios
+      - name: Add Z icon and permission messages
+        script: |
+          bash native-ios/scripts/prepare-ios-release.sh
+      - name: Set unique Apple build number
+        script: |
+          cd native-ios/ios/App
+          xcrun agvtool new-version -all "$BUILD_NUMBER"
+      - name: Apply Apple distribution signing profiles
+        script: |
+          cd native-ios/ios/App
+          xcode-project use-profiles
+      - name: Build signed iPhone IPA
+        script: |
+          xcode-project build-ipa \
+            --workspace "$CM_BUILD_DIR/$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME"
+    artifacts:
+      - native-ios/ios/App/build/ios/ipa/*.ipa
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: false
+        submit_to_app_store: false
