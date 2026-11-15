@@ -1,0 +1,331 @@
+import { MUSIC_STORAGE_KEY, blankMusicProfile, normalizeMusicProfile, normalizeSong, recordMusicAction, removeLikedSong, rankMusicResults, musicTasteSummary, musicSearchTerms } from "./lib/music-finder.js";
+import { connectSpotify, handleSpotifyCallback, spotifyIsConnected, disconnectSpotify, hasSpotifySetup, createSpotifyPlaylist, connectApple, appleIsConnected, hasAppleSetup, createApplePlaylist } from "./lib/music-providers.js";
+
+const $ = id => document.getElementById(id);
+const card = $("swipe-card");
+const audio = $("music-audio");
+let profile;
+try { profile = normalizeMusicProfile(JSON.parse(localStorage.getItem(MUSIC_STORAGE_KEY) || "null")); }
+catch { profile = blankMusicProfile(); }
+let genre = profile.genre || "All", vibe = "any", queue = [], current = null, loadCycle = 0, sequence = 0, exporting = false, gesture = null;
+let controller = null;
+const actions = [$("skip-song"), $("like-song"), $("similar-song")];
+const genres = {
+  All:["indie pop","alternative","hip hop"], Indie:["indie rock","bedroom pop","indie pop"],
+  "Hip-Hop":["hip hop","rap","alternative hip hop"], Rock:["alternative rock","rock","indie rock"],
+  "R&B":["r&b","soul","neo soul"], Pop:["pop","indie pop","synth pop"],
+  Electronic:["electronic","house","downtempo"], Country:["country","americana","alternative country"],
+  Jazz:["jazz","jazz fusion","smooth jazz"],
+};
+const vibes = {
+  any:[], dreamy:["dream pop","shoegaze","ethereal indie"], hype:["energetic hip hop","dance","high energy"],
+  chill:["chill indie","lofi","acoustic chill"], sad:["melancholic indie","sad alternative","slow songs"],
+  nostalgic:["nostalgic","classic alternative","indie folk"],
+  underground:["underground indie","alternative experimental","independent hip hop"],
+};
+function status(s) { $("discovery-status").textContent = s; }
+function playlistStatus(s) { $("playlist-status").textContent = s; }
+function connectionStatus(s) { $("connection-help").textContent = s; }
+function persist() {
+  profile.genre = genre;
+  try { localStorage.setItem(MUSIC_STORAGE_KEY, JSON.stringify(profile)); }
+  catch { status("Your browser could not save music preferences."); }
+  $("saved-count").textContent = profile.likes.length;
+}
+function placeholder() {
+  const s = document.createElement("span");
+  s.className = "art-placeholder";
+  s.textContent = "Z";
+  return s;
+}
+function display(song) {
+  current = song || null;
+  audio.pause();
+  audio.removeAttribute("src");
+  audio.load();
+  $("preview-button").textContent = "▶ Preview";
+  $("preview-button").disabled = !song?.preview;
+  $("preview-note").textContent = song?.preview ? "Listen to a short preview" : "Preview unavailable";
+  const art = $("card-art");
+  art.replaceChildren();
+  if (song?.artwork) {
+    const img = document.createElement("img");
+    img.src = song.artwork;
+    img.alt = "Cover art for " + song.title;
+    img.loading = "eager";
+    img.onerror = () => art.replaceChildren(placeholder());
+    art.append(img);
+  } else art.append(placeholder());
+  $("card-genre").textContent = song?.genre || "DISCOVER";
+  $("card-title").textContent = song?.title || "Find your sound";
+  $("card-artist").textContent = song?.artist || "Pick a genre, vibe, or search an artist.";
+  $("card-album").textContent = song?.album || "Your next favorite is out there.";
+  actions.forEach(button => { button.disabled = !song; });
+  $("discovery-count").textContent = song ? (queue.length + 1) + " SONGS TO EXPLORE" : "DISCOVER";
+  card.classList.remove("out", "dragging");
+  card.style.transform = "";
+  card.style.opacity = "";
+  card.querySelectorAll(".swipe-stamp").forEach(x => { x.style.opacity = "0"; });
+}
+function nextSong() {
+  if (queue.length) { display(queue.shift()); status(""); }
+  else { display(null); loadSongs(); }
+}
+function makeChoice(action) {
+  if (!current || card.classList.contains("out")) return;
+  const song = current;
+  profile = recordMusicAction(profile, song, action);
+  persist(); renderSaved(); renderTaste();
+  if (action === "similar") { queue = []; $("music-search").value = song.artist; }
+  const finish = () => {
+    if (action === "similar") loadSongs(song.artist);
+    else nextSong();
+  };
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) { finish(); return; }
+  card.classList.add("out");
+  card.style.transform = action === "skip" ? "translateX(-110%) rotate(-16deg)" :
+    action === "like" ? "translateX(110%) rotate(16deg)" : "translateY(-90px)";
+  card.style.opacity = "0";
+  setTimeout(finish, 215);
+}
+function terms(query = "") {
+  if (query) return [query];
+  const g = genres[genre] || genres.All;
+  const v = vibes[vibe] || [];
+  const t = musicSearchTerms(profile, genre);
+  const options = [];
+  if (v.length && genre !== "All") options.push(v[loadCycle % v.length] + " " + g[loadCycle % g.length]);
+  if (v.length) options.push(v[(loadCycle + 1) % v.length]);
+  options.push(g[loadCycle % g.length]);
+  if (profile.likes.length) options.push(t[loadCycle % t.length]);
+  options.push(g[(loadCycle + 1) % g.length]);
+  if (!profile.likes.length && genre === "All" && vibe === "any") options.push(t[loadCycle % t.length]);
+  return [...new Set(options)].slice(0, 4);
+}
+async function searchCatalog(term, signal) {
+  const url = new URL("https://itunes.apple.com/search");
+  url.searchParams.set("term", term);
+  url.searchParams.set("entity", "song");
+  url.searchParams.set("country", "US");
+  url.searchParams.set("limit", "50");
+  url.searchParams.set("explicit", "No");
+  const response = await fetch(url, { signal });
+  if (!response.ok) throw new Error("Music catalog error (" + response.status + ").");
+  const data = await response.json();
+  return (data.results || []).map(normalizeSong).filter(Boolean);
+}
+async function loadSongs(query = "") {
+  if (controller) controller.abort();
+  controller = new AbortController();
+  const task = ++sequence;
+  const selected = terms(query);
+  loadCycle++;
+  display(null);
+  status("Finding tracks for your taste…");
+  try {
+    const outcomes = await Promise.allSettled(selected.map(term => searchCatalog(term, controller.signal)));
+    if (sequence !== task) return;
+    const found = outcomes.filter(x => x.status === "fulfilled").flatMap(x => x.value);
+    if (!found.length && outcomes.every(x => x.status === "rejected"))
+      throw new Error("Cannot reach the music catalog. Check your internet connection.");
+    queue = rankMusicResults(found, profile, { genre });
+    if (queue.length) { display(queue.shift()); status(""); }
+    else status("No new tracks found. Change the genre or vibe, or search an artist.");
+  } catch (error) {
+    if (sequence === task && error.name !== "AbortError") status(error.message || "Music discovery failed.");
+  }
+}
+function renderSaved() {
+  const list = $("saved-tracks");
+  list.replaceChildren();
+  if (!profile.likes.length) {
+    const li = document.createElement("li");
+    li.className = "empty-list";
+    li.textContent = "No songs yet. Swipe right on songs you love.";
+    list.append(li);
+    return;
+  }
+  for (const song of [...profile.likes].reverse()) {
+    const li = document.createElement("li");
+    if (song.artwork) {
+      const img = document.createElement("img");
+      img.src = song.artwork;
+      img.alt = "";
+      img.loading = "lazy";
+      li.append(img);
+    }
+    const meta = document.createElement("div");
+    meta.className = "saved-meta";
+    const heading = document.createElement("strong");
+    heading.textContent = song.title;
+    const sub = document.createElement("small");
+    sub.textContent = song.artist;
+    meta.append(heading, sub);
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.textContent = "Remove";
+    remove.setAttribute("aria-label", "Remove " + song.title);
+    remove.addEventListener("click", () => {
+      profile = removeLikedSong(profile, song.id);
+      persist(); renderSaved(); renderTaste();
+    });
+    li.append(meta, remove);
+    list.append(li);
+  }
+}
+function renderTaste() {
+  const summary = musicTasteSummary(profile);
+  $("taste-likes").textContent = summary.likes;
+  $("taste-skips").textContent = summary.skipped;
+  for (const [id, names] of [["taste-genres", summary.genres], ["taste-artists", summary.artists]]) {
+    const parent = $(id);
+    parent.replaceChildren();
+    if (!names.length) { parent.textContent = "Like some songs to discover your favorites."; continue; }
+    names.forEach(name => {
+      const s = document.createElement("span");
+      s.textContent = name;
+      parent.append(s);
+    });
+  }
+}
+function updateConnections() {
+  $("spotify-state").textContent = spotifyIsConnected() ? "Connected for this session" : "Not connected";
+  $("apple-state").textContent = appleIsConnected() ? "Connected" : "Not connected";
+  $("spotify-connect").textContent = spotifyIsConnected() ? "Disconnect" : "Connect";
+  $("apple-connect").textContent = appleIsConnected() ? "Connected" : "Connect";
+  $("apple-connect").disabled = appleIsConnected();
+}
+function showTab(target) {
+  for (const key of ["discover", "saved", "taste"]) {
+    $("tab-" + key).setAttribute("aria-selected", String(target === key));
+    $("music-" + key).hidden = target !== key;
+  }
+  if (target === "saved") renderSaved();
+  if (target === "taste") { renderTaste(); updateConnections(); }
+  if (target !== "discover") { audio.pause(); $("preview-button").textContent = "▶ Preview"; }
+}
+for (const key of ["discover", "saved", "taste"]) $("tab-" + key).addEventListener("click", () => showTab(key));
+$("skip-song").addEventListener("click", () => makeChoice("skip"));
+$("like-song").addEventListener("click", () => makeChoice("like"));
+$("similar-song").addEventListener("click", () => makeChoice("similar"));
+$("refresh-songs").addEventListener("click", () => { queue = []; loadSongs(); });
+$("music-search-form").addEventListener("submit", e => { e.preventDefault(); queue = []; loadSongs($("music-search").value.trim()); });
+$("preview-button").addEventListener("click", async () => {
+  if (!current?.preview) return;
+  if (audio.paused) {
+    if (audio.src !== current.preview) audio.src = current.preview;
+    try { await audio.play(); $("preview-button").textContent = "❚❚ Pause"; }
+    catch { status("This preview is unavailable, but you can still save the song."); }
+  } else { audio.pause(); $("preview-button").textContent = "▶ Preview"; }
+});
+audio.addEventListener("ended", () => { $("preview-button").textContent = "▶ Preview"; });
+audio.addEventListener("error", () => { $("preview-button").textContent = "▶ Preview"; $("preview-note").textContent = "Preview not available"; });
+for (const button of document.querySelectorAll("[data-genre]")) button.addEventListener("click", () => {
+  genre = button.dataset.genre;
+  document.querySelectorAll("[data-genre]").forEach(x => x.setAttribute("aria-pressed", String(x === button)));
+  $("music-search").value = ""; queue = []; persist(); loadSongs();
+});
+for (const button of document.querySelectorAll("[data-vibe]")) button.addEventListener("click", () => {
+  vibe = button.dataset.vibe;
+  document.querySelectorAll("[data-vibe]").forEach(x => x.setAttribute("aria-pressed", String(x === button)));
+  $("music-search").value = ""; queue = []; loadSongs();
+});
+document.querySelectorAll("[data-genre]").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.genre === genre)));
+
+card.addEventListener("pointerdown", e => {
+  if (!current || e.target.closest("button") || card.classList.contains("out")) return;
+  gesture = { x: e.clientX, y: e.clientY, pointer: e.pointerId, horizontal: false };
+});
+card.addEventListener("pointermove", e => {
+  if (!gesture || gesture.pointer !== e.pointerId || !current) return;
+  const dx = e.clientX - gesture.x, dy = e.clientY - gesture.y;
+  if (!gesture.horizontal && Math.abs(dx) > 13 && Math.abs(dx) > Math.abs(dy) * 1.25) {
+    gesture.horizontal = true; card.classList.add("dragging");
+    try { card.setPointerCapture(e.pointerId); } catch { /* optional */ }
+  }
+  if (!gesture.horizontal) return;
+  card.style.transform = "translate(" + dx + "px," + Math.min(0, dy * .25) + "px) rotate(" + (dx / 18) + "deg)";
+  card.querySelector(".swipe-stamp-left").style.opacity = String(Math.max(0, Math.min(1, -dx / 95)));
+  card.querySelector(".swipe-stamp-right").style.opacity = String(Math.max(0, Math.min(1, dx / 95)));
+});
+card.addEventListener("pointerup", e => {
+  if (!gesture || gesture.pointer !== e.pointerId) return;
+  const dx = e.clientX - gesture.x, dy = e.clientY - gesture.y;
+  const horizontal = gesture.horizontal;
+  gesture = null; card.classList.remove("dragging");
+  card.style.transform = "";
+  card.querySelectorAll(".swipe-stamp").forEach(s => { s.style.opacity = "0"; });
+  if (horizontal && dx > 78) makeChoice("like");
+  else if (horizontal && dx < -78) makeChoice("skip");
+  else if (dy < -85 && Math.abs(dx) < 65) makeChoice("similar");
+});
+card.addEventListener("pointercancel", () => { gesture = null; card.classList.remove("dragging"); card.style.transform = ""; });
+document.addEventListener("keydown", e => {
+  if (document.activeElement?.closest("input,button,textarea,select") || $("music-discover").hidden) return;
+  if (e.key === "ArrowLeft") makeChoice("skip");
+  if (e.key === "ArrowRight") makeChoice("like");
+  if (e.key === "ArrowUp") makeChoice("similar");
+});
+
+function csv(s) { return '"' + String(s || "").replace(/"/g, '""') + '"'; }
+$("csv-export").addEventListener("click", () => {
+  if (!profile.likes.length) { playlistStatus("Save some songs first."); return; }
+  const rows = [["Title", "Artist", "Album", "Genre", "Apple Music link"].map(csv).join(",")];
+  for (const song of profile.likes) rows.push([song.title, song.artist, song.album, song.genre, song.appleUrl].map(csv).join(","));
+  const url = URL.createObjectURL(new Blob([rows.join("\r\n")], { type:"text/csv;charset=utf-8" }));
+  const link = document.createElement("a");
+  link.href = url; link.download = "z-music-playlist.csv"; link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  playlistStatus("Exported your song list.");
+});
+$("spotify-connect").addEventListener("click", async () => {
+  if (spotifyIsConnected()) { disconnectSpotify(); updateConnections(); connectionStatus("Spotify disconnected from this session."); return; }
+  try { connectionStatus("Opening Spotify sign-in…"); await connectSpotify(); }
+  catch (e) { connectionStatus(e.message); }
+});
+$("apple-connect").addEventListener("click", async () => {
+  try { connectionStatus("Connecting Apple Music…"); await connectApple(); connectionStatus("Apple Music connected."); updateConnections(); }
+  catch (e) { connectionStatus(e.message); }
+});
+async function sendPlaylist(service) {
+  if (exporting) return;
+  if (!profile.likes.length) { playlistStatus("Save some songs with the heart first."); return; }
+  if (service === "spotify" && !spotifyIsConnected()) { showTab("taste"); connectionStatus("Connect Spotify first."); return; }
+  if (service === "apple" && !appleIsConnected()) { showTab("taste"); connectionStatus("Connect Apple Music first."); return; }
+  exporting = true;
+  $("spotify-export").disabled = $("apple-export").disabled = true;
+  playlistStatus("Matching your saved songs…");
+  try {
+    const result = service === "spotify" ?
+      await createSpotifyPlaylist(profile.likes, $("playlist-name").value, playlistStatus) :
+      await createApplePlaylist(profile.likes, $("playlist-name").value, playlistStatus);
+    const output = $("playlist-status");
+    output.replaceChildren();
+    output.append(document.createTextNode("Playlist created with " + result.matched + " songs. " + (result.unmatched ? result.unmatched + " were not matched. " : "")));
+    if (result.url) {
+      const a = document.createElement("a");
+      a.href = result.url; a.target = "_blank"; a.rel = "noopener noreferrer";
+      a.textContent = "Open playlist ↗"; output.append(a);
+    }
+  } catch (e) { playlistStatus("Playlist could not be fully exported: " + (e.message || "Unknown error")); }
+  finally { exporting = false; $("spotify-export").disabled = $("apple-export").disabled = false; }
+}
+$("spotify-export").addEventListener("click", () => sendPlaylist("spotify"));
+$("apple-export").addEventListener("click", () => sendPlaylist("apple"));
+$("clear-music").addEventListener("click", () => {
+  if (!confirm("Clear all likes, skips, and saved tracks on this device?")) return;
+  localStorage.removeItem(MUSIC_STORAGE_KEY); profile = blankMusicProfile(); genre = "All"; vibe = "any";
+  $("music-search").value = "";
+  document.querySelectorAll("[data-genre]").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.genre === genre)));
+  document.querySelectorAll("[data-vibe]").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.vibe === vibe)));
+  persist(); renderSaved(); renderTaste(); queue = []; loadSongs();
+  connectionStatus("Your music preferences were cleared.");
+});
+async function init() {
+  persist(); renderSaved(); renderTaste(); updateConnections();
+  if (!hasSpotifySetup() && !hasAppleSetup()) connectionStatus("Music accounts require the app owner to configure developer access. Discovery and CSV playlists already work.");
+  try { if (await handleSpotifyCallback()) { connectionStatus("Spotify connected. You can now export playlists."); showTab("taste"); } }
+  catch (e) { connectionStatus(e.message); showTab("taste"); }
+  updateConnections(); loadSongs();
+}
+init();
