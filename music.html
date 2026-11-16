@@ -75,7 +75,7 @@
     <p id="card-album" class="card-album">Your next favorite is out there.</p>
     <p id="card-reason" class="music-reason">Explore music by genre and mood.</p>
     <div class="preview-row"><button type="button" id="preview-button" disabled aria-label="Play song preview">▶ Preview</button><span id="preview-note">Audio previews where available</span></div>
-    <p class="store-credit">Apple previews and artwork courtesy of iTunes; backup tracks courtesy of Audius. <a id="apple-store-link" href="https://music.apple.com/" target="_blank" rel="noopener noreferrer" hidden>Open in Apple Music ↗</a></p>
+    <p class="store-credit">Apple previews and artwork courtesy of iTunes; public Audius tracks may stream directly. <a id="apple-store-link" href="https://music.apple.com/" target="_blank" rel="noopener noreferrer" hidden>Open in Apple Music ↗</a></p>
     <div class="music-provider-links" aria-label="Other ways to listen">
       <a id="spotify-song-link" target="_blank" rel="noopener noreferrer" hidden>Find on Spotify</a>
       <a id="soundcloud-song-link" target="_blank" rel="noopener noreferrer" hidden>Find on SoundCloud</a>
@@ -113,6 +113,15 @@
   <h3>Music connections</h3>
   <p>To connect, Z needs your permission. Only playlist creation is requested; Z does not need your password.</p>
   <div class="connection-line"><strong>Spotify</strong><span id="spotify-state">Not connected</span><button type="button" id="spotify-connect">Connect</button></div>
+  <details id="spotify-setup" class="setup-details">
+    <summary>Set up Spotify connection</summary>
+    <p>Spotify requires a registered app to link your account. Add your public Spotify Developer Client ID, not your secret or password. This stays on this device.</p>
+    <label for="spotify-client-id" class="field-label">SPOTIFY APP CLIENT ID</label>
+    <div class="spotify-setup-row"><input type="text" id="spotify-client-id" maxlength="80" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Paste your public Client ID"><button type="button" id="save-spotify-client-id">Save ID</button></div>
+    <p>Register this exact Redirect URI in your Spotify app settings:</p>
+    <code id="spotify-redirect-uri" class="spotify-redirect-uri"></code>
+    <p>In Spotify development mode, the app owner needs Premium and must allowlist every Spotify account that connects (up to five people).</p>
+  </details>
   <div class="connection-line"><strong>Apple Music</strong><span id="apple-state">Not connected</span><button type="button" id="apple-connect">Connect</button></div>
   <p id="connection-help" class="status"></p>
   <details class="setup-details"><summary>Developer connection setup</summary>
@@ -148,12 +157,12 @@
   <p class="sonic-note">Audio analysis is approximate and cannot determine every emotion, lyric meaning, melody or chord from a file. Labels are listening hypotheses, not facts about how you feel. Apple and Spotify audio are never downloaded for analysis; catalog suggestions use artist and genre clues only unless you provide analyzable audio.</p>
 </section>
 
-<footer class="music-footer">Catalog discovery uses artist and genre clues, not streams or popularity scores; it does not analyze Apple or Spotify audio. Sound DNA only compares audio you explicitly choose on your device. Clips promote songs in the store; music-related feelings vary by listener.</footer>
+<footer class="music-footer">Catalog discovery uses artist and genre clues, not popularity scores; it does not analyze Apple, Spotify, or Audius audio automatically. Sound DNA only compares audio you explicitly choose on your device. Clips promote songs in the store; music-related feelings vary by listener.</footer>
 </main>
 <audio id="music-audio" preload="none"></audio>
 <script src="./z-shell.js?v=ux-simple-20261115-1" defer></script>
 <script src="./music-config.js?v=1" defer></script>
-<script type="module" src="./music.js?v=8"></script>
+<script type="module" src="./music.js?v=9"></script>
 <script>
 // If a module fails to load on iPhone, never leave a silently dead Start button.
 (() => {
