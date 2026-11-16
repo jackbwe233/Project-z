@@ -322,9 +322,10 @@ test('iPhone WebKit: choose genre, vibe and discovery style, then build a four-s
   await expect(page.locator('#card-title')).toContainText('WebKit Playlist Track');
   await expect(page.locator('#preview-button')).toBeEnabled();
   for (let i = 0; i < 4; i++) {
+    const prior = await page.locator('#card-title').textContent();
     await page.locator('#like-song').click();
     await expect(page.locator('#saved-count')).toHaveText(String(i + 1));
-    if (i < 3) await expect(page.locator('#like-song')).toBeEnabled();
+    if (i < 3) await expect(page.locator('#card-title')).not.toHaveText(prior);
   }
   await page.locator('#tab-saved').click();
   await expect(page.locator('#saved-tracks li')).toHaveCount(4);
