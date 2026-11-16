@@ -82,7 +82,7 @@ test("Music Start returns to Retry even if iPhone fetch never resolves after abo
 
 test("Music Start explains when its main script fails to initialize", async ({page}) => {
   await page.clock.install();
-  await page.route("**/music.js?v=8", route => route.abort("failed"));
+  await page.route("**/music.js?v=9", route => route.abort("failed"));
   await page.goto("/music.html");
   await page.locator("#start-discovery").click();
   await expect(page.locator("#discovery-status")).toContainText("still loading");
@@ -112,9 +112,36 @@ test("When Apple is rate-limited, Music Finder uses Audius and saves the track",
   await expect(page.locator("#discovery-status")).toContainText("Audius");
   await expect(page.locator("#audius-song-link")).toBeVisible();
   await expect(page.locator("#audius-song-link")).toHaveAttribute("href", /audius.co/);
+  await expect(page.locator("#preview-button")).toBeEnabled();
+  await expect(page.locator("#preview-button")).toContainText("Play track");
   await page.locator("#like-song").click();
   await expect(page.locator("#saved-count")).toHaveText("1");
   await page.reload();
   await page.locator("#tab-saved").click();
   await expect(page.locator("#saved-tracks")).toContainText("Hidden Sound");
+});
+
+
+test("Spotify connection setup accepts a public Client ID and begins PKCE sign-in", async ({ page }) => {
+  await page.route("https://accounts.spotify.com/authorize**", route => route.fulfill({
+    status: 200, contentType: "text/html", body: "<!doctype html><title>Spotify sign-in mock</title>",
+  }));
+  await page.goto("/music.html");
+  await page.locator("#tab-taste").click();
+  await expect(page.locator("#spotify-state")).toContainText("Setup needed");
+  await page.locator("#spotify-connect").click();
+  await expect(page.locator("#spotify-setup")).toHaveAttribute("open", "");
+  const redirect = await page.locator("#spotify-redirect-uri").textContent();
+  expect(redirect).toBe(new URL(page.url()).origin + "/music.html");
+  await page.locator("#spotify-client-id").fill("0123456789abcdef0123456789abcdef");
+  await page.locator("#save-spotify-client-id").click();
+  await expect(page.locator("#connection-help")).toContainText("saved on this device");
+  await expect(page.locator("#spotify-state")).toHaveText("Ready to connect");
+  await page.locator("#spotify-connect").click();
+  await expect(page).toHaveURL(/^https:\/\/accounts\.spotify\.com\/authorize\?/);
+  const params = new URL(page.url()).searchParams;
+  expect(params.get("client_id")).toBe("0123456789abcdef0123456789abcdef");
+  expect(params.get("redirect_uri")).toBe(redirect);
+  expect(params.get("code_challenge_method")).toBe("S256");
+  expect(params.get("code_challenge")).toBeTruthy();
 });

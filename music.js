@@ -1,6 +1,6 @@
 import { MUSIC_STORAGE_KEY, blankMusicProfile, normalizeMusicProfile, recordMusicAction, removeLikedSong, musicTasteSummary } from "./lib/music-finder.js";
 import { SONIC_STORAGE_KEY, MAX_SONIC_TRACKS, analyzeSonicSamples, normalizeSonicLibrary, rankSonicLibrary, sonicMoodHints, sonicSimilarity, sonicReasons, normalizeFeelings, parseLocalTrackName } from "./lib/sonic-dna.js";
-import { connectSpotify, handleSpotifyCallback, spotifyIsConnected, disconnectSpotify, hasSpotifySetup, createSpotifyPlaylist, connectApple, appleIsConnected, hasAppleSetup, createApplePlaylist } from "./lib/music-providers.js";
+import { connectSpotify, handleSpotifyCallback, spotifyIsConnected, disconnectSpotify, hasSpotifySetup, getSpotifyClientId, setSpotifyClientId, createSpotifyPlaylist, connectApple, appleIsConnected, createApplePlaylist } from "./lib/music-providers.js";
 import { discoveryQueries, smartRankSongs, reasonForSong, genreFamily } from "./lib/music-intelligence.js";
 import { appleSongSearch, audiusSongSearch } from "./lib/music-catalog.js";
 
@@ -51,6 +51,7 @@ function placeholder() {
   s.textContent = "Z";
   return s;
 }
+function playLabel(song = current) { return song?.source === "audius" ? "▶ Play track" : "▶ Preview"; }
 function display(song) {
   current = song || null;
   audio.pause();
@@ -58,9 +59,10 @@ function display(song) {
     audio.removeAttribute("src");
     audio.load(); // Only reset playback when a clip was actually loaded.
   }
-  $("preview-button").textContent = "▶ Preview";
+  $("preview-button").textContent = playLabel(song);
   $("preview-button").disabled = !song?.preview;
-  $("preview-note").textContent = song?.preview ? "Listen to a short preview" : "Preview unavailable";
+  $("preview-note").textContent = !song?.preview ? "No playable audio for this song" :
+    song.source === "audius" ? "Listen to the track on Audius" : "Listen to a short preview";
   const art = $("card-art");
   art.replaceChildren();
   if (song?.artwork) {
@@ -237,7 +239,7 @@ async function loadSongs(query = "", seedSong = null) {
     status(backup ? "Apple's song catalog is unavailable. Discovering with Audius instead." : "");
     $("start-discovery").textContent = "↻ New songs";
     $("start-hint").textContent = backup
-      ? "Audius tracks may not have a preview. Open the track to listen, or swipe to save."
+      ? "Tap Play track to stream from Audius, or swipe to save."
       : "Listen to a preview, then swipe left to skip or right to save.";
   } catch (error) {
     if (task !== sequence) return;
@@ -414,7 +416,7 @@ async function analyzeLocalFiles(input) {
 }
 
 function updateConnections() {
-  $("spotify-state").textContent = spotifyIsConnected() ? "Connected for this session" : "Not connected";
+  $("spotify-state").textContent = spotifyIsConnected() ? "Connected for this session" : hasSpotifySetup() ? "Ready to connect" : "Setup needed";
   $("apple-state").textContent = appleIsConnected() ? "Connected" : "Not connected";
   $("spotify-connect").textContent = spotifyIsConnected() ? "Disconnect" : "Connect";
   $("apple-connect").textContent = appleIsConnected() ? "Connected" : "Connect";
@@ -428,7 +430,7 @@ function showTab(target) {
   if (target === "saved") renderSaved();
   if (target === "taste") { renderTaste(); updateConnections(); }
   if (target === "sonic") renderSonic();
-  if (target !== "discover") { audio.pause(); $("preview-button").textContent = "▶ Preview"; }
+  if (target !== "discover") { audio.pause(); $("preview-button").textContent = playLabel(); }
 }
 for (const key of ["discover", "saved", "taste", "sonic"]) $("tab-" + key).addEventListener("click", () => showTab(key));
 $("sonic-files").addEventListener("change", event => { void analyzeLocalFiles(event.target); });
@@ -462,14 +464,29 @@ $("start-discovery")?.addEventListener("click", () => {
 $("music-search-form").addEventListener("submit", e => { e.preventDefault(); queue = []; loadSongs($("music-search").value.trim()); });
 $("preview-button").addEventListener("click", async () => {
   if (!current?.preview) return;
+  const requestedSong = current;
   if (audio.paused) {
-    if (audio.src !== current.preview) audio.src = current.preview;
-    try { await audio.play(); $("preview-button").textContent = "❚❚ Pause"; }
-    catch { status("This preview is unavailable, but you can still save the song."); }
-  } else { audio.pause(); $("preview-button").textContent = "▶ Preview"; }
+    if (audio.src !== requestedSong.preview) audio.src = requestedSong.preview;
+    try {
+      await audio.play();
+      if (current === requestedSong) $("preview-button").textContent = "❚❚ Pause";
+    } catch {
+      if (current !== requestedSong) return;
+      $("preview-button").textContent = playLabel();
+      $("preview-note").textContent = requestedSong.source === "audius"
+        ? "Could not stream here. Use Listen on Audius below."
+        : "This preview could not play. Open the song in Apple Music.";
+      status("Audio playback failed on this device. You can still save or open the track.");
+    }
+  } else { audio.pause(); $("preview-button").textContent = playLabel(); }
 });
-audio.addEventListener("ended", () => { $("preview-button").textContent = "▶ Preview"; });
-audio.addEventListener("error", () => { $("preview-button").textContent = "▶ Preview"; $("preview-note").textContent = "Preview not available"; });
+audio.addEventListener("ended", () => { $("preview-button").textContent = playLabel(); });
+audio.addEventListener("error", () => {
+  $("preview-button").textContent = playLabel();
+  if (current?.preview) $("preview-note").textContent = current.source === "audius"
+    ? "Stream unavailable here. Try Listen on Audius below."
+    : "Preview unavailable. Open the song in Apple Music.";
+});
 for (const button of document.querySelectorAll("[data-genre]")) button.addEventListener("click", () => {
   genre = button.dataset.genre;
   document.querySelectorAll("[data-genre]").forEach(x => x.setAttribute("aria-pressed", String(x === button)));
@@ -533,9 +550,22 @@ $("csv-export").addEventListener("click", () => {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
   playlistStatus("Exported your song list.");
 });
+$("save-spotify-client-id").addEventListener("click", () => {
+  try {
+    setSpotifyClientId($("spotify-client-id").value);
+    updateConnections();
+    connectionStatus("Spotify app ID saved on this device. Tap Connect to authorize your Spotify account.");
+  } catch (error) { connectionStatus(error.message); }
+});
 $("spotify-connect").addEventListener("click", async () => {
   if (spotifyIsConnected()) { disconnectSpotify(); updateConnections(); connectionStatus("Spotify disconnected from this session."); return; }
-  try { connectionStatus("Opening Spotify sign-in…"); await connectSpotify(); }
+  if (!hasSpotifySetup()) {
+    $("spotify-setup").open = true;
+    $("spotify-client-id").focus();
+    connectionStatus("First, add a Spotify app Client ID below, then tap Connect.");
+    return;
+  }
+  try { connectionStatus("Opening secure Spotify sign-in…"); await connectSpotify(); }
   catch (e) { connectionStatus(e.message); }
 });
 $("apple-connect").addEventListener("click", async () => {
@@ -578,8 +608,10 @@ $("clear-music").addEventListener("click", () => {
 });
 async function init() {
   persist(); renderSaved(); renderTaste(); renderSonic(); updateConnections();
+  $("spotify-client-id").value = getSpotifyClientId();
+  $("spotify-redirect-uri").textContent = location.origin + location.pathname;
   window.__Z_MUSIC_READY__ = true;
-  if (!hasSpotifySetup() && !hasAppleSetup()) connectionStatus("Music accounts require the app owner to configure developer access. Discovery and CSV playlists already work.");
+  if (!hasSpotifySetup()) connectionStatus("Spotify setup needed. Open Set up Spotify connection below to connect your account.");
   try { if (await handleSpotifyCallback()) { connectionStatus("Spotify connected. You can now export playlists."); showTab("taste"); } }
   catch (e) { connectionStatus(e.message); showTab("taste"); }
   updateConnections();

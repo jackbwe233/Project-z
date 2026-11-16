@@ -206,3 +206,9 @@ html body.z-music-page {font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe U
 .z-music-page #sonic-save-feelings{min-height:42px;padding:10px 14px!important;border-radius:9px!important;background:#b5cdee!important;color:#13233a!important;font-weight:800!important;font-size:13px!important}
 .z-music-page .sonic-shared-feelings{color:#c9d8f0!important}
 @media(max-width:480px){.z-music-page #sonic-save-feelings{width:100%}}
+
+/* Spotify setup stays usable at narrow iPhone widths. */
+.spotify-setup-row { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:10px 0; }
+.spotify-setup-row input { flex:1 1 170px; min-width:0; }
+.spotify-setup-row button { flex:0 0 auto; }
+.spotify-redirect-uri { display:block; overflow-wrap:anywhere; white-space:normal; user-select:text; padding:10px 12px; border-radius:9px; background:rgba(126,159,197,.10); }
