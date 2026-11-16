@@ -295,3 +295,41 @@ test('iPhone WebKit: music discovery card, swipe buttons and playlist are usable
   expect(metrics.font).toBeGreaterThanOrEqual(16);
   expect(errors).toEqual([]);
 });
+
+
+test('iPhone WebKit: choose genre, vibe and discovery style, then build a four-song playlist', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', e => errors.push(e.message));
+  const songs = Array.from({ length: 14 }, (_, i) => ({
+    kind:'song', trackId:74000 + i, trackName:'WebKit Playlist Track ' + i,
+    artistName:'Independent Artist ' + i, primaryGenreName:'Indie Rock',
+    trackExplicitness:'notExplicit',
+    previewUrl:'https://example.com/test-preview.m4a',
+    artworkUrl100:'https://example.com/cover100x100bb.jpg',
+    trackViewUrl:'https://music.apple.com/us/song/track-'+i,
+  }));
+  await page.route('https://itunes.apple.com/search**', route =>
+    route.fulfill({contentType:'application/json',body:JSON.stringify({results:songs})}));
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/music.html');
+  await page.locator('[data-genre="Indie"]').click();
+  await page.locator('[data-vibe="dreamy"]').click();
+  await page.locator('[data-exploration="explore"]').click();
+  await expect(page.locator('[data-genre="Indie"]')).toHaveAttribute('aria-pressed','true');
+  await expect(page.locator('[data-vibe="dreamy"]')).toHaveAttribute('aria-pressed','true');
+  await expect(page.locator('[data-exploration="explore"]')).toHaveAttribute('aria-pressed','true');
+  await page.locator('#start-discovery').click();
+  await expect(page.locator('#card-title')).toContainText('WebKit Playlist Track');
+  await expect(page.locator('#preview-button')).toBeEnabled();
+  for (let i = 0; i < 4; i++) {
+    await page.locator('#like-song').click();
+    await expect(page.locator('#saved-count')).toHaveText(String(i + 1));
+    if (i < 3) await expect(page.locator('#like-song')).toBeEnabled();
+  }
+  await page.locator('#tab-saved').click();
+  await expect(page.locator('#saved-tracks li')).toHaveCount(4);
+  await page.reload();
+  await page.locator('#tab-saved').click();
+  await expect(page.locator('#saved-tracks li')).toHaveCount(4);
+  expect(errors).toEqual([]);
+});
