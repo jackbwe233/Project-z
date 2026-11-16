@@ -367,3 +367,35 @@ test('iPhone WebKit: Sound DNA decodes actual WAV files and finds acoustic match
   await page.locator('#tab-sonic').click();
   await expect(page.locator('#sonic-library .sonic-track')).toHaveCount(2);
 });
+
+test('iPhone chat recalls the supplied name after an unrelated weather reply', async ({ page }) => {
+  await page.addInitScript(() => {
+    window.recallTestCalls = 0;
+    Object.defineProperty(navigator, 'gpu', {
+      configurable: true,
+      value: { requestAdapter: async () => ({ info: {} }) },
+    });
+  });
+  // Exercise the real composer, session history, runtime adapter and reply rendering.
+  // GPU inference is stubbed so this test can run on GitHub's CPU-only runner.
+  await page.route('**/lfm2_5.js', route => route.fulfill({
+    contentType: 'text/javascript',
+    body: `export const Lfm2Mobile = { async load() { return {
+      async warmup() {}, reset() {}, encodePrompt() { return [1]; },
+      async *generate() {
+        window.recallTestCalls++;
+        const text = "I don't have access to real-time data.";
+        yield { token: 10, text, rawText: text, delta: text };
+      }
+    }; }};`,
+  }));
+  await page.goto('/index.html?z_start=1');
+  const input = page.locator('#user-input');
+  await input.fill('My dogs name is rocky what’s a good nickname for him');
+  await page.locator('#send-btn').click();
+  await expect(page.locator('#chat-messages')).toContainText("I don't have access to real-time data.", { timeout: 15000 });
+  await input.fill('What’s my dogs name');
+  await page.locator('#send-btn').click();
+  await expect(page.locator('#chat-messages')).toContainText('You said the name is rocky.');
+  expect(await page.evaluate(() => window.recallTestCalls)).toBe(1);
+});

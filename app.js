@@ -1,4 +1,4 @@
-import { recallPetName, withMemory } from "./lib/project-z.js?v=pet-recall-2";
+import { recallPetName, withMemory } from "./lib/project-z.js?v=pet-recall-3";
 import { initProjectZ } from "./lib/project-z-ui.js?v=personalize-0.3.0-20261114";
 import {
   PREFS_KEY,
@@ -35,7 +35,7 @@ import {
   splitModelThinking,
 } from "./lib/messages.js";
 import { runAgentTurn } from "./lib/agent-loop.js";
-import { getRuntimeAdapter } from "./lib/runtime-registry.js";
+import { getRuntimeAdapter } from "./lib/runtime-registry.js?v=fresh-state-1";
 import { fetchModelFile } from "./lib/model-fetch.js";
 import { fitMessagesToContext, effectiveMaxNewTokens } from "./lib/context-window.js";
 import {

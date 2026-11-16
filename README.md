@@ -1,5 +1,7 @@
 # Project Z
 
+LFM rebuilds its generation state from the supplied conversation on each reply and clears it after failures or cancellation. Saved messages remain available. This can increase reply startup time.
+
 Direct pet-name follow-ups can use a name stated earlier in the same chat, including when long-term memory is off.
 
 Project Z adds a silver-and-white companion interface to the existing browser AI app. All model bundles, model selection, cache keys, and existing chat databases are preserved.
