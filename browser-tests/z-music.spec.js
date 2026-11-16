@@ -94,3 +94,15 @@ test("Random playlist walkthrough: Indie + Dreamy + New artists, Start, save fou
   for (const title of names) expect(playlist).toContain(title);
   expect(errors).toEqual([]);
 });
+
+test("Personalization lets listeners seed favorite artists without a provider account", async ({page}) => {
+  await page.goto("/music.html");
+  await page.locator(".taste-seed-setup summary").click();
+  await page.locator("#seed-artists").fill("Favorite Artist, Dream Band, Another Artist");
+  await page.locator("#seed-artists-form button").click();
+  await expect(page.locator("#seed-artists-feedback")).toContainText("Saved 3 favorite artists");
+  const boosts=await page.evaluate(()=>JSON.parse(localStorage.getItem("z-music-finder-v1")).boosts);
+  expect(boosts.slice(-3).map(x=>x.artist)).toEqual(["Favorite Artist","Dream Band","Another Artist"]);
+  await page.locator("#tab-taste").click();
+  await expect(page.locator("#taste-artists")).toContainText("Dream Band");
+});
