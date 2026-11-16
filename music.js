@@ -187,10 +187,10 @@ async function searchCatalog(term, signal) {
     }
   } catch (error) {
     if (signal.aborted) throw error;
-    throw new Error("Music catalog unavailable. Apple: " +
+    throw new Error("Music discovery is unavailable. Apple: " +
       (appleFailure?.message || "No results") + "; Audius: " + (error?.message || "Request failed") + ".");
   }
-  throw new Error("Music catalog unavailable. Apple: " +
+  throw new Error("Music discovery is unavailable. Apple: " +
     (appleFailure?.message || "No results") + "; Audius returned no results.");
 }
 async function loadSongs(query = "", seedSong = null) {
