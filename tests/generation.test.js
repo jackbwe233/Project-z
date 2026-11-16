@@ -40,6 +40,14 @@ describe("generationErrorFallback", () => {
     expect(result.toast).toContain("too large");
   });
 
+  it("explains Safari mapAsync GPU failures without suggesting data deletion", () => {
+    const result = generationErrorFallback(new Error("map async was not successful"));
+    expect(result.raw).toContain("Safari could not finish a WebGPU operation");
+    expect(result.raw).toContain("reopen Project Z");
+    expect(result.raw).toContain("saved chats do not need to be deleted");
+    expect(result.toast).toContain("WebGPU processing failed");
+  });
+
   it("turns WebGPU variant failures into an actionable prompt-shape error", () => {
     const result = generationErrorFallback(new Error(
       "No supported WebGPU variant for com.xenova.gemma4.DenseGemv; "
