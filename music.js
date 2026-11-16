@@ -128,38 +128,47 @@ async function searchCatalog(term, signal) {
   return songs;
 }
 async function loadSongs(query = "", seedSong = null) {
-  // Only one short-running catalog request at a time: Safari may hang otherwise.
+  // Restarting discovery must not be blocked by a previous Safari request.
   controller?.abort();
-  controller = new AbortController();
-  const request = controller;
+  const request = new AbortController();
+  controller = request;
   const task = ++sequence;
   const selected = terms(query, seedSong);
   loadCycle++;
   queue = [];
   display(null);
   $("music-discover").setAttribute("aria-busy", "true");
-  $("start-discovery").disabled = false; // Retry must always work, even during a stalled request.
+  $("start-discovery").disabled = false;
   $("start-discovery").textContent = "↻ Retry discovery";
   $("start-hint").textContent = "Searching now. Tap Retry if you want to restart.";
   status("Searching for songs…");
-  const timeout = setTimeout(() => request.abort("timeout"), 7000);
-  try {
-    let found = [];
-    // First relevant query gives a usable card without waiting for 4 slow requests.
-    // Try a second query only when the first returned no usable tracks.
-    for (const term of selected.slice(0, 2)) {
-      if (task !== sequence || request.signal.aborted) return;
+
+  // Some iOS WebKit versions leave fetch unresolved even after abort().
+  // A separate rejecting watchdog guarantees that the UI returns to Retry.
+  let watchdogId;
+  const watchdog = new Promise((_, reject) => {
+    watchdogId = setTimeout(() => {
+      request.abort();
+      reject(new Error("Music search timed out. Tap Retry or try another genre."));
+    }, 7500);
+  });
+  const search = async () => {
+    for (const term of selected.slice(0, 3)) {
+      if (task !== sequence || request.signal.aborted) return [];
       try {
-        found = await searchCatalog(term, request.signal);
+        const found = await searchCatalog(term, request.signal);
+        if (found.length) return found;
       } catch (error) {
         if (request.signal.aborted) throw error;
-        // Another term may have catalog results if the first one fails.
-        continue;
+        // Fall back to a different search when this catalog term fails.
       }
-      if (found.length) break;
     }
+    return [];
+  };
+  try {
+    const found = await Promise.race([search(), watchdog]);
     if (task !== sequence) return;
-    if (request.signal.aborted) throw new Error("Music search timed out. Tap Retry or try another genre.");
+    if (request.signal.aborted) throw new Error("Music search timed out. Tap Retry.");
     if (!found.length) throw new Error("No songs loaded. Check your connection or try a different genre.");
     queue = smartRankSongs(found, profile, {
       genre: seedSong ? genreFamily(seedSong.genre) : genre,
@@ -172,12 +181,12 @@ async function loadSongs(query = "", seedSong = null) {
     $("start-hint").textContent = "Listen to a preview, then swipe left to skip or right to save.";
   } catch (error) {
     if (task !== sequence) return;
-    status(request.signal.aborted ? "Music search timed out or was canceled. Tap Retry." :
-      (error.message || "Music discovery is unavailable. Tap Retry."));
+    status(request.signal.aborted ? "Music search timed out. Tap Retry." :
+      (error?.message || "Music discovery is unavailable. Tap Retry."));
     $("start-discovery").textContent = "▶ Try again";
-    $("start-hint").textContent = "Your app is still working — you can retry at any time.";
+    $("start-hint").textContent = "Try again or choose another genre. Your saved songs are safe.";
   } finally {
-    clearTimeout(timeout);
+    clearTimeout(watchdogId);
     if (task === sequence) {
       controller = null;
       $("music-discover").setAttribute("aria-busy", "false");
@@ -383,6 +392,7 @@ $("clear-music").addEventListener("click", () => {
 });
 async function init() {
   persist(); renderSaved(); renderTaste(); updateConnections();
+  window.__Z_MUSIC_READY__ = true;
   if (!hasSpotifySetup() && !hasAppleSetup()) connectionStatus("Music accounts require the app owner to configure developer access. Discovery and CSV playlists already work.");
   try { if (await handleSpotifyCallback()) { connectionStatus("Spotify connected. You can now export playlists."); showTab("taste"); } }
   catch (e) { connectionStatus(e.message); showTab("taste"); }
