@@ -1,6 +1,6 @@
 # Project Z
 
-On iPhone, direct pet-name follow-ups can use a name stated earlier in the same chat, including when long-term memory is off.
+Direct pet-name follow-ups can use a name stated earlier in the same chat, including when long-term memory is off.
 
 Project Z adds a silver-and-white companion interface to the existing browser AI app. All model bundles, model selection, cache keys, and existing chat databases are preserved.
 
