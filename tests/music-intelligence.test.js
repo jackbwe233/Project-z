@@ -60,4 +60,38 @@ describe("music discovery intelligence", () => {
     expect(reasonForSong(track(3,"Other","Jazz"),profile)).toContain("Jazz");
     expect(reasonForSong(track(4,"Unknown","Country"),profile,{exploration:"explore"})).toContain("different");
   });
+  it("rejects unrelated Audius genres instead of presenting off-target songs", () => {
+    const songs = [
+      {...track("1", "Random Rapper", "Hip-Hop/Rap"), source:"audius", sourceQuery:"dream pop"},
+      {...track("2", "Dream Band", "Alternative"), source:"apple", sourceQuery:"dream pop"},
+      {...track("3", "Another Band", "Indie Rock"), source:"audius", sourceQuery:"shoegaze"},
+    ];
+    const ranked = smartRankSongs(songs, {likes:[],seen:[],skippedSongs:[]}, {genre:"Indie", vibe:"dreamy"});
+    expect(ranked.map(x => x.id)).toEqual(expect.arrayContaining(["2","3"]));
+    expect(ranked.map(x => x.id)).not.toContain("1");
+  });
+  it("takes multiple artist seeds and learns from repeated skips", () => {
+    const profile = {
+      likes:[],seen:[],skippedSongs:[
+        track("11","Unwanted","Rock"),track("12","Unwanted","Rock"),track("13","Unwanted","Rock"),
+      ],
+      boosts:[
+        {artist:"Favorite A",genre:"Other"},{artist:"Favorite B",genre:"Other"},{artist:"Favorite C",genre:"Other"},
+      ],
+    };
+    const terms = discoveryQueries(profile, {genre:"Rock",exploration:"balanced"});
+    expect(terms).toContain("Favorite C");
+    const matches = smartRankSongs([
+      track("21","Unwanted","Rock"),track("22","Favorite C","Rock"),
+    ], profile,{genre:"Rock",exploration:"balanced"});
+    expect(matches.map(x=>x.id)).toEqual(["22"]);
+  });
+  it("does not let a nonmatching fallback genre overpower an explicit genre choice", () => {
+    const results = smartRankSongs([
+      {...track("2","A","Jazz"),source:"audius",sourceQuery:"hip hop"},
+      {...track("3","B","Hip-Hop/Rap"),source:"audius",sourceQuery:"hip hop"},
+    ],{likes:[],seen:[],skippedSongs:[]},{genre:"Hip-Hop"});
+    expect(results.map(x=>x.id)).toEqual(["3"]);
+  });
+
 });
