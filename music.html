@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Z Music · Discover</title>
 <link rel="icon" href="./favicon.svg">
-<link rel="stylesheet" href="./music.css?v=7">
+<link rel="stylesheet" href="./music.css?v=8">
 </head>
 <body class="z-workspace z-music-page">
 <main class="music-main">
@@ -31,6 +31,15 @@
   <input type="search" id="music-search" maxlength="100" placeholder="Search an artist, song, or sound…" enterkeyhint="search">
   <button type="submit">Find <span aria-hidden="true">↗</span></button>
  </form>
+ <details class="taste-seed-setup">
+  <summary>Make it personal — add a few favorite artists</summary>
+  <form id="seed-artists-form" class="music-search">
+   <label class="sr-only" for="seed-artists">Favorite artists, separated by commas</label>
+   <input type="text" id="seed-artists" maxlength="240" placeholder="3 artists you love, separated by commas" autocomplete="off">
+   <button type="submit">Save taste</button>
+  </form>
+  <p id="seed-artists-feedback" class="status" aria-live="polite">Artist choices stay on this device and guide new recommendations.</p>
+ </details>
  <div class="music-start-bar">
   <button type="button" id="start-discovery" class="music-start-button" aria-controls="swipe-card">▶ Start discovering</button>
   <span id="start-hint">Tap Start to find music you can preview, save or skip.</span>
@@ -162,7 +171,7 @@
 <audio id="music-audio" preload="none"></audio>
 <script src="./z-shell.js?v=ux-simple-20261115-1" defer></script>
 <script src="./music-config.js?v=1" defer></script>
-<script type="module" src="./music.js?v=9"></script>
+<script type="module" src="./music.js?v=10"></script>
 <script>
 // If a module fails to load on iPhone, never leave a silently dead Start button.
 (() => {
