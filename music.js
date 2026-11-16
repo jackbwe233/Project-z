@@ -1,4 +1,5 @@
 import { MUSIC_STORAGE_KEY, blankMusicProfile, normalizeMusicProfile, normalizeSong, recordMusicAction, removeLikedSong, musicTasteSummary } from "./lib/music-finder.js";
+import { SONIC_STORAGE_KEY, MAX_SONIC_TRACKS, analyzeSonicSamples, normalizeSonicLibrary, rankSonicLibrary, sonicMoodHints, parseLocalTrackName } from "./lib/sonic-dna.js";
 import { connectSpotify, handleSpotifyCallback, spotifyIsConnected, disconnectSpotify, hasSpotifySetup, createSpotifyPlaylist, connectApple, appleIsConnected, hasAppleSetup, createApplePlaylist } from "./lib/music-providers.js";
 import { discoveryQueries, smartRankSongs, reasonForSong, genreFamily } from "./lib/music-intelligence.js";
 
@@ -10,6 +11,11 @@ try { profile = normalizeMusicProfile(JSON.parse(localStorage.getItem(MUSIC_STOR
 catch { profile = blankMusicProfile(); }
 let genre = profile.genre || "All", vibe = "any", exploration = "balanced", queue = [], current = null, loadCycle = 0, sequence = 0, exporting = false, gesture = null;
 let controller = null;
+let sonicLibrary = [];
+try { sonicLibrary = normalizeSonicLibrary(JSON.parse(localStorage.getItem(SONIC_STORAGE_KEY) || "[]")); }
+catch { sonicLibrary = []; }
+let selectedSonicId = null, sonicBusy = false;
+
 const actions = [$("skip-song"), $("like-song"), $("similar-song")];
 function status(s) { $("discovery-status").textContent = s; }
 function playlistStatus(s) { $("playlist-status").textContent = s; }
@@ -247,6 +253,108 @@ function renderTaste() {
     });
   }
 }
+
+function persistSonic() {
+  try { localStorage.setItem(SONIC_STORAGE_KEY, JSON.stringify(sonicLibrary)); }
+  catch { $("sonic-status").textContent = "Could not save sound measurements. Check available phone storage."; }
+}
+function addSonicText(parent, tag, content, className = "") {
+  const el = document.createElement(tag);
+  if (className) el.className = className;
+  el.textContent = content;
+  parent.append(el);
+  return el;
+}
+function renderSonic() {
+  const root = $("sonic-library"), matches = $("sonic-results");
+  root.replaceChildren(); matches.replaceChildren();
+  $("sonic-count").textContent = sonicLibrary.length + (sonicLibrary.length === 1 ? " track" : " tracks");
+  if (!sonicLibrary.length) {
+    addSonicText(root,"p","No analyzed songs yet. Add two audio files to compare them.","sonic-empty");
+    addSonicText(matches,"p","Upload at least two audio files to find sound-alike matches.","sonic-empty");
+    return;
+  }
+  if (!sonicLibrary.some(x=>x.id===selectedSonicId)) selectedSonicId = sonicLibrary[0].id;
+  for (const song of [...sonicLibrary].reverse()) {
+    const item=document.createElement("button");
+    item.type="button";
+    item.className="sonic-track" + (song.id===selectedSonicId ? " selected" : "");
+    item.setAttribute("aria-pressed",String(song.id===selectedSonicId));
+    addSonicText(item,"strong",song.title);
+    addSonicText(item,"small",song.artist);
+    item.addEventListener("click",()=>{selectedSonicId=song.id;renderSonic();});
+    root.append(item);
+  }
+  const reference=sonicLibrary.find(x=>x.id===selectedSonicId);
+  const candidates=rankSonicLibrary(reference,sonicLibrary);
+  addSonicText(matches,"h3","Closest sound to " + reference.title);
+  const f=reference.features;
+  addSonicText(matches,"p",
+    "Measured: " + (f.brightness>0.5 ? "bright" : "soft/dark") + " tone · " +
+    (f.bass>0.5 ? "bass-forward" : "light low end") + " · " +
+    (f.movement>0.5 ? "active texture" : "gentler motion") +
+    (f.tempo ? " · rough pulse " + f.tempo + " BPM" : ""),
+    "sonic-summary");
+  addSonicText(matches,"p","Possible feel: " + sonicMoodHints(f).join(", ") + " (not a measured emotion)","sonic-hints");
+  if (!candidates.length) {
+    addSonicText(matches,"p","Analyze another track to see real audio-based matches.","sonic-empty");
+    return;
+  }
+  for (const found of candidates.slice(0,10)) {
+    const row=document.createElement("div");row.className="sonic-match";
+    const details=document.createElement("div");details.className="sonic-match-details";
+    addSonicText(details,"strong",found.title + " — " + found.artist);
+    addSonicText(details,"small","Similar: " + found.reasons.join(", "));
+    row.append(details);
+    addSonicText(row,"span",found.similarity + "%","sonic-match-score");
+    matches.append(row);
+  }
+  addSonicText(matches,"p","These are descriptor similarities in your local library, not a scientific probability that you will like the songs.","sonic-footnote");
+}
+async function analyzeLocalFiles(input) {
+  if (sonicBusy) return;
+  const files=Array.from(input.files || []).slice(0,5);
+  if (!files.length) return;
+  sonicBusy=true; input.disabled=true;
+  let added=0;
+  const AudioContextType=window.AudioContext || window.webkitAudioContext;
+  try {
+    if (!AudioContextType) throw new Error("Your browser does not support local sound analysis.");
+    for (const file of files) {
+      if (file.size > 16 * 1024 * 1024) {
+        $("sonic-status").textContent=file.name + " is over the 16 MB limit; choose a shorter audio file.";
+        continue;
+      }
+      $("sonic-status").textContent="Analyzing " + file.name + " (" + (added + 1) + " of " + files.length + ")…";
+      // Give Safari a paint opportunity before decoding a potentially large file.
+      await new Promise(resolve=>setTimeout(resolve,30));
+      let context;
+      try {
+        context=new AudioContextType();
+        const data=await file.arrayBuffer();
+        const audioBuffer=await context.decodeAudioData(data);
+        if (!audioBuffer || audioBuffer.duration < 1 || audioBuffer.duration > 600)
+          throw new Error("Use an audio file between 1 second and 10 minutes.");
+        const features=analyzeSonicSamples(audioBuffer.getChannelData(0),audioBuffer.sampleRate);
+        const parsed=parseLocalTrackName(file.name);
+        const id="local-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2,10);
+        sonicLibrary=[...sonicLibrary,{id,...parsed,features}].slice(-MAX_SONIC_TRACKS);
+        selectedSonicId=id; added++;
+        persistSonic(); renderSonic();
+      } catch (error) {
+        $("sonic-status").textContent="Could not analyze " + file.name + ": " + (error?.message || "unsupported audio");
+      } finally {
+        if (context) try { await context.close(); } catch { /* Safari may already close it. */ }
+      }
+    }
+    if (added) $("sonic-status").textContent="Analyzed " + added + " track" + (added===1?"":"s") + ". Tap a track to hear how its sound profile compares.";
+  } catch (error) {
+    $("sonic-status").textContent=error.message || "Audio analysis isn't available on this device.";
+  } finally {
+    sonicBusy=false; input.disabled=false; input.value="";
+  }
+}
+
 function updateConnections() {
   $("spotify-state").textContent = spotifyIsConnected() ? "Connected for this session" : "Not connected";
   $("apple-state").textContent = appleIsConnected() ? "Connected" : "Not connected";
@@ -255,15 +363,24 @@ function updateConnections() {
   $("apple-connect").disabled = appleIsConnected();
 }
 function showTab(target) {
-  for (const key of ["discover", "saved", "taste"]) {
+  for (const key of ["discover", "saved", "taste", "sonic"]) {
     $("tab-" + key).setAttribute("aria-selected", String(target === key));
     $("music-" + key).hidden = target !== key;
   }
   if (target === "saved") renderSaved();
   if (target === "taste") { renderTaste(); updateConnections(); }
+  if (target === "sonic") renderSonic();
   if (target !== "discover") { audio.pause(); $("preview-button").textContent = "▶ Preview"; }
 }
-for (const key of ["discover", "saved", "taste"]) $("tab-" + key).addEventListener("click", () => showTab(key));
+for (const key of ["discover", "saved", "taste", "sonic"]) $("tab-" + key).addEventListener("click", () => showTab(key));
+$("sonic-files").addEventListener("change", event => { void analyzeLocalFiles(event.target); });
+$("sonic-clear").addEventListener("click", () => {
+  if (!confirm("Delete the saved Sound DNA measurements on this device?")) return;
+  sonicLibrary=[];selectedSonicId=null;
+  try { localStorage.removeItem(SONIC_STORAGE_KEY); } catch { /* storage may be unavailable */ }
+  renderSonic();
+  $("sonic-status").textContent="Local Sound DNA measurements cleared.";
+});
 $("skip-song").addEventListener("click", () => makeChoice("skip"));
 $("like-song").addEventListener("click", () => makeChoice("like"));
 $("similar-song").addEventListener("click", () => makeChoice("similar"));
@@ -391,7 +508,7 @@ $("clear-music").addEventListener("click", () => {
   connectionStatus("Your music preferences were cleared.");
 });
 async function init() {
-  persist(); renderSaved(); renderTaste(); updateConnections();
+  persist(); renderSaved(); renderTaste(); renderSonic(); updateConnections();
   window.__Z_MUSIC_READY__ = true;
   if (!hasSpotifySetup() && !hasAppleSetup()) connectionStatus("Music accounts require the app owner to configure developer access. Discovery and CSV playlists already work.");
   try { if (await handleSpotifyCallback()) { connectionStatus("Spotify connected. You can now export playlists."); showTab("taste"); } }
