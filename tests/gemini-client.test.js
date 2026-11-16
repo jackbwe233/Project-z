@@ -27,7 +27,7 @@ describe("Gemini Worker request limits", () => {
     expect(output).toEqual([{ role: "user", content: "new question" }]);
   });
   it("fits escaped content within byte limits", () => {
-    const output = buildGeminiHistory([{ role: "user", content: "\n".repeat(4000) }]);
+    const output = buildGeminiHistory([{ role: "user", content: "\u0001".repeat(4000) }]);
     expect(size(output)).toBeLessThanOrEqual(16000);
     expect(output.at(-1).role).toBe("user");
   });
