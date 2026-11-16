@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Z Music · Discover</title>
 <link rel="icon" href="./favicon.svg">
-<link rel="stylesheet" href="./music.css?v=4">
+<link rel="stylesheet" href="./music.css?v=5">
 </head>
 <body class="z-workspace z-music-page">
 <main class="music-main">
@@ -21,6 +21,7 @@
     <button type="button" id="tab-discover" role="tab" aria-selected="true" aria-controls="music-discover">Discover</button>
     <button type="button" id="tab-saved" role="tab" aria-selected="false" aria-controls="music-saved">Playlist <span id="saved-count">0</span></button>
     <button type="button" id="tab-taste" role="tab" aria-selected="false" aria-controls="music-taste">My taste</button>
+    <button type="button" id="tab-sonic" role="tab" aria-selected="false" aria-controls="music-sonic">Sound DNA</button>
   </div>
   <span class="privacy">◌ Your likes stay on this device</span>
 </div>
@@ -119,12 +120,31 @@
  </div>
  <div class="privacy-controls"><button type="button" id="clear-music">Reset my music taste and saved songs</button></div>
 </section>
-<footer class="music-footer">Discovery uses Apple’s public music catalog and approximate text/genre searches; mood is not verified audio analysis. Clips are for song discovery and direct listeners to the store. Matching songs across providers can be imperfect.</footer>
+
+<section id="music-sonic" role="tabpanel" aria-labelledby="tab-sonic" hidden>
+  <div class="section-intro">
+    <h2>Match the actual sound.</h2>
+    <p>Sound DNA measures rhythm, energy, bass, brightness, texture and movement from audio files you choose. Then it finds tracks that sound closest <strong>within your analyzed library</strong> — never by streams or popularity.</p>
+  </div>
+  <div class="sonic-panel">
+    <label class="field-label" for="sonic-files">ANALYZE YOUR AUDIO</label>
+    <input id="sonic-files" type="file" accept="audio/*,.mp3,.m4a,.wav,.ogg,.flac" multiple>
+    <p class="sonic-help">Choose up to 5 files at once (maximum 16 MB each) that you own or have permission to analyze. Name files “Artist - Song.mp3” for clearer results. Analysis happens on your device, and only the sound measurements are saved here. Nothing is uploaded.</p>
+    <p id="sonic-status" class="status" role="status" aria-live="polite">Add two or more tracks to discover actual sonic matches.</p>
+    <div class="sonic-shelf-header"><h3>Analyzed tracks</h3><span id="sonic-count">0 tracks</span></div>
+    <div id="sonic-library" class="sonic-library"></div>
+    <div id="sonic-results" class="sonic-results" aria-live="polite"></div>
+    <button type="button" id="sonic-clear" class="sonic-clear">Clear Sound DNA measurements</button>
+  </div>
+  <p class="sonic-note">Audio analysis is approximate and cannot determine every emotion, lyric meaning, melody or chord from a file. Labels are listening hypotheses, not facts about how you feel. Apple and Spotify audio are never downloaded for analysis; catalog suggestions use artist and genre clues only unless you provide analyzable audio.</p>
+</section>
+
+<footer class="music-footer">Catalog discovery uses artist and genre clues, not streams or popularity scores; it does not analyze Apple or Spotify audio. Sound DNA only compares audio you explicitly choose on your device. Clips promote songs in the store; music-related feelings vary by listener.</footer>
 </main>
 <audio id="music-audio" preload="none"></audio>
 <script src="./z-shell.js?v=ux-simple-20261115-1" defer></script>
 <script src="./music-config.js?v=1" defer></script>
-<script type="module" src="./music.js?v=5"></script>
+<script type="module" src="./music.js?v=6"></script>
 <script>
 // If a module fails to load on iPhone, never leave a silently dead Start button.
 (() => {
