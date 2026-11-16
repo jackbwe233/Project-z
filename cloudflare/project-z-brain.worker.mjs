@@ -1,3 +1,4 @@
+/* global Response, TextEncoder, crypto, URL, fetch, AbortSignal */
 // Project Z Gemini gateway for Cloudflare Workers.
 // Deploy this file as the Worker script; configure GEMINI_API_KEY and
 // Z_ACCESS_TOKEN as encrypted Cloudflare Worker secrets, never here.
