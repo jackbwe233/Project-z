@@ -64,4 +64,15 @@ describe("Z Music Finder", () => {
     expect(matchScore(original, right)).toBe(1);
     expect(matchScore(original, wrong)).toBeLessThan(.72);
   });
+  it("keeps complete Audius IDs when users save or skip songs", () => {
+    const longId = "audius:" + "x".repeat(72);
+    const candidate = {...song(1),id:longId};
+    let state = recordMusicAction(blankMusicProfile(),candidate,"like");
+    state = normalizeMusicProfile(state);
+    expect(state.likes[0].id).toBe(longId);
+    state = recordMusicAction(state,{...candidate,id:"audius:"+"y".repeat(72)},"skip");
+    state = normalizeMusicProfile(state);
+    expect(state.skippedSongs[0].id).toBe("audius:"+"y".repeat(72));
+  });
+
 });
