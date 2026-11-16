@@ -1,4 +1,4 @@
-import { withMemory } from "./lib/project-z.js";
+import { recallPetName, withMemory } from "./lib/project-z.js?v=pet-recall-1";
 import { initProjectZ } from "./lib/project-z-ui.js?v=personalize-0.3.0-20261114";
 import {
   PREFS_KEY,
@@ -3182,7 +3182,8 @@ async function runAssistantGeneration(session) {
   updateComposerState();
   setModelStatus("busy", "Starting…");
 
-  const useAgent = agentModeEffective();
+  const petName = iosStability ? recallPetName(session.messages) : "";
+  const useAgent = !petName && agentModeEffective();
   /** @type {ReturnType<typeof initStreamContext>} */
   let streamCtx = initStreamContext();
   activeStreamCtx = streamCtx;
@@ -3211,7 +3212,9 @@ async function runAssistantGeneration(session) {
     const modelDef = runtimeModelDef();
     executionModelId = modelDef?.id || executionModelId;
     const runtime = getRuntimeAdapter(modelDef.runtime);
-    if (useAgent) {
+    if (petName) {
+      raw = `You said the name is ${petName}.`;
+    } else if (useAgent) {
       const availability = toolAvailability({ modelDef });
       turnTools = createActiveTools({
         attachments: state.attachments,
@@ -3371,7 +3374,7 @@ async function runAssistantGeneration(session) {
     session.lastExecution = {
       mode: useAgent ? "agent" : "chat",
       tools: useAgent ? activeToolNames(turnTools) : [],
-      generations: result?.generations ?? 1,
+      generations: result?.generations ?? (petName ? 0 : 1),
       toolCalls: result?.toolCalls ?? 0,
       aborted: wasAborted,
       error: generationError,
