@@ -13,6 +13,7 @@ catch { profile = blankMusicProfile(); }
 let genre = profile.genre || "All", vibe = "any", exploration = "balanced", queue = [], current = null, loadCycle = 0, sequence = 0, exporting = false, gesture = null;
 let controller = null;
 let filterTimer = null;
+const sessionRecommended = new Set();
 function scheduleFilterLoad() {
   clearTimeout(filterTimer);
   filterTimer = setTimeout(() => { filterTimer = null; void loadSongs(); }, 260);
@@ -54,6 +55,10 @@ function placeholder() {
 function playLabel(song = current) { return song?.source === "audius" ? "▶ Play track" : "▶ Preview"; }
 function display(song) {
   current = song || null;
+  if (song) {
+    sessionRecommended.add(song.id);
+    if (sessionRecommended.size > 750) sessionRecommended.delete(sessionRecommended.values().next().value);
+  }
   audio.pause();
   if (audio.getAttribute("src")) {
     audio.removeAttribute("src");
@@ -246,7 +251,7 @@ async function loadSongs(query = "", seedSong = null) {
     if (task !== sequence) return;
     if (request.signal.aborted) throw new Error("Music search timed out. Tap Retry.");
     if (!found.length) throw new Error("No songs loaded. Check your connection or try a different genre.");
-    queue = smartRankSongs(found, profile, {
+    queue = smartRankSongs(found, { ...profile, seen: [...(profile.seen || []), ...sessionRecommended] }, {
       genre: seedSong ? genreFamily(seedSong.genre) : genre,
       vibe, exploration: seedSong ? "explore" : exploration,
       cycle: loadCycle, sonicLibrary,
@@ -315,9 +320,11 @@ function renderSaved() {
 }
 function renderTaste() {
   const summary = musicTasteSummary(profile);
+  const chosenArtists = [...(profile.boosts || [])].reverse().map(x => x.artist).filter(Boolean);
+  const displayedArtists = [...new Set([...chosenArtists, ...summary.artists])].slice(0, 4);
   $("taste-likes").textContent = summary.likes;
   $("taste-skips").textContent = summary.skipped;
-  for (const [id, names] of [["taste-genres", summary.genres], ["taste-artists", summary.artists]]) {
+  for (const [id, names] of [["taste-genres", summary.genres], ["taste-artists", displayedArtists]]) {
     const parent = $(id);
     parent.replaceChildren();
     if (!names.length) { parent.textContent = "Like some songs to discover your favorites."; continue; }
@@ -505,6 +512,24 @@ audio.addEventListener("error", () => {
   if (current?.preview) $("preview-note").textContent = current.source === "audius"
     ? "Stream unavailable here. Try Listen on Audius below."
     : "Preview unavailable. Open the song in Apple Music.";
+});
+$("seed-artists-form").addEventListener("submit", event => {
+  event.preventDefault();
+  const input = $("seed-artists");
+  const names = [...new Set(input.value.split(",").map(x => x.trim()).filter(x => x.length >= 2 && x.length <= 80))].slice(0, 5);
+  if (!names.length) {
+    $("seed-artists-feedback").textContent = "Enter at least one artist, separated by commas.";
+    return;
+  }
+  const chosen = new Set(names.map(x => x.toLowerCase()));
+  profile.boosts = [...(profile.boosts || []).filter(x => !chosen.has(x.artist.toLowerCase())),
+    ...names.map(artist => ({ artist, genre: "Other" }))].slice(-50);
+  persist();
+  renderTaste();
+  input.value = "";
+  $("seed-artists-feedback").textContent = "Saved " + names.length + " favorite artist" + (names.length === 1 ? "" : "s") + ". Z will use them to find music.";
+  $("music-search").value = "";
+  void loadSongs();
 });
 for (const button of document.querySelectorAll("[data-genre]")) button.addEventListener("click", () => {
   genre = button.dataset.genre;
