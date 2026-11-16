@@ -88,3 +88,31 @@ test("Music Start explains when its main script fails to initialize", async ({pa
   await expect(page.locator("#discovery-status")).toContainText("could not initialize");
   await expect(page.locator("#start-discovery")).toContainText("Reload music");
 });
+
+test("When Apple is rate-limited, Music Finder uses Audius and saves the track", async ({page}) => {
+  await page.route("https://itunes.apple.com/search**", route => route.fulfill({
+    status: 429, contentType: "application/json", body: '{"error":"rate limited"}',
+  }));
+  await page.route("https://api.audius.co/v1/tracks/search**", route => route.fulfill({
+    status: 200, contentType: "application/json", body: JSON.stringify({
+      data: [
+        { id: "new_001", title: "Hidden Sound One", user: { name: "Independent One" },
+          genre: "Indie", permalink: "/independent-one/hidden-sound-one",
+          artwork: { "480x480": "https://example.com/art1.jpg" } },
+        { id: "new_002", title: "Hidden Sound Two", user: { name: "Independent Two" },
+          genre: "Indie", permalink: "/independent-two/hidden-sound-two" },
+      ],
+    }),
+  }));
+  await page.goto("/music.html");
+  await page.locator("#start-discovery").click();
+  await expect(page.locator("#card-title")).toContainText("Hidden Sound");
+  await expect(page.locator("#discovery-status")).toContainText("Audius");
+  await expect(page.locator("#audius-song-link")).toBeVisible();
+  await expect(page.locator("#audius-song-link")).toHaveAttribute("href", /audius.co/);
+  await page.locator("#like-song").click();
+  await expect(page.locator("#saved-count")).toHaveText("1");
+  await page.reload();
+  await page.locator("#tab-saved").click();
+  await expect(page.locator("#saved-tracks")).toContainText("Hidden Sound");
+});
