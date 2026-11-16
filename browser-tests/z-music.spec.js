@@ -55,3 +55,42 @@ test("Music Finder filters on genre, vibe and discovery style on small screens",
   expect(layout.card).toBeLessThanOrEqual(Math.min(412,layout.viewport));
   expect(errors).toEqual([]);
 });
+
+
+test("Random playlist walkthrough: Indie + Dreamy + New artists, Start, save four, export", async ({ page }) => {
+  const errors = [];
+  page.on("pageerror", e => errors.push(e.message));
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/music.html");
+  await page.locator('[data-genre="Indie"]').click();
+  await page.locator('[data-vibe="dreamy"]').click();
+  await page.locator('[data-exploration="explore"]').click();
+  await expect(page.locator('[data-genre="Indie"]')).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator('[data-vibe="dreamy"]')).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator('[data-exploration="explore"]')).toHaveAttribute("aria-pressed", "true");
+  await page.locator("#start-discovery").click();
+  await expect(page.locator("#card-title")).toContainText("Demo Song");
+  const names = [];
+  for (let i = 0; i < 4; i++) {
+    const title = await page.locator("#card-title").textContent();
+    expect(title).toMatch(/Demo Song/);
+    names.push(title);
+    await page.locator("#like-song").click();
+    await expect(page.locator("#saved-count")).toHaveText(String(i + 1));
+    if (i < 3) await expect(page.locator("#card-title")).not.toHaveText(title);
+  }
+  expect(new Set(names).size).toBe(4);
+  await page.locator("#tab-saved").click();
+  await expect(page.locator("#saved-tracks li")).toHaveCount(4);
+  await page.locator("#playlist-name").fill("Random Dreamy Indie Mix");
+  const downloadWait = page.waitForEvent("download");
+  await page.locator("#csv-export").click();
+  const download = await downloadWait;
+  expect(download.suggestedFilename()).toBe("z-music-playlist.csv");
+  await page.reload();
+  await page.locator("#tab-saved").click();
+  await expect(page.locator("#saved-tracks li")).toHaveCount(4);
+  const playlist = await page.locator("#saved-tracks").innerText();
+  for (const title of names) expect(playlist).toContain(title);
+  expect(errors).toEqual([]);
+});
