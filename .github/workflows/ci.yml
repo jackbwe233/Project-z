@@ -33,14 +33,14 @@ jobs:
       - name: Test
         run: npm test
 
-      - name: Cloudflare Worker smoke tests (no secrets)
-        run: node scripts/test-gemini-worker.mjs
-
       - name: Install browser
         run: npx playwright install --with-deps chromium webkit
 
       - name: Browser checks (desktop, mobile and iPhone WebKit)
         run: npm run test:browser
+
+      - name: Cloudflare Worker smoke tests (no secrets)
+        run: node scripts/test-gemini-worker.mjs
 
       - name: Save browser failure traces
         if: failure()
