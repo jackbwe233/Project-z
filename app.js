@@ -1,4 +1,4 @@
-import { recallPetName, withMemory } from "./lib/project-z.js?v=pet-recall-2";
+import { withMemory } from "./lib/project-z.js?v=pet-recall-2";
 import { initProjectZ } from "./lib/project-z-ui.js?v=personalize-0.3.0-20261114";
 import {
   PREFS_KEY,
@@ -3182,7 +3182,7 @@ async function runAssistantGeneration(session) {
   updateComposerState();
   setModelStatus("busy", "Starting…");
 
-  const petName = recallPetName(session.messages);
+  const petName = projectZ.recallPetName(session.messages);
   const useAgent = !petName && agentModeEffective();
   /** @type {ReturnType<typeof initStreamContext>} */
   let streamCtx = initStreamContext();
