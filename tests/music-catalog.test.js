@@ -39,7 +39,8 @@ describe("music catalog reliability", () => {
     expect(songs).toHaveLength(1);
     expect(songs[0]).toMatchObject({
       id: "audius:abc_123", source: "audius", title: "Clouds",
-      audiusUrl: "https://audius.co/newartist/clouds", preview: "",
+      audiusUrl: "https://audius.co/newartist/clouds",
+      preview: "https://api.audius.co/v1/tracks/abc_123/stream",
     });
   });
 
@@ -53,6 +54,14 @@ describe("music catalog reliability", () => {
     expect(track).not.toBeNull();
     expect(track.audiusUrl).toBe("");
     expect(track.artwork).toBe("");
+  });
+
+  it("does not offer playback for gated or unstreamable Audius songs", () => {
+    const basic = { id: "valid_1", title: "Song", user: { name: "Artist" } };
+    expect(normalizeAudiusSong({ ...basic, is_stream_gated: true })).toBeNull();
+    expect(normalizeAudiusSong({ ...basic, is_streamable: false })).toBeNull();
+    expect(normalizeAudiusSong({ ...basic, isStreamable: false })).toBeNull();
+    expect(normalizeAudiusSong({ ...basic, id: "../../unsafe" })).toBeNull();
   });
 
   it("times out even when a broken iPhone fetch never settles after abort", async () => {
