@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  canSendQueuedDraft,
   clampMaxNewTokens,
   formatAllModelsCacheStatus,
   isCacheCapable,
@@ -44,5 +45,23 @@ describe("clampMaxNewTokens", () => {
     expect(clampMaxNewTokens("99999")).toBe(8192);
     expect(clampMaxNewTokens("10")).toBe(64);
     expect(clampMaxNewTokens("nope")).toBe(4096);
+  });
+});
+
+describe("canSendQueuedDraft", () => {
+  const submitted = { sessionId: "chat-1", text: "First question" };
+  const current = { ...submitted, ready: true };
+
+  it("sends the submitted question when the original chat and model are ready", () => {
+    expect(canSendQueuedDraft(submitted, current)).toBe(true);
+  });
+
+  it.each([
+    { sessionId: "chat-2" },
+    { text: "Edited question" },
+    { text: "" },
+    { ready: false },
+  ])("keeps the draft when the send conditions change (%j)", change => {
+    expect(canSendQueuedDraft(submitted, { ...current, ...change })).toBe(false);
   });
 });
