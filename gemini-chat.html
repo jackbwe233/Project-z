@@ -41,6 +41,7 @@ label{display:block;margin:8px 0;color:#dceaff;font-size:.9rem}input,textarea{ba
 <form id="composer"><textarea id="question" aria-label="Message to Z" placeholder="Ask Z anything…" rows="2" maxlength="4000" required></textarea><button id="send" type="submit">Send</button></form>
 </main>
 <script type="module">
+import { buildGeminiHistory } from "./lib/gemini-client.js";
 const WORKER = "https://project-z-brain.mcrkw49n9c.workers.dev";
 const HISTORY_KEY = "project-z-gemini-chat-beta-v1";
 const $ = id => document.getElementById(id);
@@ -77,11 +78,7 @@ async function getJSON(response) {
   if (!response.ok) throw new Error(typeof data.error === "string" ? data.error : "Worker request failed (" + response.status + ").");
   return data;
 }
-function outboundHistory(){
-  const history = messages.filter(m=>m.role==="user"||m.role==="assistant").slice(-12).map(m=>({role:m.role,content:m.content.slice(0,4000)}));
-  while(history[0]?.role==="assistant") history.shift();
-  return history;
-}
+
 $("health").addEventListener("click", async()=>{
   $("health").disabled = true;
   try{
@@ -102,7 +99,7 @@ $("composer").addEventListener("submit",async e=>{
     const timeout=setTimeout(()=>controller?.abort(),30000);
     let response;
     try {
-      response=await fetch(WORKER+"/chat",{method:"POST",headers,body:JSON.stringify({messages:outboundHistory()}),signal:controller.signal,cache:"no-store"});
+      response=await fetch(WORKER+"/chat",{method:"POST",headers,body:JSON.stringify({messages:buildGeminiHistory(messages)}),signal:controller.signal,cache:"no-store"});
     }finally{clearTimeout(timeout);}
     const data=await getJSON(response);
     if(typeof data.answer!=="string" || !data.answer.trim())throw new Error("Gemini returned no answer.");
