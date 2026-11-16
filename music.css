@@ -25,6 +25,13 @@ html body.z-music-page .music-main { max-width:760px!important;padding:28px 18px
 .music-search button,.playlist-actions button{color:#101c2e!important;background:#c2d7f5!important;border:0!important;padding:11px 18px!important;border-radius:10px!important;font-weight:800!important;cursor:pointer}
 .music-search button:hover,.playlist-actions button:hover{filter:brightness(1.08)}
 .music-search input::placeholder{color:#8095b2}
+.taste-seed-setup{border:1px solid #30425c;background:#101b2b;border-radius:13px;margin:-6px 0 18px;padding:11px 13px}
+.taste-seed-setup summary{font-size:12px;color:#c2d4ef;font-weight:700;cursor:pointer;list-style-position:inside}
+.taste-seed-setup[open] summary{margin-bottom:12px}
+.taste-seed-setup .music-search{margin:0}
+.taste-seed-setup .music-search button{font-size:12px!important;white-space:nowrap;padding-inline:12px!important}
+.taste-seed-setup .status{margin:9px 2px 0;min-height:0}
+@media(max-width:390px){.taste-seed-setup .music-search{flex-wrap:wrap}.taste-seed-setup .music-search input{flex-basis:100%}.taste-seed-setup .music-search button{width:100%}}
 .filter-label,.discovery-caption{font-size:10px;letter-spacing:.2em;color:#92a7c4;font-weight:800;margin:19px 0 10px}
 .filter-row{display:flex;gap:8px;overflow-x:auto;padding:0 0 7px;scrollbar-width:none;overscroll-behavior-x:contain}
 .filter-row::-webkit-scrollbar{display:none}
