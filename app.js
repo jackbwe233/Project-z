@@ -71,7 +71,7 @@ import {
   normalizeToolPreferences,
 } from "./lib/sessions.js";
 import { generationErrorFallback } from "./lib/generation.js";
-import { detectBrowser, isIOSDevice, graphicsProbeAttempts, iosStabilityProfile } from "./lib/browser.js";
+import { detectBrowser, isIOSDevice, graphicsProbeAttempts, iosStabilityProfile, iosSafeModelId, isIOSModelAllowed } from "./lib/browser.js";
 import { computeLoadProgress } from "./lib/progress.js";
 import {
   canOfferLightweightRetry,
@@ -528,7 +528,7 @@ function loadPrefs() {
     if (p.grammarMode) state.grammarMode = p.grammarMode;
     if (MODELS[p.selectedModelId]) state.selectedModelId = p.selectedModelId;
     // A saved desktop preference must not trigger a multi-gigabyte iPhone GPU load.
-    if (iosStability) state.selectedModelId = iosStability.modelId;
+    if (iosStability) state.selectedModelId = iosSafeModelId(state.selectedModelId);
     if (typeof p.maxNewTokens === "number") state.maxNewTokens = clampMaxNewTokens(p.maxNewTokens);
     state.maxNewTokens = safeGenerationTokens(activeModelDef());
     if (p.grammarJsonSchema) $("grammar-json-schema").value = p.grammarJsonSchema;
@@ -881,7 +881,7 @@ function renderModelPicker() {
   picker.innerHTML = Object.values(MODELS).map(def => {
     const active = def.id === state.selectedModelId;
     const loaded = state.loadedModelId === def.id && !!state.model;
-    const unsafeOnIOS = !!iosStability && def.id !== iosStability.modelId;
+    const unsafeOnIOS = !!iosStability && !isIOSModelAllowed(def.id);
     return `
       <label class="model-option${active ? " active" : ""}${busy || unsafeOnIOS ? " disabled" : ""}"${unsafeOnIOS ? ' title="Desktop only: high-memory AI models can crash iPhone Safari"' : ""}>
         <input type="radio" name="model-id" value="${esc(def.id)}"${active ? " checked" : ""}${busy || unsafeOnIOS ? " disabled" : ""}>
@@ -894,9 +894,9 @@ function renderModelPicker() {
 
 async function applyModelSelection(modelId, { silent = false, persistToSession = true } = {}) {
   if (!MODELS[modelId]) modelId = DEFAULT_MODEL_ID;
-  if (iosStability && modelId !== iosStability.modelId) {
-    if (!silent) toast("Larger models are disabled on iPhone to help prevent crashes. Use desktop for those models.");
-    modelId = iosStability.modelId;
+  if (iosStability && !isIOSModelAllowed(modelId)) {
+    if (!silent) toast("Only the 230M and 350M models are available on iPhone. Larger models require desktop.");
+    modelId = iosSafeModelId(modelId);
   }
   const needsUnload = state.model && state.loadedModelId && state.loadedModelId !== modelId;
   if (modelId === state.selectedModelId && !needsUnload) {
@@ -952,8 +952,8 @@ function syncModelFromSession(session = activeSession()) {
   // Do not change which model is being loaded if a user browses other chats
   // during a download/warmup. canSendToModel still guards mismatched sessions.
   if (state.loading) return;
-  state.selectedModelId = iosStability?.modelId
-    || resolveModelIdForSession(session, state.selectedModelId);
+  const modelId = resolveModelIdForSession(session, state.selectedModelId);
+  state.selectedModelId = iosStability ? iosSafeModelId(modelId) : modelId;
   renderModelPicker();
 }
 
@@ -1343,8 +1343,8 @@ function updateComposerState() {
 async function loadModel() {
   if (state.model || state.loading) return;
   // Also enforce the safe selection when loading is triggered by a queued send.
-  if (iosStability && state.selectedModelId !== iosStability.modelId) {
-    state.selectedModelId = iosStability.modelId;
+  if (iosStability && !isIOSModelAllowed(state.selectedModelId)) {
+    state.selectedModelId = iosSafeModelId(state.selectedModelId);
     renderModelPicker();
   }
   if (state.webgpuChecking) {
@@ -1768,8 +1768,8 @@ function userMessageEl(messageIndex) {
 }
 
 function generationSendCheck(session) {
-  const expectedModelId = iosStability?.modelId
-    || resolveModelIdForSession(session, state.selectedModelId);
+  const intendedModelId = resolveModelIdForSession(session, state.selectedModelId);
+  const expectedModelId = iosStability ? iosSafeModelId(intendedModelId) : intendedModelId;
   return {
     expectedModelId,
     ...canSendToModel({
@@ -3159,8 +3159,8 @@ async function switchSession(id) {
   renderPendingFileRefs();
   renderChat();
   focusComposerInput($("user-input"));
-  const modelId = iosStability?.modelId
-    || resolveModelIdForSession(session, state.selectedModelId);
+  const intendedModelId = resolveModelIdForSession(session, state.selectedModelId);
+  const modelId = iosStability ? iosSafeModelId(intendedModelId) : intendedModelId;
   // Do not rewrite old chats just to view them; update their model on next send.
   if (!session.modelId) await patchSessionFields(session, { modelId });
   // Loading can continue while a different saved chat is displayed. Never
@@ -3444,8 +3444,8 @@ async function sendMessage() {
   }
   // A manually submitted draft takes precedence over any previously queued send.
   if (state.model) queuedFirstSend = null;
-  const expectedModelId = iosStability?.modelId
-    || resolveModelIdForSession(session, state.selectedModelId);
+  const intendedModelId = resolveModelIdForSession(session, state.selectedModelId);
+  const expectedModelId = iosStability ? iosSafeModelId(intendedModelId) : intendedModelId;
   const sendCheck = canSendToModel({
     text,
     model: state.model,
@@ -3463,7 +3463,7 @@ async function sendMessage() {
   state.busy = true;
   updateComposerState();
   session.systemPrompt = $("system-prompt").value;
-  if (iosStability) session.modelId = iosStability.modelId;
+  if (iosStability) session.modelId = iosSafeModelId(state.selectedModelId);
   else if (!session.modelId) session.modelId = state.selectedModelId;
   const fileRefs = localReferencesEnabled()
     ? resolveDraftFileRefs({
