@@ -133,6 +133,14 @@
     <p id="sonic-status" class="status" role="status" aria-live="polite">Add two or more tracks to discover actual sonic matches.</p>
     <div class="sonic-shelf-header"><h3>Analyzed tracks</h3><span id="sonic-count">0 tracks</span></div>
     <div id="sonic-library" class="sonic-library"></div>
+    <div class="sonic-feelings">
+      <label for="sonic-feelings" class="field-label">WHAT DOES THE SELECTED SONG MAKE YOU FEEL?</label>
+      <p>Optional: add your own words, separated by commas, such as hypnotic, nostalgic, majestic, peaceful, or bittersweet. Z treats these as your feelings, not universal facts.</p>
+      <div class="sonic-feelings-input">
+        <input id="sonic-feelings" type="text" maxlength="350" placeholder="hypnotic, warm, otherworldly…">
+        <button type="button" id="sonic-save-feelings">Save feelings</button>
+      </div>
+    </div>
     <div id="sonic-results" class="sonic-results" aria-live="polite"></div>
     <button type="button" id="sonic-clear" class="sonic-clear">Clear Sound DNA measurements</button>
   </div>
