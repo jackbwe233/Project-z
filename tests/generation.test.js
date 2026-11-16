@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { generationErrorFallback, isGenerationAbortError } from "../lib/generation.js";
+import { generationErrorFallback, isGenerationAbortError, isWebGpuDeviceFailure } from "../lib/generation.js";
 
 describe("isGenerationAbortError", () => {
   it("detects AbortError and abort messages", () => {
@@ -56,5 +56,19 @@ describe("generationErrorFallback", () => {
     expect(result.raw).toBe("partial");
     expect(result.aborted).toBe(false);
     expect(result.toast).toBe("Generation failed: boom");
+  });
+});
+
+describe("WebGPU command encoder recovery", () => {
+  it("classifies command encoder and lost device errors", () => {
+    expect(isWebGpuDeviceFailure(new Error("device.createCommandEncoder is not a function"))).toBe(true);
+    expect(isWebGpuDeviceFailure(new Error("deviceCreateCommandEncoder failed"))).toBe(true);
+    expect(isWebGpuDeviceFailure(new Error("GPU device was lost"))).toBe(true);
+    expect(isWebGpuDeviceFailure(new Error("network failed"))).toBe(false);
+  });
+  it("gives a reload instruction rather than treating a GPU failure as a factual answer", () => {
+    const result = generationErrorFallback(new Error("deviceCreateCommandEncoder failed"));
+    expect(result.raw).toContain("Reload this page");
+    expect(result.toast).toContain("WebGPU device error");
   });
 });

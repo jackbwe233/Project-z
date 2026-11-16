@@ -39,8 +39,8 @@ describe("iPhone memory safety limits", () => {
     const iphone = iosStabilityProfile("Mozilla/5.0 (iPhone; CPU iPhone OS 26_0 like Mac OS X)");
     expect(iphone).toEqual({
       modelId: "lfm2",
-      maxNewTokens: 256,
-      maxContextTokens: 4096,
+      maxNewTokens: 192,
+      maxContextTokens: 2048,
     });
     expect(iosStabilityProfile("Mozilla/5.0 (iPad; CPU OS 26_0 like Mac OS X)")).toBe(iphone);
     expect(iosStabilityProfile("Mozilla/5.0 (Macintosh; Intel Mac OS X) Safari/605.1", 5)).toBe(iphone);
