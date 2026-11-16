@@ -227,3 +227,38 @@ test('Z sidebar prioritizes chat and essential tabs while collapsing less-used t
   await expect(page).toHaveURL(/\/install\.html$/);
   await expect(page.getByRole('heading', { name: 'Put Z on your Home Screen.' })).toBeVisible();
 });
+
+test('A failed model load offers a one-click lightweight retry', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'gpu', {
+      configurable: true,
+      value: { requestAdapter: async () => ({}) },
+    });
+  });
+  await page.route('**/lib/runtime-registry.js', route => route.fulfill({
+    contentType: 'application/javascript',
+    body: `export function getRuntimeAdapter(runtime) {
+      return {
+        async loadModel(def) {
+          if (runtime === "gemma") throw new TypeError("Failed to fetch");
+          if (def.id !== "lfm2") throw new Error("Wrong fallback model");
+          return { async warmup() {} };
+        },
+      };
+    }`,
+  }));
+  await page.route('https://huggingface.co/**', route => route.abort());
+
+  await page.goto('/');
+  const load = page.locator('#load-model-btn');
+  const retry = page.getByRole('button', { name: /Try LFM2.5 230M/ });
+  const input = page.locator('#user-input');
+  await expect(retry).toBeHidden();
+  await input.fill('Keep my draft');
+  await load.click();
+  await expect(retry).toBeVisible();
+  await retry.click();
+  await expect(load).toHaveText('Model ready');
+  await expect(retry).toBeHidden();
+  await expect(input).toHaveValue('Keep my draft');
+});

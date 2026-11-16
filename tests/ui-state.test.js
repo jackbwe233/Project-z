@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  canOfferLightweightRetry,
   canSendQueuedDraft,
   clampMaxNewTokens,
   formatAllModelsCacheStatus,
@@ -63,5 +64,24 @@ describe("canSendQueuedDraft", () => {
     { ready: false },
   ])("keeps the draft when the send conditions change (%j)", change => {
     expect(canSendQueuedDraft(submitted, { ...current, ...change })).toBe(false);
+  });
+});
+
+describe("canOfferLightweightRetry", () => {
+  const failed = { failedModelId: "gemma4", selectedModelId: "gemma4" };
+
+  it("offers a lighter model after the selected model fails", () => {
+    expect(canOfferLightweightRetry(failed)).toBe(true);
+  });
+
+  it.each([
+    { failedModelId: null },
+    { selectedModelId: "bonsai27b" },
+    { failedModelId: "lfm2", selectedModelId: "lfm2" },
+    { loading: true },
+    { busy: true },
+    { model: {} },
+  ])("hides the fallback when it cannot be used (%j)", change => {
+    expect(canOfferLightweightRetry({ ...failed, ...change })).toBe(false);
   });
 });

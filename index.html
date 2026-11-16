@@ -524,6 +524,14 @@
   #model-status-text {
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 220px;
   }
+  #model-retry {
+    margin: 8px 14px;
+    padding: 8px 12px;
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+    color: var(--text);
+  }
+  #model-retry .btn { margin: 4px 0 4px 8px; white-space: normal; }
   .status-chip .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-muted); flex: none; }
   .status-chip.ready .dot { background: var(--success); box-shadow: 0 0 8px rgba(16,185,129,0.5); }
   .status-chip.loading .dot { background: var(--warning); animation: pulse 1.2s ease-in-out infinite; }
@@ -1791,6 +1799,11 @@ html.z-boot-returning #z-cinematic-boot {
       </div>
     </div>
 
+
+    <div id="model-retry" hidden>
+      <span role="status">The selected model couldn’t load.</span>
+      <button type="button" class="btn" id="model-retry-btn">Try LFM2.5 230M (~150 MB)</button>
+    </div>
 
     <details class="z-voice-drawer">
       <summary>Voice &amp; memory · Personalize Z</summary>
