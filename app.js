@@ -47,6 +47,7 @@ import {
 import { agentMessagesToSteps } from "./lib/agent-ui.js";
 import { looksLikeToolCallSyntax, stripToolCallSyntax, hasUnclosedThoughtChannel } from "./lib/tool-parser.js";
 import { sanitizeExternalText } from "./lib/sanitize.js";
+import { liveSearchQuery } from "./lib/live-search-routing.js";
 import { defaultSearchProvider } from "./lib/exa-search.js";
 import { GenerationTracker } from "./lib/generation-tracker.js";
 import { isPrefillChunk } from "./lib/gemma-generate.js";
@@ -3183,7 +3184,9 @@ async function runAssistantGeneration(session) {
   setModelStatus("busy", "Starting…");
 
   const petName = projectZ.recallPetName(session.messages);
-  const useAgent = !petName && agentModeEffective();
+  const liveQuery = liveSearchQuery(session.messages);
+  const searchDisabled = !!liveQuery && !webSearchEffective();
+  const useAgent = !petName && !searchDisabled && agentModeEffective();
   /** @type {ReturnType<typeof initStreamContext>} */
   let streamCtx = initStreamContext();
   activeStreamCtx = streamCtx;
@@ -3214,6 +3217,8 @@ async function runAssistantGeneration(session) {
     const runtime = getRuntimeAdapter(modelDef.runtime);
     if (petName) {
       raw = `You said the name is ${petName}.`;
+    } else if (searchDisabled) {
+      raw = "Turn on Web Search in the chat controls so I can look up current information. Then send your question again.";
     } else if (useAgent) {
       const availability = toolAvailability({ modelDef });
       turnTools = createActiveTools({
@@ -3227,6 +3232,7 @@ async function runAssistantGeneration(session) {
         modelId: modelDef.id,
       });
       result = await runAgentTurn({
+        initialWebSearchQuery: liveQuery,
         model: state.model,
         messages: baseMessages,
         tools: turnTools,
