@@ -40,8 +40,9 @@ label{display:block;margin:8px 0;color:#dceaff;font-size:.9rem}input,textarea{ba
 <section id="messages" aria-label="Gemini messages" aria-live="polite"></section>
 <form id="composer"><textarea id="question" aria-label="Message to Z" placeholder="Ask Z anything…" rows="2" maxlength="4000" required></textarea><button id="send" type="submit">Send</button></form>
 </main>
-<script type="module">
-import { buildGeminiHistory } from "./lib/gemini-client.js";
+<script>
+(async () => {
+const { buildGeminiHistory } = await import("./lib/gemini-client.js");
 const WORKER = "https://project-z-brain.mcrkw49n9c.workers.dev";
 const HISTORY_KEY = "project-z-gemini-chat-beta-v1";
 const $ = id => document.getElementById(id);
@@ -115,5 +116,6 @@ $("clear").addEventListener("click",()=>{
   messages=[];persist();render();status("Gemini chat cleared. Local Z chats were not changed.");
 });
 render();
+})().catch(error => { const s = document.getElementById("status"); if (s) s.textContent = "Gemini startup failed: " + error.message; });
 </script>
 </body></html>
