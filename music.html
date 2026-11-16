@@ -34,6 +34,7 @@
   <button type="button" id="start-discovery" class="music-start-button" aria-controls="swipe-card">▶ Start discovering</button>
   <span id="start-hint">Tap Start to find music you can preview, save or skip.</span>
  </div>
+ <p id="discovery-status" class="status music-start-status" role="status" aria-live="polite"></p>
  <p class="filter-label">GENRE</p>
  <div class="filter-row" id="genre-filters" role="group" aria-label="Music genre">
   <button type="button" data-genre="All" aria-pressed="true">For you</button>
@@ -88,7 +89,6 @@
   <button type="button" id="like-song" class="swipe-round like" aria-label="Save song to playlist">♥</button>
  </div>
  <p class="swipe-hint">← PASS &nbsp; · &nbsp; RIGHT TO SAVE → &nbsp; · &nbsp; ↑ MORE LIKE THIS. PREVIEW AUDIO IS A SAMPLE, NOT A FULL SONG.</p>
- <p id="discovery-status" class="status" role="status" aria-live="polite"></p>
 </section>
 <section id="music-saved" role="tabpanel" aria-labelledby="tab-saved" hidden>
  <div class="section-intro"><h2>Your playlist</h2><p>Every song you swipe right on lives here. Export it or send it to a music service.</p></div>
@@ -124,6 +124,22 @@
 <audio id="music-audio" preload="none"></audio>
 <script src="./z-shell.js?v=ux-simple-20261115-1" defer></script>
 <script src="./music-config.js?v=1" defer></script>
-<script type="module" src="./music.js?v=4"></script>
+<script type="module" src="./music.js?v=5"></script>
+<script>
+// If a module fails to load on iPhone, never leave a silently dead Start button.
+(() => {
+  const start = document.getElementById("start-discovery");
+  const feedback = document.getElementById("discovery-status");
+  start.addEventListener("click", () => {
+    if (!window.__Z_MUSIC_READY__) feedback.textContent = "Music is still loading. If this persists, refresh the page.";
+  });
+  setTimeout(() => {
+    if (window.__Z_MUSIC_READY__) return;
+    feedback.textContent = "Music could not initialize. Reload the page to try again.";
+    start.textContent = "↻ Reload music";
+    start.addEventListener("click", () => location.reload());
+  }, 3500);
+})();
+</script>
 </body>
 </html>
