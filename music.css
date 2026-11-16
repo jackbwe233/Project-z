@@ -166,3 +166,6 @@ html body.z-music-page {font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe U
 .z-music-page .music-provider-links a{font-size:12px;color:#b6d8ff;text-decoration:underline;text-underline-offset:3px}
 .z-music-page .music-provider-links a[hidden]{display:none!important}
 @media(max-width:500px){.z-music-page .music-start-button{width:100%}.z-music-page .music-start-bar{gap:7px}}
+
+/* Keep music-search feedback in view on narrow iPhones. */
+.z-music-page .music-start-status{margin:-10px 0 14px;min-height:1.3em;color:#d1e2ff;font-size:13px;line-height:1.45;}
