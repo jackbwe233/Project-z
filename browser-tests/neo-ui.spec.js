@@ -235,7 +235,7 @@ test('A failed model load offers a one-click lightweight retry', async ({ page }
       value: { requestAdapter: async () => ({}) },
     });
   });
-  await page.route('**/lib/runtime-registry.js', route => route.fulfill({
+  await page.route('**/lib/runtime-registry.js*', route => route.fulfill({
     contentType: 'application/javascript',
     body: `export function getRuntimeAdapter(runtime) {
       return {

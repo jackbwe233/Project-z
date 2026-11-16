@@ -22,6 +22,14 @@ describe("Pet-name recall", () => {
     expect(recallPetName([user("My dog is named Rocky."), user(wording)])).toBe("Rocky");
   });
 
+  it.each(["What’s my dogs name", "Whatâ€™s my dogs name"])("recalls the uploaded conversation wording: %s", wording => {
+    expect(recallPetName([
+      user("My dogs name is rocky whatâ€™s a good nickname for him"),
+      { role: "assistant", content: "I don't have access to real-time data." },
+      user(wording),
+    ])).toBe("rocky");
+  });
+
   it("uses the most recent matching user statement", () => {
     expect(recallPetName([
       user("My dog's name is Rocky."),
