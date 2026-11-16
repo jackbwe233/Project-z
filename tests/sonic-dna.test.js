@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   analyzeSonicSamples, normalizeSonicLibrary, sonicSimilarity,
-  rankSonicLibrary, sonicMoodHints, parseLocalTrackName,
+  rankSonicLibrary, sonicMoodHints, parseLocalTrackName, normalizeFeelings,
 } from "../lib/sonic-dna.js";
 
 const rate = 22050;
@@ -30,6 +30,19 @@ describe("Sound DNA measures audio instead of relying on popularity or catalog r
     const ranked = rankSonicLibrary(library[0],library);
     expect(ranked.map(t=>t.id)).toEqual(["sounds-close","not-like"]);
     expect(ranked[0].reasons.length).toBeGreaterThan(0);
+  });
+  it("keeps personal emotion language separate from measured features", () => {
+    const f = analyzeSonicSamples(sine(250), rate);
+    const library = normalizeSonicLibrary([
+      {...track("ref",f),feelings:["majestic","hypnotic"]},
+      {...track("a",f),feelings:["hypnotic","dreamy"]},
+      {...track("b",f),feelings:["happy"]},
+    ]);
+    const ranked=rankSonicLibrary(library[0],library);
+    expect(ranked[0].id).toBe("a");
+    expect(ranked[0].sharedFeelings).toEqual(["hypnotic"]);
+    expect(normalizeFeelings("Majestic, hypnotic, majestic")).toEqual(["majestic","hypnotic"]);
+    expect(ranked[0].similarity).toBe(100);
   });
   it("only keeps valid local sonic profiles and correctly parses file names", () => {
     const f = analyzeSonicSamples(sine(200),rate);
