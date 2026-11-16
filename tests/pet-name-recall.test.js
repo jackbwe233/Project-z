@@ -4,13 +4,22 @@ import { recallPetName } from "../lib/project-z.js";
 const user = content => ({ role: "user", content });
 const question = user("What’s my dog's name?");
 
-describe("iPhone pet-name recall", () => {
+describe("Pet-name recall", () => {
   it("recalls a fact stated before another question in the same turn", () => {
     expect(recallPetName([
       user("My dog’s name is Rocky. What’s a good nickname for him?"),
       { role: "assistant", content: "Try Rocko." },
       question,
     ])).toBe("Rocky");
+  });
+
+  it.each([
+    "whats my dogs name",
+    "What is the name of my dog?",
+    "What is my dog called?",
+    "Do you remember my dog's name?",
+  ])("handles common wording: %s", (wording) => {
+    expect(recallPetName([user("My dog is named Rocky."), user(wording)])).toBe("Rocky");
   });
 
   it("uses the most recent matching user statement", () => {
