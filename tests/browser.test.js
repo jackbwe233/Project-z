@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { detectBrowser, isIOSDevice, graphicsProbeAttempts, iosStabilityProfile } from "../lib/browser.js";
+import { detectBrowser, isIOSDevice, graphicsProbeAttempts, iosStabilityProfile, iosSafeModelId, isIOSModelAllowed } from "../lib/browser.js";
 
 describe("detectBrowser", () => {
   it("classifies common user agents", () => {
@@ -50,5 +50,21 @@ describe("iPhone memory safety limits", () => {
   it("leaves desktop model choice, context, and output limits alone", () => {
     expect(iosStabilityProfile("Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/130")).toBeNull();
     expect(iosStabilityProfile("Mozilla/5.0 (Macintosh; Intel Mac OS X) Safari/605.1", 0)).toBeNull();
+  });
+});
+
+describe("iPhone 350M model selector", () => {
+  it("supports both compact local models without exposing desktop-sized models", () => {
+    expect(isIOSModelAllowed("lfm2")).toBe(true);
+    expect(isIOSModelAllowed("lfm2_350")).toBe(true);
+    expect(isIOSModelAllowed("gemma4")).toBe(false);
+    expect(isIOSModelAllowed("bonsai27b")).toBe(false);
+  });
+
+  it("preserves the 350M selection but falls back to 230M for unsupported choices", () => {
+    expect(iosSafeModelId("lfm2_350")).toBe("lfm2_350");
+    expect(iosSafeModelId("lfm2")).toBe("lfm2");
+    expect(iosSafeModelId("gemma4")).toBe("lfm2");
+    expect(iosSafeModelId("invalid")).toBe("lfm2");
   });
 });
