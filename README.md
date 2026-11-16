@@ -387,3 +387,15 @@ The bounded inner-turn design is informed by [pi.dev](https://pi.dev/).
 ## License
 
 MIT
+
+### Direct live-question search
+
+With Web Search enabled, explicit `/search <question>` or `/live <question>`,
+weather questions, and recognized current news/score/price questions run a search
+before local generation. The query uses only the latest user message (up to 256
+characters), never saved memories. Search-off requests explain how to enable it;
+failed or empty forced searches return an honest failure without asking the model
+to guess. Existing search cards show the retrieved sources. This is a conservative
+intent detector, not universal live-question or follow-up understanding. Retrieved
+pages may be stale, and the local model can still misinterpret them. Gemini is
+separate and is not enabled by this change.
