@@ -57,3 +57,34 @@ test("Music Finder reports offline errors without disabling Start or freezing th
   await page.locator("#tab-discover").click();
   await expect(page.locator("#start-discovery")).toBeEnabled();
 });
+
+
+test("Music Start returns to Retry even if iPhone fetch never resolves after abort", async ({page}) => {
+  await page.clock.install();
+  await page.addInitScript(() => {
+    const original = window.fetch.bind(window);
+    window.fetch = (url, options) => {
+      if (String(url).includes("itunes.apple.com/search")) return new Promise(() => {});
+      return original(url, options);
+    };
+  });
+  await page.goto("/music.html");
+  const start = page.locator("#start-discovery");
+  await start.click();
+  await expect(page.locator("#discovery-status")).toContainText("Searching");
+  await page.clock.fastForward(7600);
+  await expect(page.locator("#discovery-status")).toContainText("timed out");
+  await expect(start).toBeEnabled();
+  await expect(start).toContainText("Try again");
+});
+
+test("Music Start explains when its main script fails to initialize", async ({page}) => {
+  await page.clock.install();
+  await page.route("**/music.js?v=5", route => route.abort("failed"));
+  await page.goto("/music.html");
+  await page.locator("#start-discovery").click();
+  await expect(page.locator("#discovery-status")).toContainText("still loading");
+  await page.clock.fastForward(3700);
+  await expect(page.locator("#discovery-status")).toContainText("could not initialize");
+  await expect(page.locator("#start-discovery")).toContainText("Reload music");
+});
