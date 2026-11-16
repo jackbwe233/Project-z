@@ -82,7 +82,7 @@ test("Music Start returns to Retry even if iPhone fetch never resolves after abo
 
 test("Music Start explains when its main script fails to initialize", async ({page}) => {
   await page.clock.install();
-  await page.route("**/music.js?v=8", route => route.abort("failed"));
+  await page.route("**/music.js?v=9", route => route.abort("failed"));
   await page.goto("/music.html");
   await page.locator("#start-discovery").click();
   await expect(page.locator("#discovery-status")).toContainText("still loading");
