@@ -2,6 +2,7 @@ import { MUSIC_STORAGE_KEY, blankMusicProfile, normalizeMusicProfile, normalizeS
 import { SONIC_STORAGE_KEY, MAX_SONIC_TRACKS, analyzeSonicSamples, normalizeSonicLibrary, rankSonicLibrary, sonicMoodHints, sonicSimilarity, sonicReasons, normalizeFeelings, parseLocalTrackName } from "./lib/sonic-dna.js";
 import { connectSpotify, handleSpotifyCallback, spotifyIsConnected, disconnectSpotify, hasSpotifySetup, createSpotifyPlaylist, connectApple, appleIsConnected, hasAppleSetup, createApplePlaylist } from "./lib/music-providers.js";
 import { discoveryQueries, smartRankSongs, reasonForSong, genreFamily } from "./lib/music-intelligence.js";
+import { appleSongSearch, audiusSongSearch } from "./lib/music-catalog.js";
 
 const $ = id => document.getElementById(id);
 const card = $("swipe-card");
@@ -11,6 +12,11 @@ try { profile = normalizeMusicProfile(JSON.parse(localStorage.getItem(MUSIC_STOR
 catch { profile = blankMusicProfile(); }
 let genre = profile.genre || "All", vibe = "any", exploration = "balanced", queue = [], current = null, loadCycle = 0, sequence = 0, exporting = false, gesture = null;
 let controller = null;
+let filterTimer = null;
+function scheduleFilterLoad() {
+  clearTimeout(filterTimer);
+  filterTimer = setTimeout(() => { filterTimer = null; void loadSongs(); }, 260);
+}
 let sonicLibrary = [];
 try { sonicLibrary = normalizeSonicLibrary(JSON.parse(localStorage.getItem(SONIC_STORAGE_KEY) || "[]")); }
 catch { sonicLibrary = []; }
@@ -82,6 +88,12 @@ function display(song) {
     link.hidden = !song;
     if (song) link.href = url; else link.removeAttribute("href");
   }
+  const audiusLink = $("audius-song-link");
+  if (audiusLink) {
+    audiusLink.hidden = !song?.audiusUrl;
+    if (song?.audiusUrl) audiusLink.href = song.audiusUrl;
+    else audiusLink.removeAttribute("href");
+  }
   actions.forEach(button => { button.disabled = !song; });
   $("discovery-count").textContent = song ? (queue.length + 1) + " SONGS TO EXPLORE" : "DISCOVER";
   card.classList.remove("out", "dragging");
@@ -90,7 +102,10 @@ function display(song) {
   card.querySelectorAll(".swipe-stamp").forEach(x => { x.style.opacity = "0"; });
 }
 function nextSong() {
-  if (queue.length) { display(queue.shift()); status(""); }
+  if (queue.length) {
+    display(queue.shift());
+    status(current?.source === "audius" ? "Discovering with Audius while Apple's catalog is unavailable." : "");
+  }
   else { display(null); loadSongs(); }
 }
 function makeChoice(action) {
@@ -126,27 +141,46 @@ async function searchCatalog(term, signal) {
   const key = term.toLowerCase();
   const cached = catalogCache.get(key);
   if (cached && Date.now() - cached.at < 12 * 60 * 1000) return cached.songs;
-  // Apple's iTunes search service is limited to approximately 20 calls/minute.
+  // Fewer requests after rapid filter changes, with a second catalog when Apple fails.
   const now = Date.now();
   while (catalogCalls.length && now - catalogCalls[0] > 60000) catalogCalls.shift();
-  if (catalogCalls.length >= 16) throw new Error("Song search limit reached. Try again shortly.");
-  catalogCalls.push(now);
-  const url = new URL("https://itunes.apple.com/search");
-  url.searchParams.set("term", term);
-  url.searchParams.set("media", "music");
-  url.searchParams.set("entity", "song");
-  url.searchParams.set("country", "US");
-  url.searchParams.set("limit", "35");
-  url.searchParams.set("explicit", "No");
-  const response = await fetch(url, { signal, cache: "default" });
-  if (!response.ok) throw new Error("Music catalog error (" + response.status + ").");
-  const data = await response.json();
-  const songs = (data.results || []).map(normalizeSong).filter(Boolean).map(song => ({ ...song, sourceQuery: term }));
-  if (catalogCache.size >= 40) catalogCache.delete(catalogCache.keys().next().value);
-  catalogCache.set(key, { at: Date.now(), songs });
-  return songs;
+  let appleFailure = null;
+  if (catalogCalls.length < 12) {
+    catalogCalls.push(now);
+    try {
+      const songs = await appleSongSearch(term, { signal, timeoutMs: 2400 });
+      if (songs.length) {
+        if (catalogCache.size >= 40) catalogCache.delete(catalogCache.keys().next().value);
+        catalogCache.set(key, { at: Date.now(), songs });
+        return songs;
+      }
+      appleFailure = new Error("Apple returned no matching songs");
+    } catch (error) {
+      if (signal.aborted) throw error;
+      appleFailure = error;
+    }
+  } else {
+    appleFailure = new Error("Apple requests are temporarily limited");
+  }
+  // Audius search works independently of Apple's catalog and rate limit.
+  try {
+    const songs = await audiusSongSearch(term, { signal, timeoutMs: 2400 });
+    if (songs.length) {
+      if (catalogCache.size >= 40) catalogCache.delete(catalogCache.keys().next().value);
+      catalogCache.set(key, { at: Date.now(), songs });
+      return songs;
+    }
+  } catch (error) {
+    if (signal.aborted) throw error;
+    throw new Error("Music discovery is unavailable. Apple: " +
+      (appleFailure?.message || "No results") + "; Audius: " + (error?.message || "Request failed") + ".");
+  }
+  throw new Error("Music discovery is unavailable. Apple: " +
+    (appleFailure?.message || "No results") + "; Audius returned no results.");
 }
 async function loadSongs(query = "", seedSong = null) {
+  clearTimeout(filterTimer);
+  filterTimer = null;
   // Restarting discovery must not be blocked by a previous Safari request.
   controller?.abort();
   const request = new AbortController();
@@ -172,6 +206,7 @@ async function loadSongs(query = "", seedSong = null) {
     }, 7500);
   });
   const search = async () => {
+    let lastError = null;
     for (const term of selected.slice(0, 3)) {
       if (task !== sequence || request.signal.aborted) return [];
       try {
@@ -179,9 +214,10 @@ async function loadSongs(query = "", seedSong = null) {
         if (found.length) return found;
       } catch (error) {
         if (request.signal.aborted) throw error;
-        // Fall back to a different search when this catalog term fails.
+        lastError = error;
       }
     }
+    if (lastError) throw lastError;
     return [];
   };
   try {
@@ -197,9 +233,12 @@ async function loadSongs(query = "", seedSong = null) {
     });
     if (!queue.length) throw new Error("No new songs in this search. Tap Retry or change your genre.");
     display(queue.shift());
-    status("");
+    const backup = current?.source === "audius";
+    status(backup ? "Apple's song catalog is unavailable. Discovering with Audius instead." : "");
     $("start-discovery").textContent = "↻ New songs";
-    $("start-hint").textContent = "Listen to a preview, then swipe left to skip or right to save.";
+    $("start-hint").textContent = backup
+      ? "Audius tracks may not have a preview. Open the track to listen, or swipe to save."
+      : "Listen to a preview, then swipe left to skip or right to save.";
   } catch (error) {
     if (task !== sequence) return;
     status(request.signal.aborted ? "Music search timed out. Tap Retry." :
@@ -434,18 +473,18 @@ audio.addEventListener("error", () => { $("preview-button").textContent = "▶ P
 for (const button of document.querySelectorAll("[data-genre]")) button.addEventListener("click", () => {
   genre = button.dataset.genre;
   document.querySelectorAll("[data-genre]").forEach(x => x.setAttribute("aria-pressed", String(x === button)));
-  $("music-search").value = ""; queue = []; persist(); loadSongs();
+  $("music-search").value = ""; queue = []; persist(); scheduleFilterLoad();
 });
 for (const button of document.querySelectorAll("[data-vibe]")) button.addEventListener("click", () => {
   vibe = button.dataset.vibe;
   document.querySelectorAll("[data-vibe]").forEach(x => x.setAttribute("aria-pressed", String(x === button)));
-  $("music-search").value = ""; queue = []; loadSongs();
+  $("music-search").value = ""; queue = []; scheduleFilterLoad();
 });
 document.querySelectorAll("[data-genre]").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.genre === genre)));
 for (const button of document.querySelectorAll("[data-exploration]")) button.addEventListener("click", () => {
   exploration = button.dataset.exploration;
   document.querySelectorAll("[data-exploration]").forEach(x => x.setAttribute("aria-pressed", String(x === button)));
-  queue = []; loadSongs();
+  queue = []; scheduleFilterLoad();
 });
 
 card.addEventListener("pointerdown", e => {
