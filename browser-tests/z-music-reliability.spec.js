@@ -48,6 +48,7 @@ test("Music Start stays responsive during a stalled network request; Retry cance
 
 test("Music Finder reports offline errors without disabling Start or freezing the UI",async({page})=>{
   await page.route("https://itunes.apple.com/search**",route=>route.abort("internetdisconnected"));
+  await page.route("https://api.audius.co/v1/tracks/search**",route=>route.abort("internetdisconnected"));
   await page.goto("/music.html");
   await page.locator("#start-discovery").click();
   await expect(page.locator("#discovery-status")).toContainText(/No songs loaded|Music discovery is unavailable/);
@@ -64,7 +65,8 @@ test("Music Start returns to Retry even if iPhone fetch never resolves after abo
   await page.addInitScript(() => {
     const original = window.fetch.bind(window);
     window.fetch = (url, options) => {
-      if (String(url).includes("itunes.apple.com/search")) return new Promise(() => {});
+      if (String(url).includes("itunes.apple.com/search") ||
+          String(url).includes("api.audius.co/v1/tracks/search")) return new Promise(() => {});
       return original(url, options);
     };
   });
