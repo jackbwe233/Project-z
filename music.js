@@ -139,45 +139,48 @@ function terms(query = "", seedSong = null) {
 }
 const catalogCache = new Map();
 const catalogCalls = [];
+let appleCooldownUntil = 0;
 async function searchCatalog(term, signal) {
-  const key = term.toLowerCase();
+  if (signal.aborted) throw new DOMException("Canceled", "AbortError");
+  const key = term.trim().toLowerCase();
   const cached = catalogCache.get(key);
-  if (cached && Date.now() - cached.at < 12 * 60 * 1000) return cached.songs;
-  // Fewer requests after rapid filter changes, with a second catalog when Apple fails.
+  if (cached && Date.now() - cached.at < (cached.source === "apple" ? 12 : 2) * 60 * 1000)
+    return cached.songs;
   const now = Date.now();
   while (catalogCalls.length && now - catalogCalls[0] > 60000) catalogCalls.shift();
   let appleFailure = null;
-  if (catalogCalls.length < 12) {
+  if (now >= appleCooldownUntil && catalogCalls.length < 12) {
     catalogCalls.push(now);
     try {
       const songs = await appleSongSearch(term, { signal, timeoutMs: 2400 });
       if (songs.length) {
-        if (catalogCache.size >= 40) catalogCache.delete(catalogCache.keys().next().value);
-        catalogCache.set(key, { at: Date.now(), songs });
+        if (catalogCache.size >= 50) catalogCache.delete(catalogCache.keys().next().value);
+        catalogCache.set(key, { at: Date.now(), songs, source: "apple" });
         return songs;
       }
-      appleFailure = new Error("Apple returned no matching songs");
+      appleFailure = new Error("No Apple matches");
     } catch (error) {
       if (signal.aborted) throw error;
       appleFailure = error;
+      // Do not repeatedly call an already-limited endpoint after HTTP 429.
+      if (/HTTP 429|rate limit/i.test(String(error?.message))) appleCooldownUntil = Date.now() + 65000;
     }
   } else {
-    appleFailure = new Error("Apple requests are temporarily limited");
+    appleFailure = new Error("Temporarily rate-limited; retry later");
   }
-  // Audius search works independently of Apple's catalog and rate limit.
   try {
     const songs = await audiusSongSearch(term, { signal, timeoutMs: 2400 });
     if (songs.length) {
-      if (catalogCache.size >= 40) catalogCache.delete(catalogCache.keys().next().value);
-      catalogCache.set(key, { at: Date.now(), songs });
+      if (catalogCache.size >= 50) catalogCache.delete(catalogCache.keys().next().value);
+      catalogCache.set(key, { at: Date.now(), songs, source: "audius" });
       return songs;
     }
   } catch (error) {
     if (signal.aborted) throw error;
-    throw new Error("Music discovery is unavailable. Apple: " +
+    throw new Error("Music catalog unavailable. Apple: " +
       (appleFailure?.message || "No results") + "; Audius: " + (error?.message || "Request failed") + ".");
   }
-  throw new Error("Music discovery is unavailable. Apple: " +
+  throw new Error("Music catalog unavailable. Apple: " +
     (appleFailure?.message || "No results") + "; Audius returned no results.");
 }
 async function loadSongs(query = "", seedSong = null) {
@@ -208,17 +211,33 @@ async function loadSongs(query = "", seedSong = null) {
     }, 7500);
   });
   const search = async () => {
+    const found = [];
     let lastError = null;
-    for (const term of selected.slice(0, 3)) {
+    // The first provider batch is not always relevant. Check actual ranked
+    // matches, and search a second seed when the batch is narrow or from Audius.
+    const selectedGenre = seedSong ? genreFamily(seedSong.genre) : genre;
+    const selectedMode = seedSong ? "explore" : exploration;
+    for (const [index, term] of selected.slice(0, 3).entries()) {
       if (task !== sequence || request.signal.aborted) return [];
       try {
-        const found = await searchCatalog(term, request.signal);
-        if (found.length) return found;
+        const songs = await searchCatalog(term, request.signal);
+        found.push(...songs);
+        const usable = smartRankSongs(found, profile, {
+          genre: selectedGenre, vibe, exploration: selectedMode,
+          cycle: loadCycle, sonicLibrary,
+          referenceSonic: sonicLibrary.find(item => item.id===selectedSonicId) || null,
+        });
+        // A strong Apple batch is quick; otherwise diversify across two searches.
+        if (usable.length >= 14 &&
+            (songs.some(s => s.source === "apple") || index >= 1)) break;
+        // Avoid waiting through three slow catalog fallbacks on an iPhone.
+        if (index >= 1 && usable.length) break;
       } catch (error) {
         if (request.signal.aborted) throw error;
         lastError = error;
       }
     }
+    if (found.length) return found;
     if (lastError) throw lastError;
     return [];
   };
