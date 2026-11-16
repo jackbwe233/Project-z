@@ -1,5 +1,5 @@
 import { MUSIC_STORAGE_KEY, blankMusicProfile, normalizeMusicProfile, normalizeSong, recordMusicAction, removeLikedSong, musicTasteSummary } from "./lib/music-finder.js";
-import { SONIC_STORAGE_KEY, MAX_SONIC_TRACKS, analyzeSonicSamples, normalizeSonicLibrary, rankSonicLibrary, sonicMoodHints, parseLocalTrackName } from "./lib/sonic-dna.js";
+import { SONIC_STORAGE_KEY, MAX_SONIC_TRACKS, analyzeSonicSamples, normalizeSonicLibrary, rankSonicLibrary, sonicMoodHints, sonicSimilarity, sonicReasons, parseLocalTrackName } from "./lib/sonic-dna.js";
 import { connectSpotify, handleSpotifyCallback, spotifyIsConnected, disconnectSpotify, hasSpotifySetup, createSpotifyPlaylist, connectApple, appleIsConnected, hasAppleSetup, createApplePlaylist } from "./lib/music-providers.js";
 import { discoveryQueries, smartRankSongs, reasonForSong, genreFamily } from "./lib/music-intelligence.js";
 
@@ -25,6 +25,17 @@ function persist() {
   try { localStorage.setItem(MUSIC_STORAGE_KEY, JSON.stringify(profile)); }
   catch { status("Your browser could not save music preferences."); }
   $("saved-count").textContent = profile.likes.length;
+}
+function evidenceForSong(song) {
+  const ref=sonicLibrary.find(item => item.id===selectedSonicId);
+  const identity=value=>String(value || "").trim().toLowerCase();
+  const measured=sonicLibrary.find(item => identity(item.artist)===identity(song.artist) && identity(item.title)===identity(song.title));
+  if (ref && measured) {
+    const score=sonicSimilarity(ref.features,measured.features);
+    const factors=sonicReasons(ref.features,measured.features);
+    return "Measured Sound DNA match: " + score + "% · " + factors.slice(0,2).join(" & ");
+  }
+  return reasonForSong(song, profile, { genre, exploration });
 }
 function placeholder() {
   const s = document.createElement("span");
@@ -56,7 +67,7 @@ function display(song) {
   $("card-title").textContent = song?.title || "Find your sound";
   $("card-artist").textContent = song?.artist || "Pick a genre, vibe, or search an artist.";
   $("card-album").textContent = song?.album || "Your next favorite is out there.";
-  $("card-reason").textContent = song ? reasonForSong(song, profile, { genre, exploration }) : "Explore music by genre and mood.";
+  $("card-reason").textContent = song ? evidenceForSong(song) : "Explore music by genre and mood.";
   const storeLink = $("apple-store-link");
   storeLink.hidden = !song?.appleUrl;
   if (song?.appleUrl) storeLink.href = song.appleUrl; else storeLink.removeAttribute("href");
@@ -179,6 +190,8 @@ async function loadSongs(query = "", seedSong = null) {
     queue = smartRankSongs(found, profile, {
       genre: seedSong ? genreFamily(seedSong.genre) : genre,
       vibe, exploration: seedSong ? "explore" : exploration,
+      cycle: loadCycle, sonicLibrary,
+      referenceSonic: sonicLibrary.find(item => item.id===selectedSonicId) || null,
     });
     if (!queue.length) throw new Error("No new songs in this search. Tap Retry or change your genre.");
     display(queue.shift());
