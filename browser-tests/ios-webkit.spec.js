@@ -356,6 +356,7 @@ test('iPhone WebKit: Sound DNA decodes actual WAV files and finds acoustic match
     name:'Sine Artist - Low Pulse.wav',mimeType:'audio/wav',buffer:wav(130),
   });
   await expect(page.locator('#sonic-count')).toContainText('1 track');
+  await expect(page.locator('#sonic-files')).toBeEnabled();
   await page.locator('#sonic-files').setInputFiles({
     name:'Sine Artist - Bright Pulse.wav',mimeType:'audio/wav',buffer:wav(2800),
   });
