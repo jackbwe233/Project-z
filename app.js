@@ -36,6 +36,7 @@ import {
 } from "./lib/messages.js";
 import { runAgentTurn } from "./lib/agent-loop.js";
 import { getRuntimeAdapter } from "./lib/runtime-registry.js";
+import { fetchModelFile } from "./lib/model-fetch.js";
 import { fitMessagesToContext, effectiveMaxNewTokens } from "./lib/context-window.js";
 import {
   activeToolNames,
@@ -1379,6 +1380,7 @@ async function loadModel() {
   try {
     const loadOpts = {
       onProgress: onLoadProgress,
+      fetch: fetchModelFile,
       cacheName: def.cacheName,
       revision: def.revision,
     };
