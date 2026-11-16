@@ -73,6 +73,7 @@ import { generationErrorFallback } from "./lib/generation.js";
 import { detectBrowser, isIOSDevice, graphicsProbeAttempts, iosStabilityProfile } from "./lib/browser.js";
 import { computeLoadProgress } from "./lib/progress.js";
 import {
+  canSendQueuedDraft,
   loadButtonLabel,
   formatAllModelsCacheStatus,
   isCacheCapable,
@@ -611,7 +612,7 @@ const DIAGNOSTICS_KEY = "project-z:diagnostics";
 let webgpuProbeTask = null;
 let pendingLoadAfterProbe = false;
 let pendingLoadAfterStorage = false;
-let queuedFirstSendFor = null;
+let queuedFirstSend = null;
 const diagnostics = [];
 
 function updateDiagnosticsUI() {
@@ -1355,6 +1356,8 @@ async function loadModel() {
       return;
     }
   }
+  // Another load can start while this call is waiting for the graphics probe.
+  if (state.model || state.loading) return;
   if (state.storageChecking) {
     pendingLoadAfterStorage = true;
     setModelStatus("loading", "Preparing model storage…");
@@ -1440,15 +1443,22 @@ async function loadModel() {
     updateWebSearchUI();
     updateLocalFileToolsUI();
     renderModelPicker();
-    if (state.model && queuedFirstSendFor) {
-      const intendedSession = queuedFirstSendFor;
-      queuedFirstSendFor = null;
-      // Only send to the original conversation, never a different chat opened during loading.
-      if (state.activeSessionId === intendedSession && $("user-input").value.trim()) {
-        setTimeout(() => { if (!state.busy) void sendMessage(); }, 0);
-      } else if ($("user-input").value.trim()) {
-        toast("Your draft is still here. Press Send when you're ready.");
-      }
+    if (state.model && queuedFirstSend) {
+      const submitted = queuedFirstSend;
+      setTimeout(() => {
+        if (queuedFirstSend !== submitted) return;
+        queuedFirstSend = null;
+        const draft = $("user-input").value.trim();
+        if (canSendQueuedDraft(submitted, {
+          sessionId: state.activeSessionId,
+          text: draft,
+          ready: !!state.model && !state.loading && !state.busy,
+        })) {
+          void sendMessage();
+        } else if (draft) {
+          toast("Your draft is still here. Press Send when you're ready.");
+        }
+      }, 0);
     }
     if (shouldTryLightweightFallback) {
       toast("Z detected a model memory issue. Trying the lightweight model automatically.", { duration: 6500 });
@@ -3412,8 +3422,8 @@ async function sendMessage() {
   const session = activeSession();
   // On iPhone we intentionally defer the expensive model load until the user acts.
   // Keep the draft untouched while loading so a failed load can be retried safely.
-  if (text && session && !state.model && !state.busy) {
-    queuedFirstSendFor = session.id;
+  if (text && session && (state.loading || !state.model) && !state.busy) {
+    queuedFirstSend = { sessionId: session.id, text };
     if (!state.loading) {
       toast("Starting Z’s AI brain. Your question stays here and will send once the model is ready.", { duration: 6000 });
       void loadModel();
@@ -3423,7 +3433,7 @@ async function sendMessage() {
     return;
   }
   // A manually submitted draft takes precedence over any previously queued send.
-  if (state.model && queuedFirstSendFor === session?.id) queuedFirstSendFor = null;
+  if (state.model) queuedFirstSend = null;
   const expectedModelId = iosStability?.modelId
     || resolveModelIdForSession(session, state.selectedModelId);
   const sendCheck = canSendToModel({
