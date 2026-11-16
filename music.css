@@ -197,3 +197,12 @@ html body.z-music-page {font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe U
 .z-music-page .sonic-clear{margin-top:23px;padding:10px 12px!important;background:transparent!important;color:#f2b4bb!important;border:1px solid #7c4e59!important;border-radius:10px!important;font-size:12px!important}
 .z-music-page .sonic-empty{font-size:13px;color:#9cb4cd}
 @media(max-width:480px){.z-music-page .sonic-panel{padding:14px}.z-music-page .music-tabs button{padding:11px 10px!important;font-size:12px!important}.z-music-page #sonic-files::file-selector-button{max-width:100%}}
+
+
+.z-music-page .sonic-feelings{margin-top:24px;padding:16px;border:1px solid #344963;background:#14243a;border-radius:12px}
+.z-music-page .sonic-feelings p{margin:0 0 12px;color:#a9bed7;font-size:12px;line-height:1.6}
+.z-music-page .sonic-feelings-input{display:flex;gap:9px;flex-wrap:wrap}
+.z-music-page #sonic-feelings{flex:1;min-width:160px;width:100%;background:#1f3450;border:1px solid #486587;color:#edf5ff;border-radius:8px;padding:10px;font-size:16px}
+.z-music-page #sonic-save-feelings{min-height:42px;padding:10px 14px!important;border-radius:9px!important;background:#b5cdee!important;color:#13233a!important;font-weight:800!important;font-size:13px!important}
+.z-music-page .sonic-shared-feelings{color:#c9d8f0!important}
+@media(max-width:480px){.z-music-page #sonic-save-feelings{width:100%}}
