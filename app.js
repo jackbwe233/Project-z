@@ -73,6 +73,7 @@ import { generationErrorFallback } from "./lib/generation.js";
 import { detectBrowser, isIOSDevice, graphicsProbeAttempts, iosStabilityProfile } from "./lib/browser.js";
 import { computeLoadProgress } from "./lib/progress.js";
 import {
+  canOfferLightweightRetry,
   canSendQueuedDraft,
   loadButtonLabel,
   formatAllModelsCacheStatus,
@@ -286,6 +287,7 @@ function setIcon(el, name) {
 const state = {
   model: null,
   loading: false,
+  failedModelId: null,
   busy: false,
   abort: null,
   webgpuOk: false,
@@ -871,6 +873,7 @@ async function unloadModel() {
 }
 
 function renderModelPicker() {
+  $("model-retry").hidden = !canOfferLightweightRetry(state);
   const picker = $("model-picker");
   if (!picker) return;
   const busy = state.loading || state.busy;
@@ -1365,6 +1368,7 @@ async function loadModel() {
   }
   const def = activeModelDef();
   let shouldTryLightweightFallback = false;
+  state.failedModelId = null;
   state.loading = true;
   updateComposerState();
   renderModelPicker();
@@ -1419,6 +1423,7 @@ async function loadModel() {
     recordDiagnostic("Model loading", err);
     const errorText = String(err?.message || err);
     shouldTryLightweightFallback = def.id !== "lfm2" && /out of memory|not enough memory|memory allocation|allocation failed|insufficient memory|device lost/i.test(errorText);
+    state.failedModelId = shouldTryLightweightFallback ? null : def.id;
     setModelStatus("error", `Failed · ${err?.message || err}`);
     toast(`Model failed to load: ${err?.message || err}`);
     const failedModel = state.model;
@@ -3618,6 +3623,16 @@ $("theme-toggle").addEventListener("click", () => {
 });
 $("load-model-btn").addEventListener("click", loadModel);
 $("load-model-btn-hero").addEventListener("click", loadModel);
+$("model-retry-btn").addEventListener("click", async () => {
+  if (!canOfferLightweightRetry(state)) return;
+  const sessionId = state.activeSessionId;
+  state.failedModelId = null;
+  renderModelPicker();
+  await applyModelSelection("lfm2", { silent: true });
+  if (state.activeSessionId === sessionId && state.selectedModelId === "lfm2") {
+    await loadModel();
+  }
+});
 // Detailed cache stats are opt-in, not part of opening a conversation.
 $("storage-block").addEventListener("toggle", () => {
   if (!$("storage-block").open || state.loading || state.busy || state.storageChecking) return;
