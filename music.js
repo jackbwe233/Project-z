@@ -1,5 +1,5 @@
 import { MUSIC_STORAGE_KEY, blankMusicProfile, normalizeMusicProfile, normalizeSong, recordMusicAction, removeLikedSong, musicTasteSummary } from "./lib/music-finder.js";
-import { SONIC_STORAGE_KEY, MAX_SONIC_TRACKS, analyzeSonicSamples, normalizeSonicLibrary, rankSonicLibrary, sonicMoodHints, sonicSimilarity, sonicReasons, parseLocalTrackName } from "./lib/sonic-dna.js";
+import { SONIC_STORAGE_KEY, MAX_SONIC_TRACKS, analyzeSonicSamples, normalizeSonicLibrary, rankSonicLibrary, sonicMoodHints, sonicSimilarity, sonicReasons, normalizeFeelings, parseLocalTrackName } from "./lib/sonic-dna.js";
 import { connectSpotify, handleSpotifyCallback, spotifyIsConnected, disconnectSpotify, hasSpotifySetup, createSpotifyPlaylist, connectApple, appleIsConnected, hasAppleSetup, createApplePlaylist } from "./lib/music-providers.js";
 import { discoveryQueries, smartRankSongs, reasonForSong, genreFamily } from "./lib/music-intelligence.js";
 
@@ -283,6 +283,7 @@ function renderSonic() {
   root.replaceChildren(); matches.replaceChildren();
   $("sonic-count").textContent = sonicLibrary.length + (sonicLibrary.length === 1 ? " track" : " tracks");
   if (!sonicLibrary.length) {
+    $("sonic-feelings").value = "";
     addSonicText(root,"p","No analyzed songs yet. Add two audio files to compare them.","sonic-empty");
     addSonicText(matches,"p","Upload at least two audio files to find sound-alike matches.","sonic-empty");
     return;
@@ -299,6 +300,7 @@ function renderSonic() {
     root.append(item);
   }
   const reference=sonicLibrary.find(x=>x.id===selectedSonicId);
+  $("sonic-feelings").value = (reference.feelings || []).join(", ");
   const candidates=rankSonicLibrary(reference,sonicLibrary);
   addSonicText(matches,"h3","Closest sound to " + reference.title);
   const f=reference.features;
@@ -318,6 +320,7 @@ function renderSonic() {
     const details=document.createElement("div");details.className="sonic-match-details";
     addSonicText(details,"strong",found.title + " — " + found.artist);
     addSonicText(details,"small","Similar: " + found.reasons.join(", "));
+    if (found.sharedFeelings?.length) addSonicText(details,"small","You felt: " + found.sharedFeelings.join(", "),"sonic-shared-feelings");
     row.append(details);
     addSonicText(row,"span",found.similarity + "%","sonic-match-score");
     matches.append(row);
@@ -387,6 +390,14 @@ function showTab(target) {
 }
 for (const key of ["discover", "saved", "taste", "sonic"]) $("tab-" + key).addEventListener("click", () => showTab(key));
 $("sonic-files").addEventListener("change", event => { void analyzeLocalFiles(event.target); });
+$("sonic-save-feelings").addEventListener("click", () => {
+  const selected=sonicLibrary.find(item=>item.id===selectedSonicId);
+  if (!selected) { $("sonic-status").textContent="Analyze a track before adding feelings."; return; }
+  selected.feelings=normalizeFeelings($("sonic-feelings").value);
+  persistSonic(); renderSonic();
+  $("sonic-status").textContent="Saved your feelings for " + selected.title + ". They now help sort close audio matches.";
+});
+
 $("sonic-clear").addEventListener("click", () => {
   if (!confirm("Delete the saved Sound DNA measurements on this device?")) return;
   sonicLibrary=[];selectedSonicId=null;
