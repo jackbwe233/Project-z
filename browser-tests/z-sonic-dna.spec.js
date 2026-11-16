@@ -21,14 +21,21 @@ test("Sound DNA: two locally supplied audio files are measured and compared, eve
   const input=page.locator("#sonic-files");
   await input.setInputFiles({name:"Low Artist - Bass Song.wav",mimeType:"audio/wav",buffer:Buffer.from([1,2])});
   await expect(page.locator("#sonic-count")).toContainText("1 track");
+  await expect(input).toBeEnabled();
   await input.setInputFiles({name:"High Artist - Bright Song.wav",mimeType:"audio/wav",buffer:Buffer.from([2,3])});
   await expect(page.locator("#sonic-count")).toContainText("2 tracks");
   await expect(page.locator(".sonic-match")).toHaveCount(1);
   await expect(page.locator(".sonic-match-score")).toContainText("%");
   await expect(page.locator("#sonic-results")).toContainText("Similar:");
+  await page.locator("#sonic-feelings").fill("dreamy, majestic, nostalgic");
+  await page.locator("#sonic-save-feelings").click();
+  await expect(page.locator("#sonic-status")).toContainText("Saved your feelings");
+
   await page.reload();
   await page.locator("#tab-sonic").click();
   await expect(page.locator("#sonic-library .sonic-track")).toHaveCount(2);
+  await expect(page.locator("#sonic-feelings")).toHaveValue("dreamy, majestic, nostalgic");
+
   page.once("dialog", dialog => dialog.accept());
   await page.locator("#sonic-clear").click();
   await expect(page.locator("#sonic-count")).toContainText("0 tracks");

@@ -46,6 +46,14 @@ describe("music discovery intelligence", () => {
     ], {likes:[],seen:[],skippedSongs:[track(1,"Often Skipped","Rock"),track(2,"Often Skipped","Rock")]}, {genre:"Rock"});
     expect(result[0].artist).toBe("New Artist");
   });
+  it("never uses popularity, streams or cover art as a ranking signal", () => {
+    const a={...track(101,"A","Jazz"),popularity:100000,plays:99999,artwork:"https://example.com/a.jpg"};
+    const b={...track(202,"B","Jazz"),popularity:1,plays:0,artwork:""};
+    const opts={genre:"Jazz",exploration:"explore",cycle:7};
+    const order1=smartRankSongs([a,b],{likes:[],seen:[]},opts).map(s=>s.id);
+    const order2=smartRankSongs([{...a,popularity:0,plays:0,artwork:""},{...b,popularity:99999,plays:99999,artwork:"https://example.com/b.jpg"}],{likes:[],seen:[]},opts).map(s=>s.id);
+    expect(order1).toEqual(order2);
+  });
   it("gives reasons tied only to actual saved metadata", () => {
     const profile = {likes:[track(1,"Lumen","Jazz")]};
     expect(reasonForSong(track(2,"Lumen","Jazz"),profile)).toContain("artist");
