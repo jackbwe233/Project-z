@@ -14,7 +14,9 @@ let controller = null;
 let sonicLibrary = [];
 try { sonicLibrary = normalizeSonicLibrary(JSON.parse(localStorage.getItem(SONIC_STORAGE_KEY) || "[]")); }
 catch { sonicLibrary = []; }
+const SONIC_SELECTED_KEY = "z-sonic-selected-v1";
 let selectedSonicId = null, sonicBusy = false;
+try { selectedSonicId = localStorage.getItem(SONIC_SELECTED_KEY); } catch { /* private browsing may block storage */ }
 
 const actions = [$("skip-song"), $("like-song"), $("similar-song")];
 function status(s) { $("discovery-status").textContent = s; }
@@ -289,6 +291,7 @@ function renderSonic() {
     return;
   }
   if (!sonicLibrary.some(x=>x.id===selectedSonicId)) selectedSonicId = sonicLibrary[0].id;
+  try { localStorage.setItem(SONIC_SELECTED_KEY, selectedSonicId); } catch { /* optional local persistence */ }
   for (const song of [...sonicLibrary].reverse()) {
     const item=document.createElement("button");
     item.type="button";
@@ -401,7 +404,10 @@ $("sonic-save-feelings").addEventListener("click", () => {
 $("sonic-clear").addEventListener("click", () => {
   if (!confirm("Delete the saved Sound DNA measurements on this device?")) return;
   sonicLibrary=[];selectedSonicId=null;
-  try { localStorage.removeItem(SONIC_STORAGE_KEY); } catch { /* storage may be unavailable */ }
+  try {
+    localStorage.removeItem(SONIC_STORAGE_KEY);
+    localStorage.removeItem(SONIC_SELECTED_KEY);
+  } catch { /* storage may be unavailable */ }
   renderSonic();
   $("sonic-status").textContent="Local Sound DNA measurements cleared.";
 });
