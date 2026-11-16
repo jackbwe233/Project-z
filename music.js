@@ -136,11 +136,16 @@ function makeChoice(action) {
   setTimeout(finish, 215);
 }
 function terms(query = "", seedSong = null) {
-  const targetGenre = seedSong ? genreFamily(seedSong.genre) : genre;
-  return discoveryQueries(profile, {
-    genre: targetGenre, vibe, exploration: seedSong ? "explore" : exploration,
+  const sourceFamily = seedSong ? genreFamily(seedSong.genre) : genre;
+  const targetGenre = sourceFamily === "Other" ? "All" : sourceFamily;
+  const terms = discoveryQueries(profile, {
+    genre: targetGenre, vibe, exploration: seedSong ? "balanced" : exploration,
     cycle: loadCycle, query,
   });
+  // 'More like this' must actually use the chosen song's artist as its first
+  // reference. A genre-only search is not a same-song recommendation.
+  if (seedSong?.artist && !query) return [...new Set([seedSong.artist, ...terms])].slice(0, 4);
+  return terms;
 }
 const catalogCache = new Map();
 const catalogCalls = [];
@@ -220,8 +225,8 @@ async function loadSongs(query = "", seedSong = null) {
     let lastError = null;
     // The first provider batch is not always relevant. Check actual ranked
     // matches, and search a second seed when the batch is narrow or from Audius.
-    const selectedGenre = seedSong ? genreFamily(seedSong.genre) : genre;
-    const selectedMode = seedSong ? "explore" : exploration;
+    const selectedGenre = seedSong ? (genreFamily(seedSong.genre) === "Other" ? "All" : genreFamily(seedSong.genre)) : genre;
+    const selectedMode = seedSong ? "balanced" : exploration;
     for (const [index, term] of selected.slice(0, 3).entries()) {
       if (task !== sequence || request.signal.aborted) return [];
       try {
@@ -252,8 +257,8 @@ async function loadSongs(query = "", seedSong = null) {
     if (request.signal.aborted) throw new Error("Music search timed out. Tap Retry.");
     if (!found.length) throw new Error("No songs loaded. Check your connection or try a different genre.");
     queue = smartRankSongs(found, { ...profile, seen: [...(profile.seen || []), ...sessionRecommended] }, {
-      genre: seedSong ? genreFamily(seedSong.genre) : genre,
-      vibe, exploration: seedSong ? "explore" : exploration,
+      genre: seedSong ? (genreFamily(seedSong.genre) === "Other" ? "All" : genreFamily(seedSong.genre)) : genre,
+      vibe, exploration: seedSong ? "balanced" : exploration,
       cycle: loadCycle, sonicLibrary,
       referenceSonic: sonicLibrary.find(item => item.id===selectedSonicId) || null,
     });
