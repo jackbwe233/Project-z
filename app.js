@@ -72,6 +72,7 @@ import {
   normalizeToolPreferences,
 } from "./lib/sessions.js";
 import { generationErrorFallback } from "./lib/generation.js";
+import { finalizeChatReply } from "./lib/reply-finalization.js";
 import { detectBrowser, isIOSDevice, graphicsProbeAttempts, iosStabilityProfile, iosSafeModelId, isIOSModelAllowed } from "./lib/browser.js";
 import { computeLoadProgress } from "./lib/progress.js";
 import {
@@ -3370,7 +3371,7 @@ async function runAssistantGeneration(session) {
     } else {
       finalAssistantMessage = {
         role: "assistant",
-        content: output || raw || (wasAborted ? "(stopped)" : "(no output)"),
+        content: finalizeChatReply({ output, raw, thinking, aborted: wasAborted, error: generationError }),
         thinking: thinking || "",
         meta,
       };
