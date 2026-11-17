@@ -2,6 +2,7 @@ import { MUSIC_STORAGE_KEY, blankMusicProfile, normalizeMusicProfile, recordMusi
 import { SONIC_STORAGE_KEY, MAX_SONIC_TRACKS, analyzeSonicSamples, normalizeSonicLibrary, rankSonicLibrary, sonicMoodHints, sonicSimilarity, sonicReasons, normalizeFeelings, parseLocalTrackName } from "./lib/sonic-dna.js";
 import { connectSpotify, handleSpotifyCallback, spotifyIsConnected, disconnectSpotify, hasSpotifySetup, getSpotifyClientId, setSpotifyClientId, createSpotifyPlaylist, connectApple, appleIsConnected, createApplePlaylist } from "./lib/music-providers.js";
 import { discoveryQueries, smartRankSongs, reasonForSong, genreFamily } from "./lib/music-intelligence.js";
+import { SONIC_LINKS_STORAGE_KEY, normalizeSonicLinks, resolveSonicLink } from "./lib/sonic-links.js";
 import { appleSongSearch, audiusSongSearch } from "./lib/music-catalog.js";
 
 const $ = id => document.getElementById(id);
@@ -22,7 +23,10 @@ let sonicLibrary = [];
 try { sonicLibrary = normalizeSonicLibrary(JSON.parse(localStorage.getItem(SONIC_STORAGE_KEY) || "[]")); }
 catch { sonicLibrary = []; }
 const SONIC_SELECTED_KEY = "z-sonic-selected-v1";
-let selectedSonicId = null, sonicBusy = false;
+let selectedSonicId = null, sonicBusy = false, pendingLinkedId = null;
+let sonicLinks = [];
+try { sonicLinks = normalizeSonicLinks(JSON.parse(localStorage.getItem(SONIC_LINKS_STORAGE_KEY) || "[]")); }
+catch { sonicLinks = []; }
 try { selectedSonicId = localStorage.getItem(SONIC_SELECTED_KEY); } catch { /* private browsing may block storage */ }
 
 const actions = [$("skip-song"), $("like-song"), $("similar-song")];
@@ -352,14 +356,152 @@ function addSonicText(parent, tag, content, className = "") {
   parent.append(el);
   return el;
 }
+
+function persistSonicLinks() {
+  try { localStorage.setItem(SONIC_LINKS_STORAGE_KEY, JSON.stringify(sonicLinks)); }
+  catch { $("sonic-status").textContent = "Could not save linked songs on this device."; }
+}
+function renderSonicLinks() {
+  const root = $("sonic-links");
+  root.replaceChildren();
+  $("sonic-links-count").textContent = sonicLinks.length + (sonicLinks.length === 1 ? " waiting" : " waiting");
+  if (!sonicLinks.length) {
+    addSonicText(root, "p", "Paste a song URL above to add it here.", "sonic-empty");
+    return;
+  }
+  for (const song of [...sonicLinks].reverse()) {
+    const row = document.createElement("div"); row.className = "sonic-linked-row";
+    const meta = document.createElement("div"); meta.className = "sonic-linked-meta";
+    addSonicText(meta, "strong", song.title);
+    addSonicText(meta, "small", song.artist + " · " + song.provider + " · audio needed");
+    const actions = document.createElement("div"); actions.className = "sonic-linked-actions";
+    const upload = document.createElement("button");
+    upload.type = "button"; upload.className = "sonic-link-upload";
+    upload.textContent = "Add audio"; upload.disabled = sonicBusy;
+    upload.setAttribute("aria-label", "Add audio file for " + song.title);
+    upload.addEventListener("click", () => { pendingLinkedId = song.id; $("sonic-link-file").click(); });
+    const link = document.createElement("a");
+    link.href = song.url; link.target = "_blank"; link.rel = "noopener noreferrer";
+    link.textContent = "Open ↗";
+    const remove = document.createElement("button");
+    remove.type = "button"; remove.className = "sonic-link-remove";
+    remove.textContent = "Remove"; remove.disabled = sonicBusy;
+    remove.setAttribute("aria-label", "Remove link for " + song.title);
+    remove.addEventListener("click", () => {
+      sonicLinks = sonicLinks.filter(item => item.id !== song.id);
+      persistSonicLinks(); renderSonicLinks();
+    });
+    actions.append(upload, link, remove);
+    row.append(meta, actions); root.append(row);
+  }
+}
+async function measureSonicBuffer(data, filename, linked = null) {
+  const AudioContextType = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextType) throw new Error("This browser does not support sound analysis.");
+  const context = new AudioContextType();
+  try {
+    const audioBuffer = await context.decodeAudioData(data);
+    if (!audioBuffer || audioBuffer.duration < 1 || audioBuffer.duration > 600)
+      throw new Error("Use audio between 1 second and 10 minutes.");
+    const features = analyzeSonicSamples(audioBuffer.getChannelData(0), audioBuffer.sampleRate);
+    const parsed = linked ? { title: linked.title, artist: linked.artist } : parseLocalTrackName(filename);
+    const id = linked?.id || "local-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10);
+    sonicLibrary = [...sonicLibrary.filter(item => item.id !== id), { id, ...parsed, features }].slice(-MAX_SONIC_TRACKS);
+    selectedSonicId = id;
+    if (linked) {
+      sonicLinks = sonicLinks.filter(item => item.id !== linked.id);
+      persistSonicLinks();
+    }
+    persistSonic(); renderSonic();
+  } finally {
+    try { await context.close(); } catch { /* Safari may have already closed the decoder. */ }
+  }
+}
+// Public Audius streams sometimes permit cross-origin reads. Never proxy a
+// restricted service, and never retain the audio itself.
+async function readPublicAudio(url) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 12000);
+  const limit = 16 * 1024 * 1024;
+  let reader;
+  try {
+    const response = await fetch(url, { signal: controller.signal, credentials: "omit", mode: "cors" });
+    if (!response.ok) throw new Error("Public audio is unavailable.");
+    if (Number(response.headers.get("content-length") || 0) > limit) throw new Error("Audio exceeds 16 MB.");
+    if (!response.body?.getReader) {
+      const bytes = await response.arrayBuffer();
+      if (bytes.byteLength > limit) throw new Error("Audio exceeds 16 MB.");
+      return bytes;
+    }
+    reader = response.body.getReader();
+    const chunks = [];
+    let size = 0;
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      size += value.byteLength;
+      if (size > limit) throw new Error("Audio exceeds 16 MB.");
+      chunks.push(value);
+    }
+    const merged = new Uint8Array(size);
+    let offset = 0;
+    for (const chunk of chunks) { merged.set(chunk, offset); offset += chunk.byteLength; }
+    return merged.buffer;
+  } finally {
+    clearTimeout(timer);
+    try { await reader?.cancel(); } catch { /* stream already closed */ }
+  }
+}
+async function importSonicLink(event) {
+  event.preventDefault();
+  if (sonicBusy) return;
+  sonicBusy = true;
+  const submit = $("sonic-link-submit");
+  submit.disabled = true;
+  submit.textContent = "Finding…";
+  const value = $("sonic-link").value;
+  $("sonic-status").textContent = "Identifying linked song…";
+  try {
+    const metadata = await resolveSonicLink(value);
+    const old = sonicLinks.find(x => x.url === metadata.url);
+    if (old) {
+      $("sonic-status").textContent = old.title + " is already linked. Add an audio file to measure it.";
+      return;
+    }
+    const linked = { id: "link-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10),
+      title: metadata.title, artist: metadata.artist, provider: metadata.provider, url: metadata.url };
+    if (metadata.audioUrl) {
+      $("sonic-status").textContent = "Analyzing the publicly accessible " + metadata.provider + " audio…";
+      try {
+        const bytes = await readPublicAudio(metadata.audioUrl);
+        await measureSonicBuffer(bytes, linked.title, linked);
+        $("sonic-status").textContent = "Measured Sound DNA for " + linked.title + " from public audio.";
+        $("sonic-link").value = "";
+        return;
+      } catch { /* A link does not guarantee CORS or decodable audio. Keep the import pending. */ }
+    }
+    sonicLinks = [...sonicLinks, linked].slice(-50);
+    persistSonicLinks(); renderSonicLinks();
+    $("sonic-link").value = "";
+    $("sonic-status").textContent = "Added " + linked.title + ". Tap Add audio on its card for real Sound DNA measurements; the link alone cannot provide audio.";
+  } catch (error) {
+    $("sonic-status").textContent = "Could not add link: " + (error?.message || "This music link could not be resolved.");
+  } finally {
+    sonicBusy = false;
+    submit.disabled = false;
+    submit.textContent = "Add link ↗";
+    renderSonicLinks();
+  }
+}
 function renderSonic() {
+  renderSonicLinks();
   const root = $("sonic-library"), matches = $("sonic-results");
   root.replaceChildren(); matches.replaceChildren();
   $("sonic-count").textContent = sonicLibrary.length + (sonicLibrary.length === 1 ? " track" : " tracks");
   if (!sonicLibrary.length) {
     $("sonic-feelings").value = "";
-    addSonicText(root,"p","No analyzed songs yet. Add two audio files to compare them.","sonic-empty");
-    addSonicText(matches,"p","Upload at least two audio files to find sound-alike matches.","sonic-empty");
+    addSonicText(root,"p","No sound measurements yet. Add audio files or a playable public Audius track.","sonic-empty");
+    addSonicText(matches,"p","Measure at least two songs to see real sound-based matches. Linked songs awaiting audio are not scored.","sonic-empty");
     return;
   }
   if (!sonicLibrary.some(x=>x.id===selectedSonicId)) selectedSonicId = sonicLibrary[0].id;
@@ -402,15 +544,13 @@ function renderSonic() {
   }
   addSonicText(matches,"p","These are descriptor similarities in your local library, not a scientific probability that you will like the songs.","sonic-footnote");
 }
-async function analyzeLocalFiles(input) {
+async function analyzeLocalFiles(input, linked = null) {
   if (sonicBusy) return;
   const files=Array.from(input.files || []).slice(0,5);
   if (!files.length) return;
   sonicBusy=true; input.disabled=true;
   let added=0;
-  const AudioContextType=window.AudioContext || window.webkitAudioContext;
   try {
-    if (!AudioContextType) throw new Error("Your browser does not support local sound analysis.");
     for (const file of files) {
       if (file.size > 16 * 1024 * 1024) {
         $("sonic-status").textContent=file.name + " is over the 16 MB limit; choose a shorter audio file.";
@@ -419,30 +559,19 @@ async function analyzeLocalFiles(input) {
       $("sonic-status").textContent="Analyzing " + file.name + " (" + (added + 1) + " of " + files.length + ")…";
       // Give Safari a paint opportunity before decoding a potentially large file.
       await new Promise(resolve=>setTimeout(resolve,30));
-      let context;
       try {
-        context=new AudioContextType();
-        const data=await file.arrayBuffer();
-        const audioBuffer=await context.decodeAudioData(data);
-        if (!audioBuffer || audioBuffer.duration < 1 || audioBuffer.duration > 600)
-          throw new Error("Use an audio file between 1 second and 10 minutes.");
-        const features=analyzeSonicSamples(audioBuffer.getChannelData(0),audioBuffer.sampleRate);
-        const parsed=parseLocalTrackName(file.name);
-        const id="local-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2,10);
-        sonicLibrary=[...sonicLibrary,{id,...parsed,features}].slice(-MAX_SONIC_TRACKS);
-        selectedSonicId=id; added++;
-        persistSonic(); renderSonic();
+        const data = await file.arrayBuffer();
+        await measureSonicBuffer(data, file.name, linked);
+        added++;
       } catch (error) {
         $("sonic-status").textContent="Could not analyze " + file.name + ": " + (error?.message || "unsupported audio");
-      } finally {
-        if (context) try { await context.close(); } catch { /* Safari may already close it. */ }
       }
     }
     if (added) $("sonic-status").textContent="Analyzed " + added + " track" + (added===1?"":"s") + ". Tap a track to hear how its sound profile compares.";
   } catch (error) {
     $("sonic-status").textContent=error.message || "Audio analysis isn't available on this device.";
   } finally {
-    sonicBusy=false; input.disabled=false; input.value="";
+    sonicBusy=false; input.disabled=false; input.value=""; pendingLinkedId = null; renderSonicLinks();
   }
 }
 
@@ -465,6 +594,12 @@ function showTab(target) {
 }
 for (const key of ["discover", "saved", "taste", "sonic"]) $("tab-" + key).addEventListener("click", () => showTab(key));
 $("sonic-files").addEventListener("change", event => { void analyzeLocalFiles(event.target); });
+$("sonic-link-form").addEventListener("submit", event => { void importSonicLink(event); });
+$("sonic-link-file").addEventListener("change", event => {
+  const linked = sonicLinks.find(x => x.id === pendingLinkedId);
+  if (linked) void analyzeLocalFiles(event.target, linked);
+  else event.target.value = "";
+});
 $("sonic-save-feelings").addEventListener("click", () => {
   const selected=sonicLibrary.find(item=>item.id===selectedSonicId);
   if (!selected) { $("sonic-status").textContent="Analyze a track before adding feelings."; return; }
@@ -474,11 +609,12 @@ $("sonic-save-feelings").addEventListener("click", () => {
 });
 
 $("sonic-clear").addEventListener("click", () => {
-  if (!confirm("Delete the saved Sound DNA measurements on this device?")) return;
-  sonicLibrary=[];selectedSonicId=null;
+  if (!confirm("Delete the saved Sound DNA measurements and linked songs on this device?")) return;
+  sonicLibrary=[];sonicLinks=[];selectedSonicId=null;
   try {
     localStorage.removeItem(SONIC_STORAGE_KEY);
     localStorage.removeItem(SONIC_SELECTED_KEY);
+    localStorage.removeItem(SONIC_LINKS_STORAGE_KEY);
   } catch { /* storage may be unavailable */ }
   renderSonic();
   $("sonic-status").textContent="Local Sound DNA measurements cleared.";
