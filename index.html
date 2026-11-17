@@ -1789,6 +1789,43 @@ html.z-boot-returning #z-cinematic-boot {
   filter: grayscale(1);
 }
 </style>
+
+<style id="z-silver-controls-final">
+/* Keep control accents silver in both saved theme preferences. */
+html body #app #main :is(#load-model-btn, #load-model-btn-hero, #send-btn),
+html body #z-tool-link {
+  background: linear-gradient(145deg, #eff0f3, #b8bbc4) !important;
+  color: #111216 !important;
+  border: 1px solid #d7d9df !important;
+  box-shadow: 0 3px 12px #0003 !important;
+  text-shadow: none !important;
+}
+html body #app #main :is(#theme-toggle, #attach-files-btn, #stop-btn) {
+  background: #151518 !important;
+  color: #e8e9ee !important;
+  border: 1px solid #42434b !important;
+  box-shadow: none !important;
+}
+html body #app #main :is(#load-model-btn, #load-model-btn-hero, #send-btn):hover:not(:disabled),
+html body #z-tool-link:hover {
+  background: #f2f3f6 !important;
+}
+html body #app #main :is(#theme-toggle, #attach-files-btn, #stop-btn):hover:not(:disabled) {
+  background: #28282e !important;
+  border-color: #a4a7b1 !important;
+}
+html body #app #main :is(#load-model-btn, #load-model-btn-hero, #send-btn, #attach-files-btn, #stop-btn):disabled {
+  background: #17171b !important;
+  color: #a3a5af !important;
+  border-color: #303138 !important;
+  box-shadow: none !important;
+}
+html body #app #main :is(#load-model-btn, #load-model-btn-hero, #send-btn, #attach-files-btn, #theme-toggle, #stop-btn):focus-visible,
+html body #z-tool-link:focus-visible {
+  outline: 2px solid #e8e9ee !important;
+  outline-offset: 3px !important;
+}
+</style>
 </head>
 <body>
 <div id="z-cinematic-boot" aria-hidden="true"><div class="z-boot-halo"></div><div class="z-boot-track"></div><span class="z-boot-glyph">Z</span><div class="z-boot-vignette"></div></div>
