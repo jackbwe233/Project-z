@@ -88,7 +88,7 @@ test('Orbital chat has themed surfaces and readable controls', async ({ page }) 
     const css = selector => getComputedStyle(document.querySelector(selector));
     return {
       orbitalLoaded: [...document.styleSheets].some(sheet => String(sheet.href || '').includes('z-orbital.css')),
-      sideGradient: css('#sidebar').backgroundImage,
+      sidebarBackground: css('#sidebar').backgroundColor,
       composerBorderWidth: css('#composer-shell').borderTopWidth,
       composerBorderColor: css('#composer-shell').borderTopColor,
       composerBackground: css('#composer-shell').backgroundColor,
@@ -96,7 +96,7 @@ test('Orbital chat has themed surfaces and readable controls', async ({ page }) 
     };
   });
   expect(style.orbitalLoaded).toBe(true);
-  expect(style.sideGradient).toContain('gradient');
+  expect(style.sidebarBackground).toBe('rgb(16, 16, 19)');
   expect(style.composerBorderWidth).toBe('1px');
   expect(style.composerBorderColor).toContain('rgb');
   expect(style.composerBackground).not.toBe('rgba(0, 0, 0, 0)');
@@ -167,6 +167,9 @@ test('iPhone startup leaves graphics idle even after reopening the page', async 
 
 test('Failed chat deletion keeps the saved conversation visible', async ({ page }) => {
   await page.goto('/');
+  // Wait for initial session restoration before opening the mobile drawer.
+  await expect(page.locator('#session-list .session-item')).toHaveCount(1);
+  await expect(page.locator('#user-input')).toBeEditable();
   if ((await page.viewportSize()).width < 769) {
     await page.locator('#sidebar-toggle').click();
   }
