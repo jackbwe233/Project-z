@@ -481,11 +481,11 @@ body { background:var(--bg); font-family:var(--sans); letter-spacing:-.009em; }
 /* Compact mobile-first memory management: preserve all controls and data IDs. */
 .z-memory-panel { min-width:0; width:100%; }
 .z-memory-panel[open] { max-height:min(68dvh,650px); overscroll-behavior:contain; padding:0 4px 8px; }
-.z-memory-panel > summary, .z-memory-tools > summary { min-height:44px; display:flex; align-items:center; gap:8px; font-weight:650; }
+.z-memory-panel > summary, .z-memory-tools > summary, .z-vault-panel > summary { min-height:44px; display:flex; align-items:center; gap:8px; font-weight:650; }
 .z-memory-panel > summary { justify-content:space-between; }
-.z-memory-tools { border-top:1px solid var(--line-quiet); margin:8px 0 12px; }
-.z-memory-tools > summary { cursor:pointer; color:var(--text-secondary); }
-.z-memory-tools .z-learning-toolbar { margin:4px 0 10px; }
+.z-memory-tools, .z-vault-panel { border-top:1px solid var(--line-quiet); margin:8px 0 12px; }
+.z-memory-tools > summary, .z-vault-panel > summary { cursor:pointer; color:var(--text-secondary); }
+.z-memory-tools .z-learning-toolbar, .z-vault-panel .z-learning-toolbar { margin:4px 0 10px; }
 .z-memory-tools #z-clear { border-color:var(--danger); }
 .z-memory-panel textarea { min-height:94px; padding:12px; border-radius:10px; }
 .z-learning-toolbar { display:flex; gap:8px; flex-wrap:wrap; }

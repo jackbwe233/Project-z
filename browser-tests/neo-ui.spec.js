@@ -133,6 +133,19 @@ test('Simplified memory tools stay discoverable and advanced actions stay tucked
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });
 
+test('Obsidian vault section sits inside memory and starts disconnected', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('.z-voice-drawer > summary').click();
+  await page.locator('.z-memory-panel > summary').click();
+  await page.locator('.z-vault-panel > summary').click();
+  await expect(page.locator('.z-memory-panel .z-vault-panel')).toHaveCount(1);
+  await expect(page.locator('#z-vault-status')).toHaveText('No vault connected.');
+  await expect(page.locator('#z-vault-toggle')).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Disconnect' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Connect vault folder' })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+});
+
 test('iPhone startup leaves graphics idle even after reopening the page', async ({ page }) => {
   await page.addInitScript(() => {
     Object.defineProperty(navigator, 'userAgent', {
