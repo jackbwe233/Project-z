@@ -1826,6 +1826,121 @@ html body #z-tool-link:focus-visible {
   outline-offset: 3px !important;
 }
 </style>
+
+<style id="z-monochrome-mobile-final">
+/* Final mobile monochrome pass: overrides legacy blue iPhone rules.
+   Visual-only; do not alter model, memory, web tools, or chat behavior. */
+@media (max-width: 768px) {
+  html:not([data-theme="light"]) body #app #main {
+    background: #000 !important;
+  }
+  html:not([data-theme="light"]) body #app #main .topbar {
+    background: #0b0b0e !important;
+    border-bottom: 1px solid #35363d !important;
+    box-shadow: none !important;
+  }
+  html:not([data-theme="light"]) body #app #main .topbar::after {
+    background: linear-gradient(90deg, transparent, #bfc1c9, transparent) !important;
+    box-shadow: 0 0 9px #c3c5ce24 !important;
+  }
+  html:not([data-theme="light"]) body #app :is(.z-chat-wordmark, .z-chat-orbit) {
+    color: #e6e7eb !important;
+    text-shadow: 0 0 12px #d6d8e026 !important;
+  }
+  html:not([data-theme="light"]) body #app :is(#sidebar-toggle, #z-work-top-link, #model-status, #theme-toggle, .z-voice-drawer > summary) {
+    background: #141417 !important;
+    border-color: #45464e !important;
+    color: #e8e9ee !important;
+    box-shadow: none !important;
+  }
+  html:not([data-theme="light"]) body #app #model-status-text {
+    color: #c9cbd3 !important;
+  }
+  html:not([data-theme="light"]) body #app #chat-scroll {
+    background: #000 !important;
+  }
+  html:not([data-theme="light"]) body #app #chat-messages .msg-inner > .avatar,
+  html:not([data-theme="light"]) body #app #chat-messages .msg-inner > .avatar.assistant {
+    background: linear-gradient(145deg, #34353b, #141416) !important;
+    color: #f1f1f4 !important;
+    border-color: #777983 !important;
+    box-shadow: none !important;
+  }
+  html:not([data-theme="light"]) body #app #chat-messages .msg-card,
+  html:not([data-theme="light"]) body #app #chat-messages .msg.user .msg-card {
+    background: #111114 !important;
+    color: #f0f0f2 !important;
+    border-color: #35363d !important;
+    box-shadow: 0 5px 18px #0007 !important;
+  }
+  html:not([data-theme="light"]) body #app #chat-messages .msg.user .msg-card {
+    background: #222227 !important;
+  }
+  html:not([data-theme="light"]) body #app #chat-messages :is(.msg-role, .msg-stats-inline) {
+    color: #c3c5ce !important;
+  }
+  html:not([data-theme="light"]) body #app #chat-messages .msg-footer,
+  html:not([data-theme="light"]) body #app #chat-messages .msg-head-actions .footer-action {
+    border-color: #3a3b43 !important;
+  }
+  html:not([data-theme="light"]) body #app #chat-messages .msg-head-actions .footer-action {
+    background: #1a1a1f !important;
+    color: #dadce3 !important;
+    box-shadow: none !important;
+  }
+  html:not([data-theme="light"]) body #app #composer-area {
+    background: linear-gradient(to top, #000 75%, transparent) !important;
+  }
+  html:not([data-theme="light"]) body #app #composer-shell {
+    background: #111114 !important;
+    border-color: #60616b !important;
+    box-shadow: 0 8px 24px #0009 !important;
+  }
+  html:not([data-theme="light"]) body #app #user-input::placeholder {
+    color: #a9abb5 !important;
+  }
+  html:not([data-theme="light"]) body #app #send-btn:not(:disabled),
+  html:not([data-theme="light"]) body #app #load-model-btn,
+  html:not([data-theme="light"]) body #z-tool-link {
+    background: linear-gradient(135deg, #f1f2f5, #b8bbc4) !important;
+    border-color: #d7d9df !important;
+    color: #111216 !important;
+    box-shadow: 0 3px 13px #d8dae21a !important;
+  }
+  html:not([data-theme="light"]) body #app #send-btn:disabled {
+    background: #17171b !important;
+    color: #9ea0aa !important;
+    border-color: #303138 !important;
+    box-shadow: none !important;
+  }
+  html:not([data-theme="light"]) body #app :is(button, a, summary, textarea):focus-visible {
+    outline-color: #d9dae1 !important;
+  }
+  html:not([data-theme="light"]) body #app #sidebar .z-primary-link span {
+    color: #d9dae1 !important;
+  }
+}
+html:not([data-theme="light"]) body #app #sidebar .z-primary-link,
+html:not([data-theme="light"]) body #app #sidebar .z-more-links :is(a,button),
+html:not([data-theme="light"]) body #app .z-style-panel {
+  background: #17171b !important;
+  border-color: #41424a !important;
+  color: #e6e7eb !important;
+}
+html:not([data-theme="light"]) body #app #sidebar .z-primary-link:hover,
+html:not([data-theme="light"]) body #app #sidebar .z-more-links :is(a,button):hover {
+  background: #29292f !important;
+  border-color: #747680 !important;
+}
+html:not([data-theme="light"]) body #app .z-style-panel :is(select, button, .z-style-scope) {
+  background: #242429 !important;
+  border-color: #555660 !important;
+  color: #e4e5eb !important;
+}
+html:not([data-theme="light"]) body #app .z-style-panel :is(.z-style-caption, .z-style-scope, .z-style-preview) {
+  color: #c6c8d1 !important;
+}
+</style>
 </head>
 <body>
 <div id="z-cinematic-boot" aria-hidden="true"><div class="z-boot-halo"></div><div class="z-boot-track"></div><span class="z-boot-glyph">Z</span><div class="z-boot-vignette"></div></div>
