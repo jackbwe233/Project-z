@@ -2224,23 +2224,23 @@ html:not([data-theme="light"]) body #app .z-style-panel :is(.z-style-caption, .z
       <button id="z-clear" type="button">Delete all memories</button>
     </div>
   </details>
+  <details class="z-vault-panel" id="z-vault-panel">
+    <summary>Obsidian vault</summary>
+    <p class="z-style-scope">Connect your Obsidian vault folder and Z will use the notes that match what you ask about.</p>
+    <label class="z-learning-optin" for="z-vault-toggle">
+      <input type="checkbox" id="z-vault-toggle" disabled>
+      Use vault notes in chat
+    </label>
+    <div class="z-buttons z-learning-toolbar">
+      <button id="z-vault-connect" type="button">Connect vault folder</button>
+      <button id="z-vault-disconnect" type="button" disabled>Disconnect</button>
+    </div>
+    <input type="file" id="z-vault-picker" webkitdirectory multiple accept=".md,text/markdown" hidden>
+    <small id="z-vault-status" role="status">No vault connected.</small>
+    <small>Notes are copied into this browser only. Click Reload vault after editing notes in Obsidian.</small>
+  </details>
   <input type="file" id="z-memory-import-file" accept=".json,application/json" hidden>
   <small id="z-status" role="status">Your saved data remains on this device unless you export or share it. Browser data clearing may erase it.</small>
-</details>
-<details class="z-memory-panel" id="z-vault-panel">
-  <summary>Obsidian vault</summary>
-  <p class="z-style-scope">Connect your Obsidian vault folder and Z will use the notes that match what you ask about.</p>
-  <label class="z-learning-optin" for="z-vault-toggle">
-    <input type="checkbox" id="z-vault-toggle" disabled>
-    Use vault notes in chat
-  </label>
-  <div class="z-buttons z-learning-toolbar">
-    <button id="z-vault-connect" type="button">Connect vault folder</button>
-    <button id="z-vault-disconnect" type="button" disabled>Disconnect</button>
-  </div>
-  <input type="file" id="z-vault-picker" webkitdirectory multiple accept=".md,text/markdown" hidden>
-  <small id="z-vault-status" role="status">No vault connected.</small>
-  <small>Notes are copied into this browser only. Click Reload vault after editing notes in Obsidian.</small>
 </details>
     </section>
     </details>
