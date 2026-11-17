@@ -12,6 +12,16 @@ Project Z adds a silver-and-white companion interface to the existing browser AI
 - **Dictate** uses browser speech recognition where supported and inserts text for review before sending. **Read reply** speaks the most recent reply on tap. **Stop voice** cancels speech and dictation. Speech recognition may use the browser provider’s online service; no paid API or key is added. iPhone Safari support and permission behavior require device testing.
 - A stylized human-like avatar blinks, breathes and changes during thinking, dictation and speech. Reduced-motion preferences disable animation. The avatar is stylized, not photorealistic.
 
+## Obsidian vault
+
+Open **Z's memory & learning → Obsidian vault** and tap **Connect vault folder**, then pick the vault folder.
+
+- Chrome/Edge desktop use the folder picker (read-only access). Other browsers use a folder or multi-file upload; iPhone Safari may only allow picking individual `.md` files.
+- Only `.md` notes are read. Hidden folders (`.obsidian`, `.trash`) are skipped. Limits: 2,000 notes, 200,000 characters per note, 20 million characters total.
+- The notes are copied into this browser's IndexedDB (`project-z-vault`) so they survive reloads. Nothing is uploaded. Edits made in Obsidian appear after **Reload vault**. **Disconnect** deletes the copy.
+- On each message, `lib/z-vault.js` ranks notes by keyword overlap with the latest user turns (title matches weigh most) and appends the best paragraphs to the system prompt. The excerpts are labelled as user data, not instructions, and are capped at the model's local-file excerpt budget. Both the standard and the tool-enabled prompt paths get this context. **Use vault notes in chat** turns it off.
+- Matching is keyword-based, not semantic, and Z cannot write to the vault yet.
+
 ## Music Finder (swipe to discover)
 
 Open [**Z Music Finder**](https://jackbwe233.github.io/Project-z/music.html) from the main chat sidebar or the shared tool navigation.
