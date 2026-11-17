@@ -1732,6 +1732,49 @@ html.z-boot-returning #z-cinematic-boot {
   border-radius: 10px !important;
   font-weight: 600 !important;
 }
+
+:root:not([data-theme="light"]) #app :is(#stop-btn, #attach-files-btn, #theme-toggle, #load-model-btn) {
+  background: #151518 !important;
+  color: #e8e9ee !important;
+  border: 1px solid #42434b !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+}
+:root:not([data-theme="light"]) #app #stop-btn {
+  min-height: 44px;
+  min-width: 56px;
+  padding: 0 14px;
+  font-weight: 650;
+}
+:root:not([data-theme="light"]) #app #stop-btn::before {
+  content: "";
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  margin-right: 7px;
+  background: currentColor;
+}
+:root:not([data-theme="light"]) #app :is(#stop-btn, #attach-files-btn, #theme-toggle, #load-model-btn):hover:not(:disabled) {
+  background: #28282e !important;
+  border-color: #a4a7b1 !important;
+}
+:root:not([data-theme="light"]) #app :is(#send-btn, #load-model-btn-hero, #new-chat-btn):hover:not(:disabled) {
+  background: #f2f3f6 !important;
+  color: #101115 !important;
+}
+:root:not([data-theme="light"]) #app :is(#stop-btn, #send-btn, #attach-files-btn, #theme-toggle, #load-model-btn, #load-model-btn-hero):focus-visible {
+  outline: 2px solid #e8e9ee !important;
+  outline-offset: 3px !important;
+}
+:root:not([data-theme="light"]) #app :is(#stop-btn, #send-btn, #attach-files-btn, #load-model-btn, #load-model-btn-hero):disabled {
+  background: #17171b !important;
+  color: #a3a5af !important;
+  border-color: #303138 !important;
+  box-shadow: none !important;
+  opacity: .55;
+  cursor: not-allowed;
+}
 #z-cinematic-boot {
   background: var(--z-sky) !important;
 }
