@@ -1606,9 +1606,9 @@ html.z-boot-returning #z-cinematic-boot {
 :root {
   --z-night: #070709;
   --z-panel: #121215;
-  --z-line: #3a3b42;
+  --z-line: #303138;
   --z-silver: #e8e9ee;
-  --z-metal: linear-gradient(145deg, #f4f5f7, #b9bdc7);
+  --z-metal: linear-gradient(145deg, #e9ebef, #c3c6cf);
   --z-orb: radial-gradient(circle at 36% 25%, #535660, #202126 53%, #08080b 85%);
   --z-stars:
     radial-gradient(1px 1px at 21px 33px, #e5e6ea 98%, transparent),
@@ -1617,7 +1617,7 @@ html.z-boot-returning #z-cinematic-boot {
     radial-gradient(1px 1px at 232px 184px, #d9dbe1 98%, transparent),
     radial-gradient(1px 1px at 311px 94px, #aeb1bc 98%, transparent),
     radial-gradient(1px 1px at 57px 201px, #d1d3da 98%, transparent);
-  --z-star-size: 347px 229px;
+  --z-star-size: 440px 320px;
   --z-sky: radial-gradient(ellipse at 50% 20%, #202126 0%, #09090b 55%, #030304 100%);
 }
 :root:not([data-theme="light"]) {
@@ -1663,7 +1663,7 @@ html.z-boot-returning #z-cinematic-boot {
 :root:not([data-theme="light"]) #app #empty-icon {
   background: var(--z-orb) !important;
   border: 1px solid #8e919a !important;
-  box-shadow: 0 0 0 8px #e3e6ee0c, 0 0 45px #e3e6ee38 !important;
+  box-shadow: 0 0 0 6px #e3e6ee06, 0 0 30px #e3e6ee20 !important;
 }
 :root:not([data-theme="light"]) #app #empty-icon::after {
   color: #f8f9fc !important;
@@ -1708,6 +1708,29 @@ html.z-boot-returning #z-cinematic-boot {
   border-color: var(--z-line) !important;
   color: var(--z-silver) !important;
   box-shadow: none !important;
+}
+
+:root:not([data-theme="light"]) #app #composer-shell {
+  border-radius: 18px !important;
+  box-shadow: 0 8px 28px #0003 !important;
+}
+:root:not([data-theme="light"]) #app #chat-messages .msg-card {
+  border-radius: 16px !important;
+  box-shadow: none !important;
+}
+:root:not([data-theme="light"]) #app #chat-messages .msg-role {
+  color: #c5c7cf !important;
+  letter-spacing: .01em !important;
+}
+:root:not([data-theme="light"]) #app .empty-state h2 {
+  font-weight: 600 !important;
+  letter-spacing: -.035em !important;
+  text-shadow: none !important;
+}
+:root:not([data-theme="light"]) #app #sidebar .z-primary-link,
+:root:not([data-theme="light"]) #app #sidebar #z-work-link {
+  border-radius: 10px !important;
+  font-weight: 600 !important;
 }
 #z-cinematic-boot {
   background: var(--z-sky) !important;
@@ -2175,9 +2198,9 @@ html.z-boot-returning #z-cinematic-boot {
     #z-safe-start .z-safe-card {
       background: rgba(12,12,15,.94);
       border-color: var(--z-line);
-      border-radius: 26px;
+      border-radius: 22px;
       box-shadow: 0 20px 55px #0009, inset 0 1px 0 #ffffff0c;
-      padding: 23px 20px;
+      padding: 28px 22px;
       scrollbar-width: thin;
     }
     #z-safe-start .z-safe-logo {
@@ -2192,8 +2215,8 @@ html.z-boot-returning #z-cinematic-boot {
       color: #f6f7fa;
       font-size: 52px;
       line-height: 1;
-      text-shadow: 0 0 15px #d9dbe2;
-      box-shadow: 0 0 0 7px #e3e6ee0d, 0 0 35px #e3e6ee36;
+      text-shadow: 0 0 10px #d9dbe280;
+      box-shadow: 0 0 0 6px #e3e6ee06, 0 0 28px #e3e6ee20;
     }
     #z-safe-start h1 { font-size: clamp(29px,7vw,35px); letter-spacing: -.045em; margin: 8px 0; }
     #z-safe-start p { color: #bdc0c9; line-height: 1.5; margin: 8px 0 16px; font-size: 14px; }
