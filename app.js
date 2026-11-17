@@ -1,5 +1,7 @@
 import { withMemory } from "./lib/project-z.js?v=pet-recall-2";
 import { initProjectZ } from "./lib/project-z-ui.js?v=personalize-0.3.0-20261114";
+import { initVault } from "./lib/z-vault-ui.js?v=vault-1";
+import { withVault } from "./lib/z-vault.js?v=vault-1";
 import {
   PREFS_KEY,
   THEME_KEY,
@@ -18,6 +20,7 @@ import {
   modelLabel,
   modelSupportsThinking as modelHasThinking,
   isValidModelId,
+  modelLocalFileConfig,
 } from "./lib/models.js";
 import {
   esc,
@@ -203,8 +206,15 @@ function grammarConfig() {
   };
 }
 
+// Memory notes plus relevant Obsidian vault excerpts, sized to the model's excerpt budget.
+function withPersonalContext(session, modelId) {
+  const vaultContext = zVault.context(session, modelLocalFileConfig(modelId).excerptBytes);
+  return withVault(withMemory(session, projectZ.context(session)), vaultContext);
+}
+
 function buildMessages(session) {
-  return buildMessagesForModel(withMemory(session, projectZ.context(session)), grammarConfig());
+  const modelId = (loadedModelDef() || activeModelDef()).id;
+  return buildMessagesForModel(withPersonalContext(session, modelId), grammarConfig());
 }
 
 function cacheEnv() {
@@ -3228,7 +3238,7 @@ async function runAssistantGeneration(session) {
         availability,
         searchProvider: defaultSearchProvider,
       });
-      const baseMessages = buildAgentMessages(withMemory(session, projectZ.context(session)), [], {
+      const baseMessages = buildAgentMessages(withPersonalContext(session, modelDef.id), [], {
         attachments: localReferencesEnabled() ? state.attachments : [],
         modelId: modelDef.id,
       });
@@ -3881,6 +3891,7 @@ document.addEventListener("click", event => {
 });
 
 const projectZ = initProjectZ({ input: $("user-input"), notify: toast, send: sendMessage, ready: () => !$("user-input").disabled && !state.busy && !!state.model });
+const zVault = initVault({ notify: toast });
 
 init().then(() => {
   // Handoff from the stock research page is explicit and never sent automatically.
