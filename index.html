@@ -1666,8 +1666,8 @@ html.z-boot-returning #z-cinematic-boot {
   box-shadow: 0 0 0 8px #e3e6ee0c, 0 0 45px #e3e6ee38 !important;
 }
 :root:not([data-theme="light"]) #app #empty-icon::after {
-  color: #f8f9fc;
-  text-shadow: 0 0 16px #dadde6;
+  color: #f8f9fc !important;
+  text-shadow: 0 0 16px #dadde6 !important;
 }
 :root:not([data-theme="light"]) #app #chat-messages .msg-card {
   background: var(--z-panel) !important;
@@ -1697,6 +1697,17 @@ html.z-boot-returning #z-cinematic-boot {
   color: #101115 !important;
   background: var(--z-metal) !important;
   border-color: #d7d9df !important;
+}
+:root:not([data-theme="light"]) #app #sidebar #z-work-link,
+:root:not([data-theme="light"]) #app #sidebar .z-primary-link,
+:root:not([data-theme="light"]) #app #sidebar-toggle,
+:root:not([data-theme="light"]) #app #sidebar-close,
+:root:not([data-theme="light"]) #app #z-work-top-link,
+:root:not([data-theme="light"]) #app .z-voice-drawer > summary {
+  background: var(--z-panel) !important;
+  border-color: var(--z-line) !important;
+  color: var(--z-silver) !important;
+  box-shadow: none !important;
 }
 #z-cinematic-boot {
   background: var(--z-sky) !important;
