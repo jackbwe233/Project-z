@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   emptyLearningStore, normalizeLearningStore, learnFromUserMessage,
   setLearningEnabled, setAutoSave, approveLearning, forgetLearning, editLearning, selectRelevantMemories,
-  buildPersonalMemoryContext, exportLearningBundle, importLearningBundle,
+  buildPersonalMemoryContext, memoryQueryFromMessages, exportLearningBundle, importLearningBundle,
   isSensitiveCandidate, readLearningStore, writeLearningStore,
   MAX_SAVED,
 } from "../lib/z-learning.js";
@@ -86,6 +86,35 @@ describe("Project Z learning vault", () => {
     expect(selected.join(" ")).not.toContain("clothing business");
     const context = buildPersonalMemoryContext("", vault, "guitar");
     expect(context).not.toContain("clothing business");
+  });
+
+  it("retrieves saved memories across vague follow-up questions", () => {
+    let vault = emptyLearningStore();
+    vault = learnFromUserMessage(vault, "Remember that my dog is named Rocket.").store;
+    vault = learnFromUserMessage(vault, "Remember that I play lacrosse.").store;
+    const query = memoryQueryFromMessages([
+      { role: "user", content: "What do you remember about my dog?" },
+      { role: "assistant", content: "I don't know." },
+      { role: "user", content: "What was his name again?" },
+    ]);
+    expect(query).toContain("my dog");
+    expect(query).toContain("his name again");
+    expect(query).not.toContain("I don't know.");
+    expect(selectRelevantMemories(vault, query, { maxItems: 1 })[0]).toContain("Rocket");
+  });
+
+  it("bounds memory retrieval queries and ignores tool and assistant text", () => {
+    expect(memoryQueryFromMessages(null)).toBe("");
+    const messages = [
+      { role: "user", content: "older topic" },
+      { role: "tool", content: "should never be queried" },
+      { role: "assistant", content: "also excluded" },
+      { role: "user", content: "something about my favorite book" },
+      { role: "user", content: "what about it?" },
+    ];
+    expect(memoryQueryFromMessages(messages, { maxTurns: 2 })).not.toContain("older topic");
+    expect(memoryQueryFromMessages(messages, { maxTurns: 2 })).toContain("favorite book");
+    expect(memoryQueryFromMessages(messages, { maxTurns: 3, maxChars: 12 }).length).toBeLessThanOrEqual(12);
   });
 
   it("round-trips backup contents and preserves opt-in state", () => {
