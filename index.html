@@ -1602,6 +1602,116 @@ html.z-boot-returning #z-cinematic-boot {
   }
 }
 </style>
+<style id="z-silver-starfield">
+:root {
+  --z-night: #070709;
+  --z-panel: #121215;
+  --z-line: #3a3b42;
+  --z-silver: #e8e9ee;
+  --z-metal: linear-gradient(145deg, #f4f5f7, #b9bdc7);
+  --z-orb: radial-gradient(circle at 36% 25%, #535660, #202126 53%, #08080b 85%);
+  --z-stars:
+    radial-gradient(1px 1px at 21px 33px, #e5e6ea 98%, transparent),
+    radial-gradient(1px 1px at 104px 116px, #a1a4b0 98%, transparent),
+    radial-gradient(1.5px 1.5px at 179px 64px, #fff 98%, transparent),
+    radial-gradient(1px 1px at 232px 184px, #d9dbe1 98%, transparent),
+    radial-gradient(1px 1px at 311px 94px, #aeb1bc 98%, transparent),
+    radial-gradient(1px 1px at 57px 201px, #d1d3da 98%, transparent);
+  --z-star-size: 347px 229px;
+  --z-sky: radial-gradient(ellipse at 50% 20%, #202126 0%, #09090b 55%, #030304 100%);
+}
+:root:not([data-theme="light"]) {
+  --bg: var(--z-night);
+  --bg-chat: var(--z-night);
+  --surface: var(--z-panel);
+  --surface-2: #1b1b20;
+  --border: var(--z-line);
+  --border-soft: #27282e;
+  --text: var(--z-silver);
+  --text-secondary: #bfc1ca;
+  --text-muted: #a1a3ad;
+  --accent: #c6c9d2;
+  --accent-hover: #edf0f5;
+  --accent-soft: #ffffff14;
+  --accent-glow: #e3e6ee24;
+  --think-bg: #101013;
+}
+:root:not([data-theme="light"]) #app #main,
+:root:not([data-theme="light"]) #app #chat-scroll {
+  background: var(--z-night) !important;
+}
+:root:not([data-theme="light"]) #app #main .topbar,
+:root:not([data-theme="light"]) #app #sidebar {
+  background: #101013 !important;
+  border-color: var(--z-line) !important;
+}
+:root:not([data-theme="light"]) #app #chat-scroll .empty-state {
+  background: var(--z-stars), var(--z-sky) !important;
+  background-size: var(--z-star-size), var(--z-star-size), var(--z-star-size), var(--z-star-size), var(--z-star-size), var(--z-star-size), 100% 100% !important;
+}
+:root:not([data-theme="light"]) #app #chat-scroll .empty-state::before,
+:root:not([data-theme="light"]) #app #chat-scroll .empty-state::after {
+  display: none;
+}
+:root:not([data-theme="light"]) #app #chat-scroll .empty-state p,
+:root:not([data-theme="light"]) #app #chat-scroll .loader-status,
+:root:not([data-theme="light"]) #app .z-chat-wordmark,
+:root:not([data-theme="light"]) #app .z-chat-orbit {
+  color: var(--z-silver) !important;
+  text-shadow: none !important;
+}
+:root:not([data-theme="light"]) #app #empty-icon {
+  background: var(--z-orb) !important;
+  border: 1px solid #8e919a !important;
+  box-shadow: 0 0 0 8px #e3e6ee0c, 0 0 45px #e3e6ee38 !important;
+}
+:root:not([data-theme="light"]) #app #empty-icon::after {
+  color: #f8f9fc;
+  text-shadow: 0 0 16px #dadde6;
+}
+:root:not([data-theme="light"]) #app #chat-messages .msg-card {
+  background: var(--z-panel) !important;
+  border-color: var(--z-line) !important;
+}
+:root:not([data-theme="light"]) #app #chat-messages .msg.user .msg-card {
+  background: #23242a !important;
+}
+:root:not([data-theme="light"]) #app #composer-area {
+  background: linear-gradient(0deg, var(--z-night) 76%, transparent) !important;
+}
+:root:not([data-theme="light"]) #app #composer-shell,
+:root:not([data-theme="light"]) #app #model-status {
+  background: var(--z-panel) !important;
+  border-color: var(--z-line) !important;
+  box-shadow: none !important;
+}
+:root:not([data-theme="light"]) #app #composer-shell:focus-within {
+  border-color: #9b9da7 !important;
+}
+:root:not([data-theme="light"]) #app #user-input::placeholder {
+  color: #aeb0ba !important;
+}
+:root:not([data-theme="light"]) #app #load-model-btn-hero,
+:root:not([data-theme="light"]) #app #send-btn:not(:disabled),
+:root:not([data-theme="light"]) #app #new-chat-btn {
+  color: #101115 !important;
+  background: var(--z-metal) !important;
+  border-color: #d7d9df !important;
+}
+#z-cinematic-boot {
+  background: var(--z-sky) !important;
+}
+#z-cinematic-boot .z-boot-glyph {
+  filter: grayscale(1);
+  text-shadow: 0 0 14px #e7e8ec, 0 0 38px #a7aab7 !important;
+}
+#z-cinematic-boot .z-boot-halo,
+#z-cinematic-boot .z-boot-track,
+#z-cinematic-boot::before,
+#z-cinematic-boot::after {
+  filter: grayscale(1);
+}
+</style>
 </head>
 <body>
 <div id="z-cinematic-boot" aria-hidden="true"><div class="z-boot-halo"></div><div class="z-boot-track"></div><span class="z-boot-glyph">Z</span><div class="z-boot-vignette"></div></div>
@@ -2044,74 +2154,69 @@ html.z-boot-returning #z-cinematic-boot {
     #z-safe-start #z-launch-error{color:#aa3333}
     #z-safe-start button:focus-visible,#z-safe-start a:focus-visible{outline:3px solid #6a98d3;outline-offset:3px}
 
-    /* Midnight-blue starfield: entirely CSS, safe for iPhone and offline use. */
-    #z-safe-start{
-      background:
-        radial-gradient(ellipse 85% 48% at 50% 6%,rgba(31,102,191,.30),transparent 75%),
-        radial-gradient(ellipse 72% 30% at 55% 100%,rgba(14,60,124,.30),transparent 80%),
-        linear-gradient(165deg,#071730 0%,#030b19 52%,#010308 100%);
-      isolation:isolate;
-      padding:max(16px,env(safe-area-inset-top)) 14px max(18px,env(safe-area-inset-bottom));
+    #z-safe-start {
+      background: var(--z-stars), var(--z-sky);
+      background-size: var(--z-star-size), var(--z-star-size), var(--z-star-size), var(--z-star-size), var(--z-star-size), var(--z-star-size), 100% 100%;
+      isolation: isolate;
+      padding: max(16px,env(safe-area-inset-top)) 14px max(18px,env(safe-area-inset-bottom));
+      color: var(--z-silver);
     }
-    #z-safe-start::before,#z-safe-start::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;background-repeat:repeat}
-    #z-safe-start::before{
-      background-image:radial-gradient(1px 1px at 24px 42px,#fff 98%,transparent),radial-gradient(1.5px 1.5px at 143px 93px,#d9eaff 98%,transparent),radial-gradient(1px 1px at 279px 186px,#fff 98%,transparent),radial-gradient(1px 1px at 345px 44px,#b3d1ff 98%,transparent);
-      background-size:370px 250px;opacity:.72;
+    #z-safe-start .z-safe-card {
+      background: rgba(12,12,15,.94);
+      border-color: var(--z-line);
+      border-radius: 26px;
+      box-shadow: 0 20px 55px #0009, inset 0 1px 0 #ffffff0c;
+      padding: 23px 20px;
+      scrollbar-width: thin;
     }
-    #z-safe-start::after{
-      background-image:radial-gradient(2px 2px at 77px 155px,#e8f4ff 98%,transparent),radial-gradient(1px 1px at 243px 27px,#fff 98%,transparent),radial-gradient(1px 1px at 321px 224px,#bedaff 98%,transparent);
-      background-size:420px 295px;opacity:.45;
+    #z-safe-start .z-safe-logo {
+      display: grid;
+      place-items: center;
+      margin: 4px auto 12px;
+      width: 80px;
+      height: 80px;
+      border: 1px solid #8e919a;
+      border-radius: 50%;
+      background: var(--z-orb);
+      color: #f6f7fa;
+      font-size: 52px;
+      line-height: 1;
+      text-shadow: 0 0 15px #d9dbe2;
+      box-shadow: 0 0 0 7px #e3e6ee0d, 0 0 35px #e3e6ee36;
     }
-    #z-safe-start .z-safe-card{
-      background:linear-gradient(160deg,rgba(14,35,69,.91),rgba(7,20,42,.95) 62%,rgba(4,12,28,.95));
-      border:1px solid rgba(122,178,244,.46);
-      border-radius:28px;
-      box-shadow:0 20px 55px rgba(0,0,0,.5),0 0 30px rgba(60,133,226,.12),inset 0 1px 0 rgba(255,255,255,.07);
-      padding:26px 20px 24px;
-      scrollbar-width:thin;
+    #z-safe-start h1 { font-size: clamp(29px,7vw,35px); letter-spacing: -.045em; margin: 8px 0; }
+    #z-safe-start p { color: #bdc0c9; line-height: 1.5; margin: 8px 0 16px; font-size: 14px; }
+    #z-safe-start .z-safe-install,
+    #z-safe-start #z-launch-open,
+    #z-safe-start .z-safe-shortcuts a {
+      border: 1px solid var(--z-line);
+      background: var(--z-panel);
+      color: var(--z-silver);
     }
-    #z-safe-start .z-safe-logo{
-      display:grid;place-items:center;margin:5px auto 8px;width:82px;height:82px;
-      border-radius:50%;font-size:56px;font-weight:850;line-height:1;letter-spacing:-.09em;
-      color:#eef7ff;text-shadow:0 0 14px #a9d6ff,0 0 35px rgba(67,160,255,.70);
-      background:radial-gradient(circle at 45% 27%,rgba(61,124,217,.48),rgba(10,31,68,.5) 65%,transparent);
-      border:1px solid rgba(139,203,255,.40);
-      box-shadow:0 0 0 7px rgba(102,174,255,.06),0 0 38px rgba(62,151,250,.23);
+    #z-safe-start .z-safe-install {
+      display: block; margin: 13px 0 16px; padding: 11px 9px;
+      border-radius: 12px; text-decoration: none; font-weight: 650;
     }
-    #z-safe-start h1{font-size:clamp(29px,7vw,35px);letter-spacing:-.045em;color:#f7fbff;margin:8px 0 9px}
-    #z-safe-start p{color:#b7cbe5;line-height:1.5;margin:8px 0 19px;font-size:14px}
-    #z-safe-start .z-safe-install{
-      display:block;margin:13px 0 19px;padding:13px 9px;border-radius:14px;
-      border:1px solid rgba(151,202,255,.7);color:#f4faff;background:linear-gradient(135deg,#244d7e,#172d4e);
-      text-decoration:none;font-weight:740;box-shadow:0 6px 19px rgba(8,49,105,.3);
+    #z-safe-start label { color: var(--z-silver); }
+    #z-safe-start textarea {
+      background: var(--z-night); border-color: #5c5e67;
+      border-radius: 13px; color: var(--z-silver);
     }
-    #z-safe-start label{color:#e5f0ff;margin-bottom:8px;font-weight:720}
-    #z-safe-start textarea{
-      min-height:88px;background:rgba(1,8,20,.72);border:1px solid rgba(125,184,252,.70);
-      border-radius:15px;color:#f4f9ff;box-shadow:inset 0 1px 12px rgba(20,74,135,.16);
+    #z-safe-start textarea::placeholder { color: #aeb0ba; }
+    #z-safe-start button[type="submit"] { color: #101115; background: var(--z-metal); font-weight: 750; }
+    #z-safe-start .z-launch-hint { font-size: 11px; margin: 10px 0; }
+    #z-safe-start .z-safe-shortcuts {
+      display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; margin-top: 12px;
     }
-    #z-safe-start textarea::placeholder{color:#9cb2cf}
-    #z-safe-start button[type="submit"]{
-      color:#07172a;font-weight:800;background:linear-gradient(125deg,#b9dcff,#76b7ff 65%,#a7cbff);
-      border:1px solid rgba(210,236,255,.7);box-shadow:0 6px 23px rgba(67,156,255,.25);
+    #z-safe-start .z-safe-shortcuts a {
+      min-height: 46px; display: grid; place-items: center; margin: 0; padding: 8px 5px;
+      border-radius: 12px; text-decoration: none; font-size: 14px; font-weight: 600;
     }
-    #z-safe-start #z-launch-open{
-      background:linear-gradient(135deg,rgba(41,78,124,.85),rgba(22,48,85,.90));
-      border:1px solid rgba(119,175,239,.57);color:#edf6ff;font-weight:700;
-    }
-    #z-safe-start .z-launch-hint{font-size:11px;margin:12px 0;color:#a8bedb}
-    #z-safe-start .z-safe-shortcuts{
-      display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:13px;
-    }
-    #z-safe-start .z-safe-shortcuts a{
-      min-height:51px;display:flex;align-items:center;justify-content:center;gap:6px;
-      margin:0;padding:10px 5px;border:1px solid rgba(104,151,210,.47);border-radius:13px;
-      background:linear-gradient(140deg,rgba(32,61,99,.56),rgba(11,29,57,.7));
-      color:#d9eaff;text-decoration:none;font-size:14px;font-weight:600;
-    }
-    #z-safe-start .z-safe-shortcuts a.z-safe-wide{grid-column:1/-1}
-    #z-safe-start .z-safe-shortcuts a:hover,#z-safe-start .z-safe-install:hover{border-color:#c0e4ff;filter:brightness(1.12)}
-    #z-safe-start .z-safe-card > a[href="./recovery.html"]{font-size:12px;margin-top:16px;color:#a9c7ee}
+    #z-safe-start .z-safe-shortcuts a.z-safe-wide { grid-column: 1/-1; }
+    #z-safe-start .z-safe-shortcuts a:hover,
+    #z-safe-start .z-safe-install:hover { border-color: #b9bcc5; }
+    #z-safe-start a[href="./recovery.html"] { font-size: 12px; margin-top: 15px; color: #bfc1ca; }
+    #z-safe-start :is(button, a, textarea):focus-visible { outline-color: #e1e3e9; }
     @media(max-width:390px){#z-safe-start .z-safe-card{padding:21px 15px}#z-safe-start .z-safe-shortcuts a{font-size:13px}}
 
   `;
