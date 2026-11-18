@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#061326">
+<title>Z · Gemini Beta</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,sans-serif;background:#061326;color:#eff6ff}
+*{box-sizing:border-box}body{margin:0;min-height:100dvh;background:radial-gradient(ellipse at 20% 0,#163559 0,transparent 52%),#061326}
+main{max-width:820px;min-height:100dvh;margin:auto;display:flex;flex-direction:column;padding:16px;gap:14px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+a{color:#bedbff}h1{margin:0;font-size:1.25rem;letter-spacing:.04em}small,.muted{color:#a9bbd3}button,input,textarea{font:inherit}
+button{background:#193c66;color:#fff;border:1px solid #537ea9;border-radius:12px;padding:11px 14px;cursor:pointer}
+button:disabled{opacity:.45;cursor:not-allowed}button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid #d4e8ff;outline-offset:2px}
+.panel{border:1px solid #345377;background:#0c1e35;border-radius:16px;padding:16px}
+label{display:block;margin:8px 0;color:#dceaff;font-size:.9rem}input,textarea{background:#071529;border:1px solid #48617d;border-radius:10px;color:white;padding:12px;width:100%}
+#messages{flex:1;min-height:240px;display:flex;flex-direction:column;gap:12px;overflow-wrap:anywhere}
+.message{padding:14px 16px;border-radius:16px;background:#132e4e;white-space:pre-wrap;line-height:1.5}
+.message.user{background:#254d79;align-self:flex-end;max-width:90%}
+.message.assistant{align-self:flex-start;max-width:95%}
+.message strong{display:block;font-size:.76rem;text-transform:uppercase;color:#b7d4f7;margin-bottom:8px;letter-spacing:.07em}
+.actions{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+#composer{display:flex;gap:10px;align-items:flex-end;position:sticky;bottom:0;background:#061326;padding:12px 0}
+#question{resize:vertical;min-height:50px;max-height:180px}
+#status{min-height:20px}#status.error{color:#ffb5b5}
+@media(max-width:520px){#composer{gap:6px}#send{padding:12px 11px}.panel{padding:12px}}
+</style>
+</head>
+<body>
+<main>
+<header><div><h1>✦ Z / Gemini Beta</h1><small>Cloud answers, same Z personality</small></div><a href="./index.html">← Local Z</a></header>
+<section class="panel" aria-label="Gemini connection">
+  <div class="actions"><strong>Secure Worker connection</strong><span id="connection" class="muted">Not connected</span></div>
+  <label for="access">Your Worker access token (X-Z-Access)</label>
+  <input id="access" type="password" autocomplete="off" spellcheck="false" placeholder="Enter your Worker access token">
+  <div class="actions" style="margin-top:10px"><small>This token stays in this browser tab and is never committed to GitHub. Do not paste your Gemini API key here.</small><button id="health" type="button">Check Worker</button></div>
+</section>
+<div class="actions"><span id="status" role="status" aria-live="polite">Gemini mode is experimental. Chat history here is separate from local Z.</span><button id="clear" type="button">Clear Gemini chat</button></div>
+<section id="messages" aria-label="Gemini messages" aria-live="polite"></section>
+<form id="composer"><textarea id="question" aria-label="Message to Z" placeholder="Ask Z anything…" rows="2" maxlength="4000" required></textarea><button id="send" type="submit">Send</button></form>
+</main>
+<script>
+(async () => {
+const { buildGeminiHistory } = await import("./lib/gemini-client.js");
+const WORKER = "https://project-z-brain.mcrkw49n9c.workers.dev";
+const HISTORY_KEY = "project-z-gemini-chat-beta-v1";
+const $ = id => document.getElementById(id);
+let messages = [];
+let controller = null;
+try {
+  const saved = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+  if (Array.isArray(saved)) messages = saved.filter(m => (m.role === "user" || m.role === "assistant") && typeof m.content === "string" && m.content.length <= 4000).slice(-50);
+} catch { /* Ignore corrupt data. */ }
+function status(text, error = false) { $("status").textContent = text; $("status").classList.toggle("error", error); }
+function render() {
+  const host = $("messages");
+  host.replaceChildren();
+  if (!messages.length) {
+    const p = document.createElement("p"); p.className = "muted"; p.textContent = "Your Gemini conversations will appear here. The local AI is still available through Local Z."; host.append(p);
+  }
+  for (const msg of messages) {
+    const el = document.createElement("article"); el.className = "message " + msg.role;
+    const heading = document.createElement("strong"); heading.textContent = msg.role === "user" ? "You" : "Z · Gemini";
+    const body = document.createElement("div"); body.textContent = msg.content;
+    el.append(heading, body); host.append(el);
+  }
+  host.lastElementChild?.scrollIntoView({block:"nearest"});
+}
+function persist(){try{localStorage.setItem(HISTORY_KEY, JSON.stringify(messages.slice(-50)));}catch{status("Could not save chat on this device.",true);}}
+function authHeaders() {
+  const token = $("access").value.trim();
+  if (!token) throw new Error("Enter your Worker access token first.");
+  return {"Content-Type":"application/json","X-Z-Access":token};
+}
+async function getJSON(response) {
+  let data;
+  try { data = await response.json(); } catch { throw new Error("Worker returned an invalid response."); }
+  if (!response.ok) throw new Error(typeof data.error === "string" ? data.error : "Worker request failed (" + response.status + ").");
+  return data;
+}
+
+$("health").addEventListener("click", async()=>{
+  $("health").disabled = true;
+  try{
+    const response = await fetch(WORKER + "/health",{method:"GET",cache:"no-store",signal:AbortSignal.timeout(10000)});
+    const data = await getJSON(response);
+    if(!data.ok) throw new Error("Worker health check failed.");
+    $("connection").textContent="Worker online"; status("Worker online. Send a message to verify Gemini and your access token.");
+  }catch(err){$("connection").textContent="Unverified";status("Could not check Worker: "+err.message,true);}
+  finally{$("health").disabled=false;}
+});
+$("composer").addEventListener("submit",async e=>{
+  e.preventDefault(); if(controller) return;
+  const content=$("question").value.trim();if(!content)return;
+  let headers;try{headers=authHeaders();}catch(err){status(err.message,true);return;}
+  controller=new AbortController();$("send").disabled=true;$("question").disabled=true;
+  messages.push({role:"user",content});persist();render();$("question").value="";status("Z is thinking…");
+  try{
+    const timeout=setTimeout(()=>controller?.abort(),30000);
+    let response;
+    try {
+      response=await fetch(WORKER+"/chat",{method:"POST",headers,body:JSON.stringify({messages:buildGeminiHistory(messages)}),signal:controller.signal,cache:"no-store"});
+    }finally{clearTimeout(timeout);}
+    const data=await getJSON(response);
+    if(typeof data.answer!=="string" || !data.answer.trim())throw new Error("Gemini returned no answer.");
+    messages.push({role:"assistant",content:data.answer.trim()});persist();render();status("Answered using "+(typeof data.model==="string"?data.model:"Gemini")+".");
+  }catch(err){
+    status(err.name==="AbortError" ? "Request timed out. Check your connection and try again." : "Gemini request failed: "+err.message,true);
+    // Remove an unanswered question so a retry does not duplicate it in context.
+    if(messages.at(-1)?.role==="user") { $("question").value=messages.pop().content;persist();render(); }
+  }finally{controller=null;$("send").disabled=false;$("question").disabled=false;}
+});
+$("clear").addEventListener("click",()=>{
+  if(controller || !confirm("Clear only the Gemini beta chat history on this device?"))return;
+  messages=[];persist();render();status("Gemini chat cleared. Local Z chats were not changed.");
+});
+render();
+})().catch(error => { const s = document.getElementById("status"); if (s) s.textContent = "Gemini startup failed: " + error.message; });
+</script>
+</body></html>
